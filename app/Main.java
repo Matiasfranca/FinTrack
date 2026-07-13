@@ -13,6 +13,7 @@ class Main {
     public static void main(String[] args) {
 
         while (option != 5) {
+            option = 0;
             Formatter.showMenu();
          
             try {
