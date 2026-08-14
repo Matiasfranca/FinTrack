@@ -1,0 +1,227 @@
+SOFTWARE USE AND STUDY LICENSE
+
+Copyright (c) 2026 Matias Saraiva de França.
+All rights reserved.
+
+
+PREAMBLE AND PURPOSE
+
+This License governs the FinTrack software ("Software") and establishes the terms and conditions under which the source code, architecture, files, associated documentation, and other elements comprising the Software made publicly available by the copyright holder ("Licensor") may be accessed, analyzed, studied, executed, and modified.
+
+The primary purpose of this License is to make the Software publicly available for academic, educational, analytical, learning, and individual study purposes, while preserving the Licensor's copyright, economic rights, and other applicable rights in the protected expression of the source code and derivative works.
+
+
+1. LIMITED LICENSE GRANT FOR STUDY AND ANALYSIS
+
+Subject to the terms and conditions of this License, the Licensor grants to any person ("Licensee") a non-exclusive, non-transferable, limited license solely to:
+
+a) View, download, clone, fork on public code-hosting platforms, and maintain local copies of the Software's source code;
+
+b) Analyze, examine, audit, and study the structure, algorithms, and operation of the source code;
+
+c) Modify the source code locally solely for personal learning, technical experimentation, and individual study; and
+
+d) Execute the Software and locally modified versions solely in a private development environment for analysis, testing, study, and learning purposes.
+
+Any rights not expressly granted under this Section are reserved by the Licensor.
+
+
+2. GENERAL RESTRICTIONS AND PROHIBITIONS
+
+The public availability of the Software's source code does not constitute a waiver of copyright or a transfer of intellectual property rights.
+
+Without the prior, express, written, and verifiable authorization of the Licensor, the Licensee or any third party is expressly prohibited from, under any circumstances:
+
+a) Using the source code, in whole or in part, in any other software project, whether commercial or non-commercial, public or private;
+
+b) Copying, reproducing, or extracting classes, methods, functions, components, interfaces, modules, routines, code segments, or substantial portions of the Software;
+
+c) Incorporating, integrating, or combining any portion of the Software into another software, library, application, or system;
+
+d) Using the Software or its source code as a library, dependency, component, SDK, framework, or development foundation for other programs;
+
+e) Creating derivative works, adaptations, or modified versions of the Software for any purpose outside the strict scope of private local study;
+
+f) Publishing, distributing, transmitting, making available, communicating to the public, or otherwise providing modified versions of the Software, portions of its source code, or forks intended for use by third parties;
+
+g) Compiling, packaging, or distributing binaries, executables, containers, packages, or other artifacts derived from the Software or its modifications;
+
+h) Selling, licensing, sublicensing, renting, leasing, assigning, transferring, distributing, or commercially exploiting the Software, its modified versions, derivatives, or components;
+
+i) Using the Software or its source code in products, services, Software as a Service (SaaS), Platform as a Service (PaaS), APIs, corporate infrastructure, production environments, professional activities, commercial activities, operational activities, or for obtaining any direct or indirect economic advantage;
+
+j) Commercializing products, solutions, or services developed based, in whole or in part, on the Software's source code;
+
+k) Removing, altering, concealing, falsifying, or suppressing copyright notices, trademarks, rights-reservation notices, or authorship identifiers contained in the Software; or
+
+l) Representing, directly or indirectly, that the Licensee or any other person is the author, co-author, or copyright holder of the Software or of substantial portions thereof that have been reproduced or adapted from the Software.
+
+
+3. ANTI-CIRCUMVENTION AND SUPERFICIAL MODIFICATIONS
+
+3.1. The restrictions of this License apply to the protected expression of the Software, including its source code and concrete elements of its implementation, organization, and structure, to the extent protected under applicable law.
+
+The Licensee acknowledges that the restrictions established by this License may not be circumvented, evaded, or defeated through superficial, cosmetic, or merely formal modifications.
+
+3.2. For purposes of this License, the following acts do not, by themselves, transform a reproduction or derivative work into an independent implementation and remain subject to all applicable restrictions of this License, including:
+
+a) Renaming or translating classes, interfaces, methods, functions, variables, parameters, modules, or identifiers;
+
+b) Reorganizing, splitting, merging, or moving files, folders, or directories;
+
+c) Changing coding style, indentation, formatting, spacing, or naming conventions;
+
+d) Removing, adding, or modifying comments, documentation, or annotations;
+
+e) Translating or converting the source code into another programming language or programming paradigm;
+
+f) Partially rewriting or syntactically restructuring the code while retaining substantially the original protected expression;
+
+g) Fragmenting copied code into multiple files or components in an attempt to conceal the copying of a substantial portion;
+
+h) Cumulatively copying small portions of code that, considered together, constitute a substantial portion of the protected expression of the Software;
+
+i) Creating a fork with incremental modifications and making it available for use by third parties;
+
+j) Compiling modified source code and distributing only the resulting binaries; or
+
+k) Using modified source code in another project on the claim that the modifications have sufficiently changed the original Software.
+
+3.3. Superficial, structural, syntactic, or formatting modifications do not automatically transform a copy or derivative work into an independent implementation.
+
+
+4. PROTECTED EXPRESSION AND INDEPENDENT IMPLEMENTATIONS
+
+4.1. Under applicable copyright law, this License applies to the protected expression of the Software, including its source code and concrete elements of its implementation, organization, and structure, to the extent such elements are protected by applicable law.
+
+This License does not purport to grant exclusive rights over ideas, abstract concepts, generic functions, business methods, processes, mathematical concepts, or technical knowledge as such.
+
+4.2. Studying the Software does not grant any license to copy, adapt, incorporate, or derive from the protected expression of the Software.
+
+4.3. This License does not prohibit the development of a genuinely independent implementation created without reproducing, copying, adapting, incorporating, or deriving from the protected expression of the Software, even if the resulting software has similar functionality, concepts, or objectives, provided that the resulting implementation does not reproduce, incorporate, adapt, or otherwise derive from the protected expression of the Software.
+
+
+5. PUBLIC REPOSITORIES AND FORKS
+
+5.1. The Licensee acknowledges that making the Software available on public platforms such as GitHub may technically permit the use of platform features such as "fork."
+
+5.2. The technical creation of a fork does not grant the Licensee or any third party any rights beyond those expressly granted under Section 1 of this License.
+
+5.3. A repository created through a fork, and any modifications made therein, remain subject to this License. Publishing, distributing, commercializing, incorporating into other software, deploying, or otherwise making such fork or modified fork available for operational use by third parties is prohibited without prior express authorization from the Licensor.
+
+
+6. EXPRESS AUTHORIZATION AND AUTHORIZATION MECHANISMS
+
+6.1. Any use of the Software or its source code that exceeds the limited rights granted under Section 1 requires prior, express, written, and verifiable authorization from the Licensor or from a representative expressly authorized by the Licensor to grant such permission.
+
+6.2. The Licensor may grant individual, general, restricted, or broad authorizations at the Licensor's sole discretion, through separate written terms or agreements.
+
+6.3. An authorization granted by the Licensor may permit, among other things:
+
+a) Personal, academic, educational, professional, institutional, or business use;
+
+b) Direct or indirect commercial use;
+
+c) Reuse of portions of the source code in third-party projects;
+
+d) Creation, distribution, and commercialization of derivative works, products, or services; and
+
+e) Sublicensing or temporary assignment of authorized rights.
+
+6.4. No authorization shall be presumed, implied, inferred, or created merely by conduct.
+
+Informal conversations, emails, messages, code comments, forum interactions, Issues, Pull Requests, acceptance of technical suggestions, code reviews, or other discussions shall not constitute authorization to perform an activity prohibited by this License, unless the communication itself clearly and unequivocally constitutes a written authorization issued by the Licensor and expressly identifies the scope of the permission granted.
+
+6.5. An authorization may be limited by person, organization, project, version, purpose, duration, territory, or any other scope expressly specified by the Licensor.
+
+
+7. CITATION AND ATTRIBUTION
+
+7.1. Citation, reference to, or mention of the Software is permitted in scientific articles, academic papers, theses, undergraduate or graduate dissertations, educational publications, teaching materials, study portfolios, technical presentations, and similar works, provided that clear and appropriate attribution is given to the Licensor and the original project.
+
+7.2. The right to cite or reference the Software is limited to academic, educational, descriptive, or informational purposes and does not grant any authorization to copy, reuse, distribute, or commercialize the source code or portions thereof.
+
+7.3. Providing attribution or credit to the Licensor does not, by itself, constitute authorization for any use prohibited by this License.
+
+Credit does not replace permission.
+
+
+8. CONTRIBUTIONS AND PULL REQUESTS
+
+8.1. The voluntary submission of contributions, bug fixes, improvements, suggestions, or Pull Requests to the Software repository does not automatically transfer the contributor's copyright to the Licensor and does not grant the contributor any additional rights, special license, ownership interest, or participation in the proprietary rights of the Software.
+
+8.2. If the Licensor wishes to incorporate third-party contributions into the official Software, the Licensor may require the contributor to enter into a Contributor License Agreement (CLA) or an individual copyright assignment or license agreement.
+
+
+9. THIRD-PARTY COMPONENTS AND DEPENDENCIES
+
+9.1. This License applies only to those portions of the Software for which the Licensor has sufficient intellectual property rights to grant the permissions described herein.
+
+9.2. The Software may contain or depend upon third-party libraries, frameworks, components, images, fonts, documentation, or other materials that remain subject to their respective licenses.
+
+Nothing in this License modifies, limits, or expands the terms of any applicable third-party license.
+
+The Licensee remains responsible for complying with the applicable terms governing third-party materials.
+
+
+10. VIOLATION AND TERMINATION
+
+10.1. Any violation of the terms or conditions of this License shall automatically terminate all rights granted to the Licensee under Section 1.
+
+10.2. Upon violation, the Licensee must immediately cease all activities that depend upon rights granted by this License and that are not otherwise authorized by applicable law or by a valid separate authorization.
+
+10.3. Termination does not limit, prejudice, or waive any right of the Licensor to seek civil remedies, injunctive relief, damages, or any other legal remedy available under applicable law for the protection of the Licensor's copyright and other applicable rights.
+
+
+11. DISCLAIMER OF WARRANTIES AND LIMITATION OF LIABILITY
+
+11.1. TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, PERFORMANCE, AVAILABILITY, OR NON-INFRINGEMENT OF THIRD-PARTY RIGHTS.
+
+11.2. TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE LICENSOR SHALL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, PUNITIVE, OR CONSEQUENTIAL DAMAGES, INCLUDING, WITHOUT LIMITATION, LOSS OF PROFITS, BUSINESS INTERRUPTION, LOSS OF DATA OR INFORMATION, OR ANY OTHER PECUNIARY LOSS, ARISING OUT OF OR RELATING TO THE USE, INABILITY TO USE, EXECUTION, OR MODIFICATION OF THE SOFTWARE, EVEN IF THE LICENSOR HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+Nothing in this License excludes or limits liability that cannot lawfully be excluded or limited under applicable law.
+
+
+12. GOVERNING LAW AND JURISDICTION
+
+12.1. This License shall be governed by and interpreted in accordance with the laws of the Federative Republic of Brazil, including, where applicable, Law No. 9,609/1998 concerning the protection of computer program intellectual property and Law No. 9,610/1998 concerning copyright.
+
+12.2. To the extent legally permitted, the courts of Barroquinha, Ceará, Brazil, shall have exclusive jurisdiction over disputes arising from or relating to this License or the use of the Software, with express waiver of any other jurisdiction, however privileged.
+
+
+13. GENERAL PROVISIONS
+
+13.1. Severability
+
+If any provision of this License is held by a competent court to be invalid, unlawful, or unenforceable, that provision shall be enforced to the maximum extent permitted by law or adjusted only to the extent necessary to remedy the invalidity, while all remaining provisions shall remain in full force and effect.
+
+13.2. No Waiver
+
+The Licensor's tolerance of any breach of this License shall not constitute a waiver, novation, or modification of the terms of this License.
+
+Failure or delay by the Licensor to exercise any right under this License shall not constitute a waiver of that right.
+
+13.3. No Implied Rights
+
+No right, license, authorization, or permission is granted by implication, estoppel, custom, conduct, or otherwise, except as expressly provided in this License or in a separate written authorization issued by the Licensor.
+
+13.4. Non-Waivable Rights
+
+Nothing in this License is intended to restrict any rights, exceptions, limitations, or legal protections that cannot lawfully be restricted or waived under applicable law.
+
+13.5. Entire Agreement
+
+This License constitutes the entire agreement governing the rights expressly granted by the Licensor concerning the public availability and use of the Software, except for separate written authorizations or agreements expressly referring to the Software.
+
+It supersedes prior informal understandings or discussions concerning the rights granted under this License, to the extent permitted by applicable law.
+
+
+14. COPYRIGHT
+
+Copyright (c) 2026 Matias Saraiva de França.
+
+All rights reserved except as expressly granted by this License.
+
+
+SOFTWARE USE AND STUDY LICENSE
+Version 1.0
