@@ -1,11 +1,10 @@
-package utils;
+package ui.console;
 
 import java.util.List;
 import java.util.Scanner;
-
 import model.Transaction;
 
-public class Formatter {
+public class ConsoleFormatter {
     
     public static void clearScreen() {
         System.out.println("\n".repeat(40));
