@@ -1,0 +1,37 @@
+.chart-card {
+    -fx-background-radius: 8px;
+    -fx-padding: 20px;
+}
+
+.chart-tab {
+    -fx-background-color: transparent;
+    -fx-text-fill: #9A9A9E;
+    -fx-font-size: 12px;
+    -fx-padding: 6px 12px;
+    -fx-background-radius: 6px;
+    -fx-cursor: hand;
+}
+
+.chart-tab:selected {
+    -fx-background-color: #28282C;
+    -fx-text-fill: #F5F5F0;
+}
+
+.month-nav-button {
+    -fx-background-color: #28282C;
+    -fx-text-fill: #F5F5F0;
+    -fx-background-radius: 4px;
+    -fx-padding: 2px 10px;
+    -fx-cursor: hand;
+    -fx-font-size: 13px;
+}
+
+.month-nav-button:hover {
+    -fx-background-color: #C9A227;
+    -fx-text-fill: #121214;
+}
+
+.month-label {
+    -fx-font-size: 12px;
+    -fx-padding: 0 6px;
+}

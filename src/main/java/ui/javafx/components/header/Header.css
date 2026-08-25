@@ -1,0 +1,33 @@
+.add-transaction {
+    -fx-background-color: transparent;
+    -fx-text-fill: #C9A227;
+    -fx-border-color: #C9A227;
+    -fx-border-width: 1.5px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-padding: 9px 18px;
+    -fx-cursor: hand;
+}
+
+.add-transaction:hover {
+    -fx-background-color: rgba(201, 162, 39, 0.12);
+}
+
+.add-transaction:pressed {
+    -fx-background-color: rgba(201, 162, 39, 0.22);
+}
+
+.header {
+    -fx-padding: 20px 0 0 0;
+}
+
+.brand-title {
+    -fx-fill: #121214;
+    -fx-stroke: #C9A227;
+    -fx-stroke-width: 1;
+    -fx-font-size: 30px;
+    -fx-font-weight: bold;
+    -fx-letter-spacing: 0.3px;
+}
