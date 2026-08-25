@@ -1,0 +1,70 @@
+.transaction-row {
+    -fx-border-color: transparent transparent #28282C transparent;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.transaction-row:hover {
+    -fx-background-color: #1F1F23;
+    -fx-background-radius: 6px;
+}
+
+.transaction-description {
+    -fx-font-size: 14px;
+}
+
+.transaction-value {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.options-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #9A9A9E;
+    -fx-font-size: 16px;
+    -fx-padding: 6px 10px;
+    -fx-cursor: hand;
+}
+
+.options-button:hover {
+    -fx-text-fill: #F5F5F0;
+    -fx-background-color: #28282C;
+    -fx-background-radius: 4px;
+}
+
+/* =========================
+   three-dot menu
+   ========================= */
+.context-menu {
+    -fx-background-color: #1C1C1F;
+    -fx-background-insets: 0;
+    -fx-background-radius: 6px;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 4px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 10, 0, 0, 3);
+}
+
+.context-menu .menu-item {
+    -fx-background-color: transparent;
+    -fx-padding: 6px 12px;
+}
+
+.context-menu .menu-item .label {
+    -fx-text-fill: #F5F5F0;
+    -fx-font-size: 13px;
+}
+
+.context-menu .menu-item:focused,
+.context-menu .menu-item:hovered {
+    -fx-background-color: #28282C;
+    -fx-background-radius: 4px;
+}
+
+.context-menu .menu-item.danger-item .label {
+    -fx-text-fill: #F87171;
+}
+
+.chart-card {
+    -fx-background-radius: 8px;
+    -fx-padding: 20px;
+}

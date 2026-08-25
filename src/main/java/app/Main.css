@@ -1,0 +1,118 @@
+/* =========================================================
+   FinTrack - Global Colors
+   ========================================================= */
+
+
+/* =========================
+   Background
+   ========================= */
+
+.background {
+    -fx-background-color: #121214;
+}
+
+/* =========================
+   Scroll
+   ========================= */
+
+.main-scroll, .main-scroll .viewport {
+    -fx-background-color: #121214;
+    -fx-background: #121214;
+}
+
+.main-scroll .scroll-bar:vertical,
+.main-scroll .scroll-bar:horizontal {
+    -fx-background-color: #121214;
+}
+
+.main-scroll .scroll-bar .track {
+    -fx-background-color: #1C1C1F;
+    -fx-background-radius: 6px;
+}
+
+.main-scroll .scroll-bar .thumb {
+    -fx-background-color: #28282C;
+    -fx-background-radius: 6px;
+}
+
+.main-scroll .scroll-bar .thumb:hover {
+    -fx-background-color: #C9A227;
+}
+
+.main-scroll .scroll-bar .increment-button,
+.main-scroll .scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.main-scroll .scroll-bar .increment-arrow,
+.main-scroll .scroll-bar .decrement-arrow {
+    -fx-shape: " ";  /* some com a setinha padrão, fica mais clean */
+}
+
+/* =========================
+   Surfaces
+   ========================= */
+
+.surface {
+    -fx-background-color: #1C1C1F;
+}
+
+/* .surface:hover {
+    -fx-background-color: #28282C;
+} */
+
+
+/* =========================
+   Primary
+   ========================= */
+
+.primary {
+    -fx-background-color: #C9A227;
+}
+
+.primary:hover {
+    -fx-background-color: #E0B84B;
+}
+
+
+/* =========================
+   Text
+   ========================= */
+
+.text-primary {
+    -fx-text-fill: #F5F5F0;
+}
+
+.text-secondary {
+    -fx-text-fill: #9A9A9E;
+}
+
+
+/* =========================
+   Financial Status
+   ========================= */
+
+.success {
+    -fx-text-fill: #34D399;
+}
+
+.danger {
+    -fx-text-fill: #F87171;
+}
+
+/* =========================
+   Buttons
+   ========================= */
+
+.button-action:hover {
+    -fx-translate-x: 5px;
+}
+
+/* =========================
+   Titles
+   ========================= */
+.title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
