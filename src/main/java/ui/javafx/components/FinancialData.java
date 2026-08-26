@@ -26,13 +26,13 @@ public class FinancialData {
     @SuppressWarnings("deprecation")
     private static final NumberFormat CURRENCY_FORMAT = NumberFormat.getNumberInstance(new Locale("pt", "BR"));
 
-    private static final List<Transaction> SAMPLE_TRANSACTIONS = List.of(
-            new Transaction("Salário", 3200, true),
-            new Transaction("Freelance projeto X", 800, true),
-            new Transaction("Venda item usado", 150, true),
-            new Transaction("Supermercado", -310, false),
-            new Transaction("Conta de luz", -180, false),
-            new Transaction("Assinatura streaming", -39.90, false));
+    // private static final List<Transaction> SAMPLE_TRANSACTIONS = List.of(
+    //         new Transaction("Salário", 3200, true),
+    //         new Transaction("Freelance projeto X", 800, true),
+    //         new Transaction("Venda item usado", 150, true),
+    //         new Transaction("Supermercado", -310, false),
+    //         new Transaction("Conta de luz", -180, false),
+    //         new Transaction("Assinatura streaming", -39.90, false));
 
     public static double[] dailyBalanceFor(int year, int month) {
 
@@ -92,9 +92,9 @@ public class FinancialData {
         return TOTAL_INCOME;
     }
 
-    public static List<Transaction> sampleTransactions() {
-        return SAMPLE_TRANSACTIONS;
-    }
+    // public static List<Transaction> sampleTransactions() {
+    //     return SAMPLE_TRANSACTIONS;
+    // }
 
     public static String formatCurrency(double value) {
         return CURRENCY_FORMAT.format(value);

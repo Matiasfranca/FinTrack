@@ -4,8 +4,7 @@ CREATE TABLE IF NOT EXISTS MONTH (
     id INTEGER PRIMARY KEY,
     year INTEGER NOT NULL,
     month INTEGER NOT NULL,
-    budget NUMERIC NOT NULL DEFAULT 0.00,
-
+    
     UNIQUE (year, month)
 );
 
@@ -23,7 +22,9 @@ CREATE TABLE IF NOT EXISTS BANK_ACCOUNT (
     ),
 
     is_active INTEGER NOT NULL DEFAULT 1
-        CHECK (is_active IN (0, 1))
+        CHECK (is_active IN (0, 1)),
+
+    UNIQUE(name, type)
 );
 
 

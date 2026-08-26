@@ -10,7 +10,7 @@ import javafx.scene.Scene;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import ui.javafx.FinTrackUI;
+import ui.javafx.JavafxUI;
 
 public class Main extends Application {
 
@@ -31,8 +31,6 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-
-        CSSFX.start();
 
         this.stage = primaryStage;
 
@@ -75,7 +73,7 @@ public class Main extends Application {
     @FXML
     private void openGUI(ActionEvent event) throws Exception {
 
-        FinTrackUI ui = new FinTrackUI(stage, scene);
+        JavafxUI ui = new JavafxUI(stage, scene);
         ui.start();
     }
 

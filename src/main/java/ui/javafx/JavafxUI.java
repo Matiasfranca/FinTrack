@@ -10,12 +10,12 @@ import ui.javafx.components.Components;
 /**
  * FintrackUI
  */
-public class FinTrackUI {
+public class JavafxUI {
 
     private final Stage stage;
     private final Scene scene;
 
-    public FinTrackUI(Stage stage, Scene scene) {
+    public JavafxUI(Stage stage, Scene scene) {
 
         this.stage = stage;
         this.scene = scene;

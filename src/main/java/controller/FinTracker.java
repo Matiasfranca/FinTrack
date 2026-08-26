@@ -3,18 +3,18 @@ package controller;
 import java.util.List;
 import exceptions.InvalidInput;
 import model.Transaction;
-import model.MonthlyTransaction;
+import model.Month;
 
 public class FinTracker {
 
-    private final MonthlyTransaction monthlyTransaction = new MonthlyTransaction();
+    private final Month monthlyTransaction = new Month();
 
     public void addTransaction(String description, double value, boolean receipt) {
 
         Transaction transaction;
 
-        transaction = new Transaction(description, value, receipt);
-        this.monthlyTransaction.add(transaction);
+        // transaction = new Transaction(description, value, receipt);
+        // this.monthlyTransaction.add(transaction);
 
     }
 
