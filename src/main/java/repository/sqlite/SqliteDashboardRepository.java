@@ -3,6 +3,7 @@ package repository.sqlite;
 import database.DatabaseConnection;
 import exceptions.DataAccessException;
 import model.TransactionType;
+import model.dto.CardData;
 import model.dto.CategoryChartData;
 import model.dto.DailyFinancialData;
 import repository.DashboardRepository;
@@ -58,8 +59,8 @@ public class SqliteDashboardRepository implements DashboardRepository {
         String sql = """
             SELECT 
                 CAST(strftime('%d', date) AS INTEGER) as day_of_month,
-                SUM(CASE WHEN type = 'INCOME' THEN value ELSE 0 END) as daily_income,
-                SUM(CASE WHEN type = 'EXPENSE' THEN value ELSE 0 END) as daily_expense
+                IFNULL( SUM(CASE WHEN type = 'INCOME' THEN value ELSE 0 END), 0 ) as daily_income,
+                IFNULL( SUM(CASE WHEN type = 'EXPENSE' THEN value ELSE 0 END), 0 ) as daily_expense
             FROM "TRANSACTION"
             WHERE month_id = ?
             GROUP BY day_of_month
@@ -87,5 +88,37 @@ public class SqliteDashboardRepository implements DashboardRepository {
         }
 
         return result;
+    }
+
+@Override
+    public CardData getMonthlyCard(int monthId) {
+        String sql = """
+            SELECT 
+                IFNULL( SUM(CASE WHEN type = 'INCOME' THEN value ELSE 0 END), 0 ) as total_income,
+                IFNULL( SUM(CASE WHEN type = 'EXPENSE' THEN value ELSE 0 END), 0 ) as total_expense,
+                IFNULL( SUM(CASE WHEN type = 'INVESTMENT' THEN value ELSE 0 END), 0 ) as total_investment
+            FROM "TRANSACTION"
+            WHERE month_id = ?
+            """;
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, monthId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new CardData(
+                        rs.getBigDecimal("total_income"),
+                        rs.getBigDecimal("total_expense"),
+                        rs.getBigDecimal("total_investment")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Falha ao gerar dados de cards", e);
+        }
+
+        return new CardData(java.math.BigDecimal.ZERO, java.math.BigDecimal.ZERO, java.math.BigDecimal.ZERO);
     }
 }
