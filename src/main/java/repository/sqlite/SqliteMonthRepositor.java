@@ -7,7 +7,7 @@ import java.time.YearMonth;
 import model.Month;
 import java.sql.*;
 
-public class SqliteMonthRepository implements MonthRepository {
+public class SqliteMonthRepositor implements MonthRepository {
 
     /**
      * Retrieves a month from the database. If it does not exist, inserts it and

@@ -8,16 +8,22 @@ import java.sql.SQLException;
 
 public class DatabaseInitializer {
 
+    // Flag to control if we are running tests
+    private static boolean testMode = false;
+
+    public static void setTestMode(boolean enabled) {
+        testMode = enabled;
+    }
+
     public static void initialize() {
+        // Selects the appropriate schema file based on the environment mode
+        String schemaPath = testMode ? "/database/schemas/reset.sql" : "/database/schemas/schema.sql";
 
         try (Connection connection = DatabaseConnection.getConnection();
-             InputStream input = DatabaseInitializer.class
-                     .getResourceAsStream("/database/schemas/schema.sql")) {
+             InputStream input = DatabaseInitializer.class.getResourceAsStream(schemaPath)) {
 
             if (input == null) {
-                throw new IllegalStateException(
-                        "Arquivo schema.sql não encontrado."
-                );
+                throw new IllegalStateException("Schema file not found: " + schemaPath);
             }
 
             String schema = new String(
@@ -26,7 +32,6 @@ public class DatabaseInitializer {
             );
 
             for (String sql : schema.split(";")) {
-
                 String statement = sql.trim();
 
                 if (!statement.isEmpty()) {
@@ -35,10 +40,7 @@ public class DatabaseInitializer {
             }
 
         } catch (IOException | SQLException e) {
-            throw new RuntimeException(
-                    "Erro ao inicializar o banco de dados.",
-                    e
-            );
+            throw new RuntimeException("Failed to initialize database.", e);
         }
     }
 }

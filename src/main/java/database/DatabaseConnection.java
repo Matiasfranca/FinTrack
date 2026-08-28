@@ -7,16 +7,24 @@ import java.sql.Statement;
 
 public class DatabaseConnection {
 
-        private static final String URL = "jdbc:sqlite:fintrack.db";
+    private static boolean testMode = false;
 
-        public static Connection getConnection() throws SQLException {
-                Connection connection = DriverManager.getConnection(URL);
+    public static void setTestMode(boolean enabled) {
+        testMode = enabled;
+        DatabaseInitializer.setTestMode(enabled);
+    }
 
-                try (Statement statement = connection.createStatement()) {
-                        statement.execute("PRAGMA foreign_keys = ON");
-                }
+    private static String getUrl() {
+        return testMode ? "jdbc:sqlite:fintrack-test.db" : "jdbc:sqlite:fintrack.db";
+    }
 
-                return connection;
+    public static Connection getConnection() throws SQLException {
+        Connection connection = DriverManager.getConnection(getUrl());
+
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("PRAGMA foreign_keys = ON");
         }
 
+        return connection;
+    }
 }

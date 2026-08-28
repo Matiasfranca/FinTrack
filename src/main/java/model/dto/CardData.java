@@ -15,7 +15,7 @@ public class CardData {
     }
 
     public BigDecimal getCashFlowBalance() { return income.subtract(expense).subtract(investment); }
-    public BigDecimal getIncome() { return income; }
-    public BigDecimal getExpense() { return expense; }
+    public BigDecimal getTotalIncome() { return income; }
+    public BigDecimal getTotalExpense() { return expense; }
     
 }
