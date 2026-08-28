@@ -10,7 +10,7 @@ import javafx.scene.Scene;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-// import ui.javafx.JavafxUI;
+import ui.javafx.JavafxUI;
 
 public class Main extends Application {
 
@@ -73,8 +73,8 @@ public class Main extends Application {
     @FXML
     private void openGUI(ActionEvent event) throws Exception {
 
-        // JavafxUI ui = new JavafxUI(stage, scene);
-        // ui.start();
+        JavafxUI ui = new JavafxUI(stage, scene);
+        ui.start();
     }
 
     @FXML
