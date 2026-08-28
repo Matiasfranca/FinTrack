@@ -18,10 +18,6 @@ public class Transaction {
                         PaymentMethod paymentMethod, LocalDate date,
                         int bankAccountId, Integer categoryId) {
 
-        // if (value <= 0) {
-        //     throw new IllegalArgumentException("O valor da transação deve ser positivo.");
-        // }
-
         this.description = description;
         this.value = value;
         this.type = type;
@@ -31,10 +27,6 @@ public class Transaction {
         this.categoryId = categoryId;
     }
 
-    /**
-     * Construtor pra transação já EXISTENTE, vinda do banco (com id).
-     * Usado pelo repositório ao montar objetos a partir do ResultSet.
-     */
     public Transaction(int id, String description, BigDecimal value, TransactionType type,
                         PaymentMethod paymentMethod, LocalDate date,
                         int bankAccountId, Integer categoryId) {
@@ -54,7 +46,6 @@ public class Transaction {
     public Integer getBankAccountId() { return bankAccountId; }
     public Integer getCategoryId() { return categoryId; }
 
-    /** Conveniência pra UI, que ainda pensa em termos de "é receita?". */
     public boolean isReceipt() {
         return type == TransactionType.INCOME;
     }

@@ -25,6 +25,6 @@ public class Category {
     
     @Override
     public String toString() {
-        return name; // Importante para os ComboBox do JavaFX mostrarem apenas o nome
+        return name;
     }
 }
