@@ -33,11 +33,11 @@ public class SqliteBankAccountRepository implements BankAccountRepository {
                         account.isActive()
                     );
                 } else {
-                    throw new SQLException("Falha ao criar conta bancária, nenhum ID retornado.");
+                    throw new SQLException("Failed to create bank account, no ID returned.");
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Falha ao salvar a conta bancária: " + account.getName(), e);
+            throw new DataAccessException("Failed to save bank account: " + account.getName(), e);
         }
     }
 
@@ -55,7 +55,7 @@ public class SqliteBankAccountRepository implements BankAccountRepository {
             stmt.executeUpdate();
             
         } catch (SQLException e) {
-            throw new DataAccessException("Falha ao atualizar a conta bancária", e);
+            throw new DataAccessException("Failed to update bank account", e);
         }
     }
 
@@ -70,7 +70,7 @@ public class SqliteBankAccountRepository implements BankAccountRepository {
             stmt.executeUpdate();
             
         } catch (SQLException e) {
-            throw new DataAccessException("Falha ao desativar a conta bancária " + accountId, e);
+            throw new DataAccessException("Failed to deactivate bank account " + accountId, e);
         }
     }
 
@@ -100,7 +100,7 @@ public class SqliteBankAccountRepository implements BankAccountRepository {
                 ));
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Falha ao buscar contas bancárias", e);
+            throw new DataAccessException("Failed to retrieve bank accounts", e);
         }
         
         return accounts;

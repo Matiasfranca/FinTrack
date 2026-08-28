@@ -44,7 +44,6 @@ public class TransactionRow extends HBox {
         removeItem.getStyleClass().add("danger-item");
         menu.getItems().addAll(editItem, removeItem);
 
-        // Sem lógica ainda (fase de design) — só abre o menu por enquanto.
 optionsButton.setOnAction(e -> {
     // if (menu.getStylesheets().isEmpty() && optionsButton.getScene() != null) {
     //     menu.getStylesheets().addAll(optionsButton.getScene().getStylesheets());

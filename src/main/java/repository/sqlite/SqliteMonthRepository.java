@@ -7,7 +7,7 @@ import java.time.YearMonth;
 import model.Month;
 import java.sql.*;
 
-public class SqliteMonthRepositor implements MonthRepository {
+public class SqliteMonthRepository implements MonthRepository {
 
     /**
      * Retrieves a month from the database. If it does not exist, inserts it and
@@ -42,7 +42,7 @@ public class SqliteMonthRepositor implements MonthRepository {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Falha ao buscar o mês " + yearMonth, e);
+            throw new DataAccessException("Failed to retrieve month " + yearMonth, e);
         }
         return null;
     }
@@ -65,11 +65,11 @@ public class SqliteMonthRepositor implements MonthRepository {
                     int newId = generatedKeys.getInt(1);
                     return new Month(newId, yearMonth.getYear(), yearMonth.getMonthValue());
                 } else {
-                    throw new SQLException("A criação do mês falhou, nenhum ID obtido.");
+                    throw new SQLException("Month creation failed, no ID obtained.");
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Falha ao criar o mês " + yearMonth, e);
+            throw new DataAccessException("Failed to create month " + yearMonth, e);
         }
     }
 }

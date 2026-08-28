@@ -48,7 +48,7 @@ public class SqliteDashboardRepository implements DashboardRepository {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Falha ao gerar dados de categorias", e);
+            throw new DataAccessException("Failed to generate category distribution data", e);
         }
 
         return result;
@@ -84,13 +84,13 @@ public class SqliteDashboardRepository implements DashboardRepository {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Falha ao gerar dados diários", e);
+            throw new DataAccessException("Failed to generate daily financial data", e);
         }
 
         return result;
     }
 
-@Override
+    @Override
     public CardData getMonthlyCard(int monthId) {
         String sql = """
             SELECT 
@@ -116,7 +116,7 @@ public class SqliteDashboardRepository implements DashboardRepository {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Falha ao gerar dados de cards", e);
+            throw new DataAccessException("Failed to generate card summary data", e);
         }
 
         return new CardData(java.math.BigDecimal.ZERO, java.math.BigDecimal.ZERO, java.math.BigDecimal.ZERO);

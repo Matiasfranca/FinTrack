@@ -43,7 +43,7 @@ public class SqliteTransactionRepository implements TransactionRepository {
             stmt.executeUpdate();
 
         } catch (SQLException e) {
-            throw new DataAccessException("Falha ao salvar transação", e);
+            throw new DataAccessException("Failed to save transaction", e);
         }
     }
 
@@ -85,7 +85,7 @@ public class SqliteTransactionRepository implements TransactionRepository {
             }
 
         } catch (SQLException e) {
-            throw new DataAccessException("Falha ao buscar transações de " + month, e);
+            throw new DataAccessException("Failed to retrieve transactions for " + month, e);
         }
 
         return result;
@@ -99,7 +99,7 @@ public class SqliteTransactionRepository implements TransactionRepository {
             stmt.setInt(1, transactionId);
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("Falha ao remover transação " + transactionId, e);
+            throw new DataAccessException("Failed to delete transaction " + transactionId, e);
         }
     }
 
@@ -131,13 +131,13 @@ public class SqliteTransactionRepository implements TransactionRepository {
             stmt.setString(7, transaction.getPaymentMethod().name());
             stmt.setString(8, transaction.getDescription());
             
-            // O ID da transação que será editada vai por último (parâmetro 9)
+            // The transaction ID to be updated goes last (parameter 9)
             stmt.setInt(9, transaction.getId());
 
             stmt.executeUpdate();
 
         } catch (SQLException e) {
-            throw new DataAccessException("Falha ao atualizar transação " + transaction.getId(), e);
+            throw new DataAccessException("Failed to update transaction " + transaction.getId(), e);
         }
     }
 }

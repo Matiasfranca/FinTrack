@@ -3,7 +3,8 @@ package repository;
 import database.DatabaseConnection;
 import database.DatabaseInitializer;
 import model.Month;
-import repository.sqlite.SqliteMonthRepositor;
+import repository.sqlite.SqliteMonthRepository;
+
 import java.time.YearMonth;
 
 import org.junit.jupiter.api.*;
@@ -12,13 +13,13 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class SqliteMonthRepositoryTest {
 
-    private static SqliteMonthRepositor monthRepo;
+    private static SqliteMonthRepository monthRepo;
 
     @BeforeAll
     static void setUp() {
         DatabaseConnection.setTestMode(true);
         DatabaseInitializer.initialize();
-        monthRepo = new SqliteMonthRepositor();
+        monthRepo = new SqliteMonthRepository();
     }
 
     @Test

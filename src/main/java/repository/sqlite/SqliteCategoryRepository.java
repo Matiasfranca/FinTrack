@@ -30,11 +30,11 @@ public class SqliteCategoryRepository implements CategoryRepository {
                         category.getColor()
                     );
                 } else {
-                    throw new SQLException("Falha ao criar categoria, nenhum ID retornado.");
+                    throw new SQLException("Failed to create category, no ID returned.");
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Falha ao salvar a categoria: " + category.getName(), e);
+            throw new DataAccessException("Failed to save category: " + category.getName(), e);
         }
     }
 
@@ -51,7 +51,7 @@ public class SqliteCategoryRepository implements CategoryRepository {
             stmt.executeUpdate();
             
         } catch (SQLException e) {
-            throw new DataAccessException("Falha ao atualizar a categoria: " + category.getName(), e);
+            throw new DataAccessException("Failed to update category: " + category.getName(), e);
         }
     }
 
@@ -66,7 +66,7 @@ public class SqliteCategoryRepository implements CategoryRepository {
             stmt.executeUpdate();
             
         } catch (SQLException e) {
-            throw new DataAccessException("Falha ao deletar a categoria com ID: " + categoryId, e);
+            throw new DataAccessException("Failed to delete category with ID: " + categoryId, e);
         }
     }
 
@@ -87,7 +87,7 @@ public class SqliteCategoryRepository implements CategoryRepository {
                 ));
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Falha ao buscar categorias", e);
+            throw new DataAccessException("Failed to retrieve categories", e);
         }
         
         return categories;

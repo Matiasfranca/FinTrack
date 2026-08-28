@@ -1,6 +1,5 @@
 package app;
 
-import fr.brouillard.oss.cssfx.CSSFX;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;

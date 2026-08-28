@@ -7,11 +7,7 @@ import java.util.Random;
 
 import model.Transaction;
 
-/**
- * Fonte única de dados de exemplo, usada por todos os gráficos
- * (mini-gráficos dos cards + gráfico mensal grande), pra manter
- * tudo consistente. Trocar por dado real do FinTracker no futuro.
- */
+
 public class FinancialData {
 
     public static final int DAYS = 31;
@@ -36,8 +32,7 @@ public class FinancialData {
 
     public static double[] dailyBalanceFor(int year, int month) {
 
-        // Random random = new Random(year * 100 + month); // seed determinístico: mesmo mês = mesmo gráfico sempre
-        Random random = new Random(); // seed determinístico: mesmo mês = mesmo gráfico sempre
+        Random random = new Random();
         double[] balance = new double[DAYS];
 
         for (int i = 0; i < DAYS; i++) {
@@ -50,8 +45,7 @@ public class FinancialData {
     }
 
     static {
-        Random random = new Random(42); // seed fixo: mesmo gráfico toda vez que abrir
-
+        Random random = new Random(42); 
         for (int i = 0; i < DAYS; i++) {
             double income = random.nextDouble() * 500; // 0 a 500
             double expense = random.nextDouble() * 400; // 0 a 400
