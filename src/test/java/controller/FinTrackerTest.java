@@ -6,6 +6,7 @@ import exceptions.InvalidInput;
 import model.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.YearMonth;
 
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -135,5 +136,190 @@ public class FinTrackerTest {
         });
 
         assertEquals("Cannot delete a transaction with an invalid ID.", exception.getMessage());
+    }
+
+    @Test
+    @Order(10)
+    void shouldListTransactionsByMonthSuccessfully() {
+        YearMonth targetMonth = YearMonth.of(2026, 6); // Mês que usamos nos testes anteriores
+
+        assertDoesNotThrow(() -> {
+            var transactions = finTracker.listTransactionsByMonth(targetMonth);
+            assertNotNull(transactions, "The transaction list should never be null.");
+        });
+    }
+
+    @Test
+    @Order(11)
+    void shouldThrowExceptionWhenListingTransactionsWithNullYearMonth() {
+        InvalidInput exception = assertThrows(InvalidInput.class, () -> {
+            finTracker.listTransactionsByMonth(null);
+        });
+
+        assertEquals("YearMonth cannot be null.", exception.getMessage());
+    }
+
+    @Test
+    @Order(12)
+    void shouldGetCategoryDistributionSuccessfully() {
+        YearMonth targetMonth = YearMonth.of(2026, 6);
+
+        assertDoesNotThrow(() -> {
+            var distribution = finTracker.getCategoryDistribution(targetMonth, TransactionType.EXPENSE);
+            assertNotNull(distribution, "The category distribution list should never be null.");
+        });
+    }
+
+    @Test
+    @Order(13)
+    void shouldGetMonthlyOverviewSuccessfully() {
+        YearMonth targetMonth = YearMonth.of(2026, 6);
+
+        assertDoesNotThrow(() -> {
+            var overview = finTracker.getMonthlyOverview(targetMonth);
+            assertNotNull(overview, "The monthly overview list should never be null.");
+        });
+    }
+
+    @Test
+    @Order(14)
+    void shouldGetMonthlyCardSuccessfully() {
+        YearMonth targetMonth = YearMonth.of(2026, 6);
+
+        assertDoesNotThrow(() -> {
+            var card = finTracker.getMonthlyCard(targetMonth);
+            assertNotNull(card, "The card data summary should never be null.");
+        });
+    }
+
+    @Test
+    @Order(15)
+    void shouldThrowExceptionWhenDashboardMethodsReceiveNullYearMonth() {
+        assertAll(
+            () -> {
+                InvalidInput ex1 = assertThrows(InvalidInput.class, () -> finTracker.getCategoryDistribution(null, TransactionType.EXPENSE));
+                assertEquals("YearMonth and TransactionType cannot be null.", ex1.getMessage());
+            },
+            () -> {
+                InvalidInput ex2 = assertThrows(InvalidInput.class, () -> finTracker.getMonthlyOverview(null));
+                assertEquals("YearMonth cannot be null.", ex2.getMessage());
+            },
+            () -> {
+                InvalidInput ex3 = assertThrows(InvalidInput.class, () -> finTracker.getMonthlyCard(null));
+                assertEquals("YearMonth cannot be null.", ex3.getMessage());
+            }
+        );
+    }
+
+    @Test
+    @Order(16)
+    void shouldListAllCategoriesSuccessfully() {
+        assertDoesNotThrow(() -> {
+            var categories = finTracker.listAllCategories();
+            assertNotNull(categories, "The categories list should never be null.");
+        });
+    }
+
+    @Test
+    @Order(17)
+    void shouldUpdateCategorySuccessfully() {
+        Category category = new Category(1, "Updated Category", "#00FF00");
+
+        assertDoesNotThrow(() -> {
+            finTracker.updateCategory(category);
+        });
+    }
+
+    @Test
+    @Order(18)
+    void shouldThrowExceptionWhenUpdatingInvalidCategory() {
+        Category invalidCategory = new Category(0, "", null);
+
+        InvalidInput exception = assertThrows(InvalidInput.class, () -> {
+            finTracker.updateCategory(invalidCategory);
+        });
+
+        assertEquals("Cannot update category with invalid ID or name.", exception.getMessage());
+    }
+
+    @Test
+    @Order(19)
+    void shouldDeleteCategorySuccessfully() {
+        int validCategoryId = 1;
+
+        assertDoesNotThrow(() -> {
+            finTracker.deleteCategory(validCategoryId);
+        });
+    }
+
+    @Test
+    @Order(20)
+    void shouldThrowExceptionWhenDeletingCategoryWithInvalidId() {
+        int invalidCategoryId = 0;
+
+        InvalidInput exception = assertThrows(InvalidInput.class, () -> {
+            finTracker.deleteCategory(invalidCategoryId);
+        });
+
+        assertEquals("Cannot delete a category with an invalid ID.", exception.getMessage());
+    }
+
+    @Test
+    @Order(21)
+    void shouldListBankAccountsSuccessfully() {
+        assertAll(
+            () -> {
+                var allAccounts = finTracker.listAllBankAccounts();
+                assertNotNull(allAccounts, "All bank accounts list should never be null.");
+            },
+            () -> {
+                var activeAccounts = finTracker.listActiveBankAccounts();
+                assertNotNull(activeAccounts, "Active bank accounts list should never be null.");
+            }
+        );
+    }
+
+    @Test
+    @Order(22)
+    void shouldUpdateBankAccountSuccessfully() {
+        BankAccount account = new BankAccount(1, "Updated Bank", BankAccountType.SAVINGS, true);
+
+        assertDoesNotThrow(() -> {
+            finTracker.updateBankAccount(account);
+        });
+    }
+
+    @Test
+    @Order(23)
+    void shouldThrowExceptionWhenUpdatingInvalidBankAccount() {
+        BankAccount invalidAccount = new BankAccount(0, "", null, true);
+
+        InvalidInput exception = assertThrows(InvalidInput.class, () -> {
+            finTracker.updateBankAccount(invalidAccount);
+        });
+
+        assertEquals("Cannot update bank account with invalid ID or name.", exception.getMessage());
+    }
+
+    @Test
+    @Order(24)
+    void shouldDeactivateBankAccountSuccessfully() {
+        int validAccountId = 1;
+
+        assertDoesNotThrow(() -> {
+            finTracker.deactivateBankAccount(validAccountId);
+        });
+    }
+
+    @Test
+    @Order(25)
+    void shouldThrowExceptionWhenDeactivatingInvalidBankAccount() {
+        int invalidAccountId = -1;
+
+        InvalidInput exception = assertThrows(InvalidInput.class, () -> {
+            finTracker.deactivateBankAccount(invalidAccountId);
+        });
+
+        assertEquals("Cannot deactivate a bank account with an invalid ID.", exception.getMessage());
     }
 }

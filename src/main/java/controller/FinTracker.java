@@ -7,12 +7,17 @@ import java.util.List;
 import java.util.Arrays;
 import exceptions.InvalidInput;
 import model.*;
+import model.dto.CardData;
+import model.dto.CategoryChartData;
+import model.dto.DailyFinancialData;
 import repository.BankAccountRepository;
 import repository.CategoryRepository;
+import repository.DashboardRepository;
 import repository.MonthRepository;
 import repository.TransactionRepository;
 import repository.sqlite.SqliteBankAccountRepository;
 import repository.sqlite.SqliteCategoryRepository;
+import repository.sqlite.SqliteDashboardRepository;
 import repository.sqlite.SqliteMonthRepository;
 import repository.sqlite.SqliteTransactionRepository;
 import utils.ValidationRule;
@@ -23,6 +28,7 @@ public class FinTracker {
     private final MonthRepository monthRepository = new SqliteMonthRepository();
     private final BankAccountRepository bankAccountRepository = new SqliteBankAccountRepository();
     private final CategoryRepository categoryRepository = new SqliteCategoryRepository();
+    private final DashboardRepository dashboardRepository = new SqliteDashboardRepository();
 
     public void addTransaction(Transaction transaction, BankAccount account, Category category) throws InvalidInput {
 
@@ -99,4 +105,82 @@ public class FinTracker {
         transactionRepository.delete(transactionId);
     }
 
+    public List<Transaction> listTransactionsByMonth(YearMonth yearMonth) throws InvalidInput {
+        if (yearMonth == null) {
+            throw new InvalidInput("YearMonth cannot be null.");
+        }        
+
+        return transactionRepository.findByMonth(yearMonth);
+    }
+
+    public List<CategoryChartData> getCategoryDistribution(YearMonth yearMonth, TransactionType type) throws InvalidInput {
+        if (yearMonth == null || type == null) {
+            throw new InvalidInput("YearMonth and TransactionType cannot be null.");
+        }
+        int monthId = monthRepository.getOrCreate(yearMonth).getId();
+        return dashboardRepository.getCategoryDistribution(monthId, type);
+    }
+
+    public List<DailyFinancialData> getMonthlyOverview(YearMonth yearMonth) throws InvalidInput {
+        if (yearMonth == null) {
+            throw new InvalidInput("YearMonth cannot be null.");
+        }
+        int monthId = monthRepository.getOrCreate(yearMonth).getId();
+        return dashboardRepository.getMonthlyOverview(monthId);
+    }
+
+    public CardData getMonthlyCard(YearMonth yearMonth) throws InvalidInput {
+        if (yearMonth == null) {
+            throw new InvalidInput("YearMonth cannot be null.");
+        }
+        int monthId = monthRepository.getOrCreate(yearMonth).getId();
+        return dashboardRepository.getMonthlyCard(monthId);
+    }
+
+    // --- CATEGORIES ---
+
+    public List<Category> listAllCategories() {
+        return categoryRepository.findAll();
+    }
+
+    public void updateCategory(Category category) throws InvalidInput {
+        if (category == null || category.getId() <= 0 || category.getName() == null || category.getName().isBlank()) {
+            throw new InvalidInput("Cannot update category with invalid ID or name.");
+        }
+        categoryRepository.update(category);
+    }
+
+    public void deleteCategory(int categoryId) throws InvalidInput {
+        if (categoryId <= 0) {
+            throw new InvalidInput("Cannot delete a category with an invalid ID.");
+        }
+        categoryRepository.delete(categoryId);
+    }
+
+    // --- BANK ACCOUNTS ---
+
+    public List<BankAccount> listAllBankAccounts() {
+        return bankAccountRepository.findAll();
+    }
+
+    public List<BankAccount> listActiveBankAccounts() {
+        return bankAccountRepository.findAllActive();
+    }
+
+    public void updateBankAccount(BankAccount account) throws InvalidInput {
+        if (account == null || account.getId() <= 0 || account.getName() == null || account.getName().isBlank()) {
+            throw new InvalidInput("Cannot update bank account with invalid ID or name.");
+        }
+        if (account.getType() == null) {
+            throw new InvalidInput("Bank account type cannot be null.");
+        }
+        bankAccountRepository.update(account);
+    }
+
+    public void deactivateBankAccount(int accountId) throws InvalidInput {
+        if (accountId <= 0) {
+            throw new InvalidInput("Cannot deactivate a bank account with an invalid ID.");
+        }
+        bankAccountRepository.deactivate(accountId);
+    }
 }
