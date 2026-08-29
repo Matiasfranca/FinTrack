@@ -11,6 +11,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SqliteBankAccountRepository implements BankAccountRepository {
+    
+    @Override
+    public BankAccount getOrCreate(BankAccount account) {
+    
+        if (account.getId() > 0) {
+            return account;
+        }
+        return save(account);
+    }
 
     @Override
     public BankAccount save(BankAccount account) {

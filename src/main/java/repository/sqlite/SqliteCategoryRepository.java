@@ -12,6 +12,15 @@ import java.util.List;
 public class SqliteCategoryRepository implements CategoryRepository {
 
     @Override
+    public Category getOrCreate(Category category) {
+        if (category.getId() > 0) {
+            return category;
+        }
+        
+        return save(category);
+    }
+
+    @Override
     public Category save(Category category) {
         String sql = "INSERT INTO CATEGORY (name, color) VALUES (?, ?)";
         
