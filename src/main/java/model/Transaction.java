@@ -15,24 +15,23 @@ public class Transaction {
     private Integer categoryId;         
 
     public Transaction(String description, BigDecimal value, TransactionType type,
-                        PaymentMethod paymentMethod, LocalDate date,
-                        int bankAccountId, Integer categoryId) {
+                        PaymentMethod paymentMethod, LocalDate date) {
 
         this.description = description;
         this.value = value;
         this.type = type;
         this.paymentMethod = paymentMethod;
         this.date = date;
-        this.bankAccountId = bankAccountId;
-        this.categoryId = categoryId;
     }
 
     public Transaction(int id, String description, BigDecimal value, TransactionType type,
                         PaymentMethod paymentMethod, LocalDate date,
                         int bankAccountId, Integer categoryId) {
 
-        this(description, value, type, paymentMethod, date, bankAccountId, categoryId);
+        this(description, value, type, paymentMethod, date);
         this.id = id;
+        this.bankAccountId = bankAccountId;
+        this.categoryId = categoryId;
     }
 
     public Integer getId() { return id; }
@@ -48,5 +47,12 @@ public class Transaction {
 
     public boolean isReceipt() {
         return type == TransactionType.INCOME;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+    public void setDate(LocalDate date) {
+        this.date = date;
     }
 }
