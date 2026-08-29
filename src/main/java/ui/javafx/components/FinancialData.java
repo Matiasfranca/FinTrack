@@ -7,11 +7,7 @@ import java.util.Random;
 
 import model.Transaction;
 
-/**
- * Fonte única de dados de exemplo, usada por todos os gráficos
- * (mini-gráficos dos cards + gráfico mensal grande), pra manter
- * tudo consistente. Trocar por dado real do FinTracker no futuro.
- */
+
 public class FinancialData {
 
     public static final int DAYS = 31;
@@ -26,18 +22,17 @@ public class FinancialData {
     @SuppressWarnings("deprecation")
     private static final NumberFormat CURRENCY_FORMAT = NumberFormat.getNumberInstance(new Locale("pt", "BR"));
 
-    private static final List<Transaction> SAMPLE_TRANSACTIONS = List.of(
-            new Transaction("Salário", 3200, true),
-            new Transaction("Freelance projeto X", 800, true),
-            new Transaction("Venda item usado", 150, true),
-            new Transaction("Supermercado", -310, false),
-            new Transaction("Conta de luz", -180, false),
-            new Transaction("Assinatura streaming", -39.90, false));
+    // private static final List<Transaction> SAMPLE_TRANSACTIONS = List.of(
+    //         new Transaction("Salário", 3200, true),
+    //         new Transaction("Freelance projeto X", 800, true),
+    //         new Transaction("Venda item usado", 150, true),
+    //         new Transaction("Supermercado", -310, false),
+    //         new Transaction("Conta de luz", -180, false),
+    //         new Transaction("Assinatura streaming", -39.90, false));
 
     public static double[] dailyBalanceFor(int year, int month) {
 
-        // Random random = new Random(year * 100 + month); // seed determinístico: mesmo mês = mesmo gráfico sempre
-        Random random = new Random(); // seed determinístico: mesmo mês = mesmo gráfico sempre
+        Random random = new Random();
         double[] balance = new double[DAYS];
 
         for (int i = 0; i < DAYS; i++) {
@@ -50,8 +45,7 @@ public class FinancialData {
     }
 
     static {
-        Random random = new Random(42); // seed fixo: mesmo gráfico toda vez que abrir
-
+        Random random = new Random(42); 
         for (int i = 0; i < DAYS; i++) {
             double income = random.nextDouble() * 500; // 0 a 500
             double expense = random.nextDouble() * 400; // 0 a 400
@@ -92,9 +86,9 @@ public class FinancialData {
         return TOTAL_INCOME;
     }
 
-    public static List<Transaction> sampleTransactions() {
-        return SAMPLE_TRANSACTIONS;
-    }
+    // public static List<Transaction> sampleTransactions() {
+    //     return SAMPLE_TRANSACTIONS;
+    // }
 
     public static String formatCurrency(double value) {
         return CURRENCY_FORMAT.format(value);

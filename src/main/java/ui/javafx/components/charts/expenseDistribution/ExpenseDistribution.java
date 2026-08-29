@@ -32,7 +32,7 @@ public class ExpenseDistribution extends VBox {
             "Alimentação", "Cartão", "Pix", "Outros"
     };
     private static final double[] CATEGORY_VALUES = {
-            40, 30, 20, 10 // % — placeholder, troca por dado real depois
+            40, 30, 20, 10 
     };
 
     public ExpenseDistribution() {
@@ -47,7 +47,6 @@ public class ExpenseDistribution extends VBox {
         this.drawChart();
     }
 
-    // ExpenseDistribution.java — adiciona no topo do card, antes do canvas
     private ChartMode mode = ChartMode.EXPENSE;
 
     private HBox buildToggle() {
@@ -96,7 +95,7 @@ public class ExpenseDistribution extends VBox {
 
         for (int i = 0; i < CATEGORY_VALUES.length; i++) {
 
-            double arcExtent = CATEGORY_VALUES[i] * 3.6; // % → graus (360/100)
+            double arcExtent = CATEGORY_VALUES[i] * 3.6; 
 
             gc.setFill(Color.web(CATEGORY_COLORS[i]));
             gc.fillArc(CHART_X, CHART_Y, CHART_SIZE, CHART_SIZE, startAngle, arcExtent, ArcType.ROUND);

@@ -20,10 +20,10 @@ public class TransactionList extends VBox {
         VBox rows = new VBox();
         rows.getStyleClass().add("transaction-rows");
 
-        List<Transaction> transactions = FinancialData.sampleTransactions();
-        for (Transaction transaction : transactions) {
-            rows.getChildren().add(new TransactionRow(transaction));
-        }
+        // List<Transaction> transactions = FinancialData.sampleTransactions();
+        // for (Transaction transaction : transactions) {
+        //     rows.getChildren().add(new TransactionRow(transaction));
+        // }
 
         getChildren().addAll(title, rows);
 

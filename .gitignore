@@ -25,6 +25,10 @@ replay_pid*
 
 # vscode
 .vscode
+.env
 
 # javafx
 target
+
+#database
+*.db

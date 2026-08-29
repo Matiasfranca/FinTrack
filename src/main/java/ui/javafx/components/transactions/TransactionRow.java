@@ -30,7 +30,7 @@ public class TransactionRow extends HBox {
 
         boolean isIncome = transaction.isReceipt();
         String sign = isIncome ? "+ " : "- ";
-        String formatted = sign + FinancialData.formatCurrency(Math.abs(transaction.getValue()));
+        String formatted = sign + (transaction.getValue());
 
         Label value = new Label(formatted);
         value.getStyleClass().addAll(isIncome ? "success" : "danger", "transaction-value");
@@ -44,7 +44,6 @@ public class TransactionRow extends HBox {
         removeItem.getStyleClass().add("danger-item");
         menu.getItems().addAll(editItem, removeItem);
 
-        // Sem lógica ainda (fase de design) — só abre o menu por enquanto.
 optionsButton.setOnAction(e -> {
     // if (menu.getStylesheets().isEmpty() && optionsButton.getScene() != null) {
     //     menu.getStylesheets().addAll(optionsButton.getScene().getStylesheets());

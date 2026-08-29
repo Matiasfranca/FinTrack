@@ -21,7 +21,7 @@ public class Header extends HBox {
         setHgrow(spacer, Priority.ALWAYS);
 
         Button addTransaction = new Button("+ Adicionar transação");
-        addTransaction.getStyleClass().add("add-transaction");   // tirei "primary" daqui
+        addTransaction.getStyleClass().add("add-transaction"); 
 
         getChildren().addAll(title, spacer, addTransaction);
 
