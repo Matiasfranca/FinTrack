@@ -3,7 +3,7 @@ package ui.console;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 import exceptions.InvalidInput;
-import utils.InputValidator;
+// import utils.InputValidator;
 
 public class ConsoleInput {
 
@@ -13,9 +13,9 @@ public class ConsoleInput {
             try {
                 String description = sc.nextLine();
 
-                if (InputValidator.isValid(description)) {
-                    return description;
-                }
+                // if (InputValidator.isValid(description)) {
+                //     return description;
+                // }
                 
                 throw new InvalidInput("A descrição não pode estar vazia: ");
 
@@ -30,9 +30,9 @@ public class ConsoleInput {
         while (true) {
             try {
                 int value = sc.nextInt();
-                if (value != 1 && value != 2 && id == 0 || !InputValidator.isValid(value)) {
-                    throw new InputMismatchException();
-                }
+                // if (value != 1 && value != 2 && id == 0 || !InputValidator.isValid(value)) {
+                //     throw new InputMismatchException();
+                // }
                 sc.nextLine();
                 return value;
 
@@ -49,10 +49,10 @@ public class ConsoleInput {
             try {
                 double value = sc.nextDouble();
 
-                if (InputValidator.isValid(value)) {
-                    sc.nextLine();
-                    return receipt ? value : -value;
-                }
+                // if (InputValidator.isValid(value)) {
+                //     sc.nextLine();
+                //     return receipt ? value : -value;
+                // }
 
                 throw new InputMismatchException();
 

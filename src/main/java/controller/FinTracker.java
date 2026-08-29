@@ -31,7 +31,6 @@ private final TransactionRepository transactionRepository = new SqliteTransactio
 
         // 1. We declare all our rules in a list
         List<ValidationRule<?>> rules = Arrays.asList(
-                new ValidationRule<>(description, s -> !s.trim().isEmpty(), "Invalid description."),
                 new ValidationRule<>(value, v -> v.compareTo(BigDecimal.ZERO) > 0, "Invalid value."),
                 new ValidationRule<>(transactionDate, d -> true, "Date cannot be null."), // null is checked automatically inside
                 new ValidationRule<>(type, t -> true, "Transaction type cannot be null."),
@@ -44,10 +43,12 @@ private final TransactionRepository transactionRepository = new SqliteTransactio
 
         int monthId = monthRepository.getOrCreate(YearMonth.from(transactionDate)).getId();
         int accountId = bankAccountRepository.getOrCreate(account).getId();
-        int categoryId = (category != null && category.getName() != null && !category.getName().isBlank()) ? categoryRepository.getOrCreate(category).getId() : null; 
+        Integer categoryId = (category != null && category.getName() != null && !category.getName().isBlank()) ? categoryRepository.getOrCreate(category).getId() : null; 
+
+        String finalDescription = (description == null || description.isBlank()) ? null : description.trim();
 
         // 3. If the loop finishes without errors, the data is 100% valid!
-        Transaction transaction = new Transaction(description, value, type, paymentMethod, transactionDate, accountId, categoryId);
+        Transaction transaction = new Transaction(finalDescription, value, type, paymentMethod, transactionDate, accountId, categoryId);
 
         transactionRepository.save(transaction, monthId, accountId, categoryId);
     }

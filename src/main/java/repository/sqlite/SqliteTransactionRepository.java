@@ -38,7 +38,7 @@ public class SqliteTransactionRepository implements TransactionRepository {
             stmt.setBigDecimal(5, transaction.getValue());
             stmt.setString(6, transaction.getTransactionType().name());
             stmt.setString(7, transaction.getPaymentMethod().name());
-            stmt.setString(8, transaction.getDescription());
+            stmt.setString(8, transaction.getDescription() != null ? transaction.getDescription().trim() : null);
 
             stmt.executeUpdate();
 
@@ -129,9 +129,8 @@ public class SqliteTransactionRepository implements TransactionRepository {
             stmt.setBigDecimal(5, transaction.getValue());
             stmt.setString(6, transaction.getTransactionType().name());
             stmt.setString(7, transaction.getPaymentMethod().name());
-            stmt.setString(8, transaction.getDescription());
+            stmt.setString(8, transaction.getDescription() != null ? transaction.getDescription().trim() : null);
             
-            // The transaction ID to be updated goes last (parameter 9)
             stmt.setInt(9, transaction.getId());
 
             stmt.executeUpdate();
