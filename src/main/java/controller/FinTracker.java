@@ -106,7 +106,7 @@ public class FinTracker {
     public List<Transaction> listTransactionsByMonth(YearMonth yearMonth) throws InvalidInput {
         if (yearMonth == null) {
             throw new InvalidInput("YearMonth cannot be null.");
-        }        
+        }
 
         return transactionRepository.findByMonth(yearMonth);
     }

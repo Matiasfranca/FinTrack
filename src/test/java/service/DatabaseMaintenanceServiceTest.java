@@ -9,13 +9,10 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 public class DatabaseMaintenanceServiceTest {
 
-    private static DatabaseMaintenanceService maintenanceService;
-
     @BeforeAll
     static void setUp() {
         DatabaseConnection.setTestMode(true);
         DatabaseInitializer.initialize();
-        maintenanceService = new DatabaseMaintenanceService();
 
         // Prepares mock data: an empty month and an inactive account with no transactions to test cleanup logic
         try (var conn = database.DatabaseConnection.getConnection();
@@ -32,7 +29,7 @@ public class DatabaseMaintenanceServiceTest {
     @Test
     void shouldCleanDatabaseTrashSuccessfully() {
         assertDoesNotThrow(() -> {
-            maintenanceService.cleanDatabaseTrash();
+            DatabaseMaintenanceService.cleanDatabaseTrash();
         }, "Cleaning database trash should not throw any exceptions");
     }
 }

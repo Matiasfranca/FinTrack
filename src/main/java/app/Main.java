@@ -6,15 +6,21 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+import service.DatabaseMaintenanceService;
 import ui.javafx.JavafxUI;
 
 public class Main extends Application {
 
     private Stage stage;
     private Scene scene;
+
+    @FXML
+    private Button guiButton;
 
     @FXML
     private HBox terminalOption;
@@ -32,6 +38,7 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
 
         database.DatabaseInitializer.initialize();
+        DatabaseMaintenanceService.cleanIfFirstDayOfMonth();
 
         this.stage = primaryStage;
 
@@ -55,18 +62,26 @@ public class Main extends Application {
     @FXML
     private void initialize() {
 
-        guiPointer.setVisible(true);
-        terminalPointer.setVisible(false);
+        Tooltip aviso = new Tooltip("Em desenvolvimento. Por favor, utilize o Terminal nesta versão.");
+        guiButton.setTooltip(aviso);
 
-        terminalOption.setOnMouseEntered(e -> {
-            terminalPointer.setVisible(true);
-            guiPointer.setVisible(false);
+        guiButton.setOpacity(0.4); 
+        guiButton.setOnAction(event -> {
+
         });
 
-        guiOption.setOnMouseEntered(e -> {
-            terminalPointer.setVisible(false);
-            guiPointer.setVisible(true);
-        });
+        guiPointer.setVisible(false);
+        terminalPointer.setVisible(true);
+
+        // terminalOption.setOnMouseEntered(e -> {
+        // terminalPointer.setVisible(true);
+        // guiPointer.setVisible(false);
+        // });
+
+        // guiOption.setOnMouseEntered(e -> {
+        // terminalPointer.setVisible(false);
+        // guiPointer.setVisible(true);
+        // });
     }
 
     @FXML

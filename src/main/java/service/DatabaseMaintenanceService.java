@@ -9,7 +9,7 @@ import java.time.LocalDate;
 
 public class DatabaseMaintenanceService {
 
-    public void cleanIfFirstDayOfMonth() {
+    static public void cleanIfFirstDayOfMonth() {
         LocalDate today = LocalDate.now();
 
         if (today.getDayOfMonth() == 1) {
@@ -17,7 +17,7 @@ public class DatabaseMaintenanceService {
         }
     }
 
-    public void cleanDatabaseTrash() {
+    static public void cleanDatabaseTrash() {
         String deleteEmptyMonths = """
                 DELETE FROM MONTH
                 WHERE id NOT IN (
