@@ -1,102 +1,232 @@
-// package ui.console;
+package ui.console;
 
-// import java.util.Scanner;
-// import controller.FinTracker;
-// import exceptions.InvalidInput;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.List;
+import java.util.Scanner;
 
-// public class ConsoleUI {
+import controller.FinTracker;
+import exceptions.InvalidInput;
+import model.BankAccount;
+import model.BankAccountType;
+import model.Category;
+import model.PaymentMethod;
+import model.Transaction;
+import model.TransactionType;
+import model.dto.CardData;
+import model.dto.CategoryChartData;
 
-//     private final FinTracker finTracker;
+public class ConsoleUI {
 
-//     public ConsoleUI() {
-//         this.finTracker = new FinTracker();
-//     }
+    private final FinTracker finTracker;
 
-//     public void start(Scanner sc) {
+    public ConsoleUI() {
+        this.finTracker = new FinTracker();
+    }
 
-//         int option = 0;
+    public void start(Scanner sc) {
 
-//         do {
-//             option = 0;
+        int option = 0;
 
-//             ConsoleFormatter.showMenu();
-//             option = ConsoleInput.readInt(sc, 1);
+        do {
+            option = 0;
+            ConsoleFormatter.clearScreen();
+            ConsoleFormatter.showMenu();
+            option = ConsoleInput.readInt(sc, 5);
 
-//             switch (option) {
+            switch (option) {
 
-//                 case 1 -> this.addTransaction(sc);
+                case 1 -> this.addTransaction(sc);
+                case 2 -> this.listTransaction(sc);
+                case 3 -> this.removeTransaction(sc);
+                case 4 -> this.showDashboard(sc);
+                case 5 -> System.out.println("\nSaindo do FinTrack. Até logo! 👋");
 
-//                 case 2 -> this.listTransaction(sc);
+            }
+        } while (option != 5);
 
-//                 case 3 -> this.removeTransaction(sc);
+        sc.close();
+    }
 
-//                 case 4 -> this.calculateTotalBalance(sc);
+    private void addTransaction(Scanner sc) {
 
-//                 case 5 -> System.out.println("\nSaindo....");
+        ConsoleFormatter.clearScreen();
+        ConsoleFormatter.showHeader("➕ NOVA TRANSAÇÃO");
 
-//                 default -> {
+        ConsoleFormatter.showInputDescription();
+        String description = ConsoleInput.readString(sc);
 
-//                     System.err.println("\nDigite uma opção válida");
-//                     ConsoleFormatter.pause(sc);
+        ConsoleFormatter.showInputValue();
+        double val = ConsoleInput.readDouble(sc);
+        BigDecimal value = BigDecimal.valueOf(val);
 
-//                 }
-//             }
-//         } while (option != 5);
+        ConsoleFormatter.showInputType();
+        int typeOpt = ConsoleInput.readInt(sc, 3);
+        TransactionType type = switch (typeOpt) {
+            case 1 -> TransactionType.INCOME;
+            case 3 -> TransactionType.INVESTMENT;
+            default -> TransactionType.EXPENSE;
+        };
 
-//         sc.close();
-//     }
+        List<BankAccount> activeAccounts = finTracker.listActiveBankAccounts();
+        BankAccount account = null;
 
-//     private void addTransaction(Scanner sc) {
+        if (activeAccounts.isEmpty()) {
+            System.out.println("\nNenhuma conta cadastrada. Vamos criar uma nova.");
+            System.out.print("Nome da Conta (ex: Nubank): ");
+            String bankName = ConsoleInput.readString(sc);
 
-//         ConsoleFormatter.showInputDescription();
-//         String description = ConsoleInput.readString(sc);
+            ConsoleFormatter.showBankAccountTypes();
+            int typeAccOpt = ConsoleInput.readInt(sc, 4);
+            BankAccountType accType = mapBankAccountType(typeAccOpt);
 
-//         ConsoleFormatter.showInputType();
-//         boolean receipt = ConsoleInput.readInt(sc, 0) == 1;
+            account = new BankAccount(bankName, accType);
+        } else {
+            ConsoleFormatter.showBankAccounts(activeAccounts);
+            int accOpt = ConsoleInput.readInt(sc, activeAccounts.size() + 1);
+            if (accOpt == activeAccounts.size() + 1) {
+                System.out.print("Nome da Nova Conta: ");
+                String bankName = ConsoleInput.readString(sc);
 
-//         ConsoleFormatter.showInputValue();
-//         double value = ConsoleInput.readDouble(sc, receipt);
+                ConsoleFormatter.showBankAccountTypes();
+                int typeAccOpt = ConsoleInput.readInt(sc, 4);
+                BankAccountType accType = mapBankAccountType(typeAccOpt);
 
-//         finTracker.addTransaction(description, value, receipt);
+                account = new BankAccount(bankName, accType);
+            } else if (accOpt > 0 && accOpt <= activeAccounts.size()) {
+                account = activeAccounts.get(accOpt - 1);
+            } else {
+                account = activeAccounts.get(0);
+            }
+        }
 
-//         System.out.println("\n✅ Transação adicionada com sucesso!");
+        ConsoleFormatter.showPaymentMethods();
+        int payOpt = ConsoleInput.readInt(sc, 6);
+        PaymentMethod paymentMethod = switch (payOpt) {
+            case 1 -> PaymentMethod.PIX;
+            case 2 -> PaymentMethod.CREDIT_CARD;
+            case 3 -> PaymentMethod.DEBIT_CARD;
+            case 4 -> PaymentMethod.CASH;
+            case 5 -> PaymentMethod.BANK_TRANSFER;
+            default -> PaymentMethod.BOLETO;
+        };
 
-//         ConsoleFormatter.pause(sc);
-//         ConsoleFormatter.clearScreen();
-//     }
+        List<Category> categories = finTracker.listAllCategories();
+        Category category = null;
+        if (categories.isEmpty()) {
+            System.out.println("\nNenhuma categoria cadastrada.");
+            System.out.print("Deseja criar uma categoria agora? [1] Sim / [2] Não (Deixar em branco): ");
+            int createCat = ConsoleInput.readInt(sc, 2);
 
-//     private void listTransaction(Scanner sc) {
+            if (createCat == 1) {
+                System.out.print("Nome da Nova Categoria (ex: Alimentação): ");
+                String catName = ConsoleInput.readString(sc);
+                category = new Category(catName, "#CCCCCC");
+            }
+        } else {
+            ConsoleFormatter.showCategories(categories);
 
-//         ConsoleFormatter.showTransactions(finTracker.listTransaction());
-//         ConsoleFormatter.pause(sc);
-//         ConsoleFormatter.clearScreen();
+            int catOpt = ConsoleInput.readInt(sc, categories.size() + 2);
 
-//     }
+            if (catOpt == categories.size() + 2) {
+                System.out.print("Nome da Nova Categoria: ");
+                String catName = ConsoleInput.readString(sc);
+                category = new Category(catName, "#CCCCCC");
+            } else if (catOpt == categories.size() + 1) {
+                category = null;
+            } else {
+                category = categories.get(catOpt - 1);
+            }
+        }
 
-//     private void removeTransaction(Scanner sc) {
+        Transaction transaction = new Transaction(description, value, type, paymentMethod, LocalDate.now());
 
-//         ConsoleFormatter.showTransactions(finTracker.listTransaction());
-//         System.out.print("Se deseja apagar diga o numero da conta a ser apagada da lista: ");
+        try {
+            finTracker.addTransaction(transaction, account, category);
+            ConsoleFormatter.showSuccess("\n✅ Transação adicionada com sucesso!");
+        } catch (InvalidInput e) {
+            ConsoleFormatter.showError(e.getMessage());
+        }
 
-//         int option = ConsoleInput.readInt(sc, 1);
-//         try {
-//             finTracker.removeTransaction(option);
-//             System.out.println("\n✅ Removido com sucesso!");
-//         } catch (InvalidInput e) {
-//             System.err.println(e.getMessage());
-//         }
+        ConsoleFormatter.pause(sc);
+        ConsoleFormatter.clearScreen();
+    }
 
-//         ConsoleFormatter.pause(sc);
-//         ConsoleFormatter.clearScreen();
-//     }
+    private void listTransaction(Scanner sc) {
+        ConsoleFormatter.clearScreen();
+        ConsoleFormatter.showHeader("📋 LISTA DE TRANSAÇÕES (MÊS ATUAL)");
 
-//     private void calculateTotalBalance(Scanner sc) {
+        try {
+            List<Transaction> transactions = finTracker.listTransactionsByMonth(YearMonth.now());
+            if (transactions.isEmpty()) {
+                System.out.println("\nNenhuma transação encontrada para este mês.");
+            } else {
+                ConsoleFormatter.showTransactions(transactions);
+            }
+        } catch (InvalidInput e) {
+            ConsoleFormatter.showError(e.getMessage());
+        }
 
-//         double total = finTracker.calculateTotalBalance();
-//         System.out.println("O total do mês: " + total);
+        ConsoleFormatter.pause(sc);
+        ConsoleFormatter.clearScreen();
+    }
 
-//         ConsoleFormatter.pause(sc);
-//         ConsoleFormatter.clearScreen();
-//     }
+    private void removeTransaction(Scanner sc) {
+        ConsoleFormatter.clearScreen();
+        ConsoleFormatter.showHeader("🗑️ REMOVER TRANSAÇÃO");
 
-// }
+        try {
+            List<Transaction> transactions = finTracker.listTransactionsByMonth(YearMonth.now());
+            if (transactions.isEmpty()) {
+                System.out.println("\nNão há transações para remover neste mês.");
+                ConsoleFormatter.pause(sc);
+                return;
+            }
+
+            ConsoleFormatter.showTransactions(transactions);
+            System.out.print("\nDigite o ID da transação a ser apagada: ");
+            int id = ConsoleInput.readInt(sc, 1);
+
+            finTracker.deleteTransaction(id);
+            ConsoleFormatter.showSuccess("Transação removida com sucesso!");
+
+        } catch (InvalidInput e) {
+            ConsoleFormatter.showError(e.getMessage());
+        }
+
+        ConsoleFormatter.pause(sc);
+        ConsoleFormatter.clearScreen();
+    }
+
+    private void showDashboard(Scanner sc) {
+        ConsoleFormatter.clearScreen();
+        YearMonth currentMonth = YearMonth.now();
+
+        try {
+            CardData card = finTracker.getMonthlyCard(currentMonth);
+            ConsoleFormatter.showDashboardCard(card);
+
+            List<CategoryChartData> expensesByCategory = finTracker.getCategoryDistribution(currentMonth,
+                    TransactionType.EXPENSE);
+            ConsoleFormatter.showCategoryDistribution(expensesByCategory);
+
+        } catch (InvalidInput e) {
+            ConsoleFormatter.showError(e.getMessage());
+        }
+
+        ConsoleFormatter.pause(sc);
+        ConsoleFormatter.clearScreen();
+
+    }
+
+    private BankAccountType mapBankAccountType(int option) {
+        return switch (option) {
+            case 1 -> BankAccountType.CHECKING;
+            case 2 -> BankAccountType.SAVINGS;
+            case 3 -> BankAccountType.CASH;
+            default -> BankAccountType.OTHER;
+        };
+    }
+
+}

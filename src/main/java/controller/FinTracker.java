@@ -30,14 +30,14 @@ public class FinTracker {
     private final CategoryRepository categoryRepository = new SqliteCategoryRepository();
     private final DashboardRepository dashboardRepository = new SqliteDashboardRepository();
 
+    // --- TRANSACTION ---
+
     public void addTransaction(Transaction transaction, BankAccount account, Category category) throws InvalidInput {
 
-        // Garante a data padrão se vier nula
         if (transaction.getDate() == null) {
             transaction.setDate(LocalDate.now());
         }
 
-        // 1. Validações centralizadas usando os dados do objeto Transaction
         List<ValidationRule<?>> rules = Arrays.asList(
                 new ValidationRule<>(transaction.getValue(), v -> v.compareTo(BigDecimal.ZERO) > 0, "Invalid value."),
                 new ValidationRule<>(transaction.getDate(), d -> true, "Date cannot be null."),
@@ -48,19 +48,16 @@ public class FinTracker {
             rule.validate();
         }
 
-        // 2. Resolução dos IDs
         int monthId = monthRepository.getOrCreate(YearMonth.from(transaction.getDate())).getId();
         int accountId = bankAccountRepository.getOrCreate(account).getId();
         Integer categoryId = (category != null && category.getName() != null && !category.getName().isBlank())
                 ? categoryRepository.getOrCreate(category).getId()
                 : null;
 
-        // 3. Tratamento da descrição (opcional, vira null se vazia)
         String desc = transaction.getDescription();
         String finalDescription = (desc == null || desc.isBlank()) ? null : desc.trim();
         transaction.setDescription(finalDescription);
 
-        // 4. Salva no repositório
         transactionRepository.save(transaction, monthId, accountId, categoryId);
     }
 
@@ -73,7 +70,6 @@ public class FinTracker {
             transaction.setDate(LocalDate.now());
         }
 
-        // Mesmas regras para o update
         List<ValidationRule<?>> rules = Arrays.asList(
                 new ValidationRule<>(transaction.getValue(), v -> v.compareTo(BigDecimal.ZERO) > 0, "Invalid value."),
                 new ValidationRule<>(transaction.getDate(), d -> true, "Date cannot be null."),
@@ -105,6 +101,8 @@ public class FinTracker {
         transactionRepository.delete(transactionId);
     }
 
+    // --- LIST ---
+
     public List<Transaction> listTransactionsByMonth(YearMonth yearMonth) throws InvalidInput {
         if (yearMonth == null) {
             throw new InvalidInput("YearMonth cannot be null.");
@@ -128,6 +126,8 @@ public class FinTracker {
         int monthId = monthRepository.getOrCreate(yearMonth).getId();
         return dashboardRepository.getMonthlyOverview(monthId);
     }
+
+    // --- CARD ---
 
     public CardData getMonthlyCard(YearMonth yearMonth) throws InvalidInput {
         if (yearMonth == null) {

@@ -31,10 +31,11 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 
+        database.DatabaseInitializer.initialize();
+
         this.stage = primaryStage;
 
-        FXMLLoader loader =
-                new FXMLLoader(getClass().getResource("Main.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("Main.fxml"));
 
         loader.setController(this);
 
@@ -44,8 +45,7 @@ public class Main extends Application {
         this.scene = scene;
 
         scene.getStylesheets().add(
-                getClass().getResource("Main.css").toExternalForm()
-        );
+                getClass().getResource("Main.css").toExternalForm());
 
         primaryStage.setTitle("FinTrack");
         primaryStage.setScene(scene);
@@ -79,6 +79,20 @@ public class Main extends Application {
     @FXML
     private void openTERMINAL(ActionEvent event) {
 
-        // abrir ConsoleUI futuramente
+        stage.hide();
+        System.out.println("Iniciando o modo Terminal...\n");
+
+        Thread consoleThread = new Thread(() -> {
+
+            java.util.Scanner sc = new java.util.Scanner(System.in);
+            ui.console.ConsoleUI consoleUI = new ui.console.ConsoleUI();
+
+            consoleUI.start(sc);
+
+            javafx.application.Platform.exit();
+            System.exit(0);
+        });
+
+        consoleThread.start();
     }
 }

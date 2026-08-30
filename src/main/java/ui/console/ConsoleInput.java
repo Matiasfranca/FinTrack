@@ -2,22 +2,25 @@ package ui.console;
 
 import java.util.InputMismatchException;
 import java.util.Scanner;
+
 import exceptions.InvalidInput;
-// import utils.InputValidator;
+import utils.ValidationRule;
 
 public class ConsoleInput {
 
     public static String readString(Scanner sc) {
-
         while (true) {
             try {
-                String description = sc.nextLine();
+                String input = sc.nextLine();
 
-                // if (InputValidator.isValid(description)) {
-                //     return description;
-                // }
-                
-                throw new InvalidInput("A descrição não pode estar vazia: ");
+                ValidationRule<String> rule = new ValidationRule<>(
+                        input,
+                        s -> !s.trim().isEmpty(),
+                        "A descrição não pode estar vazia. Digite novamente: "
+                );
+                rule.validate();
+
+                return input.trim();
 
             } catch (InvalidInput e) {
                 System.out.print(e.getMessage());
@@ -25,40 +28,50 @@ public class ConsoleInput {
         }
     }
 
-    public static int readInt(Scanner sc, int id) {
-
+    public static int readInt(Scanner sc, int minValidValue) {
         while (true) {
             try {
                 int value = sc.nextInt();
-                // if (value != 1 && value != 2 && id == 0 || !InputValidator.isValid(value)) {
-                //     throw new InputMismatchException();
-                // }
                 sc.nextLine();
+
+                ValidationRule<Integer> rule = new ValidationRule<>(
+                        value,
+                        v -> v <= minValidValue && v > 0 ,
+                        "Opção inválida. Digite uma opção válida: "
+                );
+                rule.validate();
+
                 return value;
 
             } catch (InputMismatchException e) {
-                System.out.print("Digite uma opção válida: ");
+                System.out.print("Formato inválido. Digite um número inteiro: ");
                 sc.nextLine();
+            } catch (InvalidInput e) {
+                System.out.print(e.getMessage());
             }
         }
     }
 
-    public static double readDouble(Scanner sc, boolean receipt) {
-
+    public static double readDouble(Scanner sc) {
         while (true) {
             try {
                 double value = sc.nextDouble();
+                sc.nextLine();
 
-                // if (InputValidator.isValid(value)) {
-                //     sc.nextLine();
-                //     return receipt ? value : -value;
-                // }
+                ValidationRule<Double> rule = new ValidationRule<>(
+                        value,
+                        v -> v > 0,
+                        "O valor deve ser maior que zero. Digite novamente: "
+                );
+                rule.validate();
 
-                throw new InputMismatchException();
+                return value;
 
             } catch (InputMismatchException e) {
-                System.out.print("Valor inválido por favor digite novamente: ");
+                System.out.print("Formato inválido. Digite um número válido (ex: 150,50): ");
                 sc.nextLine();
+            } catch (InvalidInput e) {
+                System.out.print(e.getMessage());
             }
         }
     }
