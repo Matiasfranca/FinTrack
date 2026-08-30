@@ -1,0 +1,10 @@
+#!/bin/bash
+if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then
+    rm -f /usr/local/bin/fintrack
+    
+    rm -f /usr/share/applications/fintrack.desktop
+    
+    rm -f /usr/share/icons/hicolor/512x512/apps/fintrack.png
+    
+    update-desktop-database /usr/share/applications 2>/dev/null || true
+fi

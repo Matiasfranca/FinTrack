@@ -34,6 +34,18 @@ public class Main extends Application {
     @FXML
     private ImageView guiPointer;
 
+    public static void main(String[] args) {
+        if (args.length > 0 && args[0].equals("--console")) {
+            java.util.Scanner sc = new java.util.Scanner(System.in);
+            ui.console.ConsoleUI consoleUI = new ui.console.ConsoleUI();
+            consoleUI.start(sc);
+            System.exit(0);
+            return;
+        } else {
+            launch(args);
+        }
+    }
+
     @Override
     public void start(Stage primaryStage) throws Exception {
 
@@ -65,7 +77,7 @@ public class Main extends Application {
         Tooltip aviso = new Tooltip("Em desenvolvimento. Por favor, utilize o Terminal nesta versão.");
         guiButton.setTooltip(aviso);
 
-        guiButton.setOpacity(0.4); 
+        guiButton.setOpacity(0.4);
         guiButton.setOnAction(event -> {
 
         });
@@ -93,21 +105,48 @@ public class Main extends Application {
 
     @FXML
     private void openTERMINAL(ActionEvent event) {
+        stage.close();
 
-        stage.hide();
-        System.out.println("Iniciando o modo Terminal...\n");
+        try {
+            ProcessBuilder check = new ProcessBuilder("which", "fintrack");
+            Process process = check.start();
+            int errorCode = process.waitFor();
 
-        Thread consoleThread = new Thread(() -> {
+            if (errorCode == 0) {
+                try {
+                    ProcessBuilder pb = new ProcessBuilder("x-terminal-emulator", "-e", "fintrack", "--console");
+                    pb.start();
+                } catch (Exception e) {
+                    String[] terminals = { "gnome-terminal", "konsole", "xfce4-terminal", "xterm" };
+                    for (String term : terminals) {
+                        try {
+                            ProcessBuilder pb = new ProcessBuilder(term, term.equals("gnome-terminal") ? "--" : "-e",
+                                    "fintrack", "--console");
+                            pb.start();
+                            break;
+                        } catch (Exception ignored) {
+                        }
+                    }
+                }
+                javafx.application.Platform.exit();
+                System.exit(0);
 
-            java.util.Scanner sc = new java.util.Scanner(System.in);
-            ui.console.ConsoleUI consoleUI = new ui.console.ConsoleUI();
+            } else {
+                System.out.println("\n--- MODO TERMINAL (Ambiente de Desenvolvimento) ---\n");
 
-            consoleUI.start(sc);
+                javafx.application.Platform.exit();
 
-            javafx.application.Platform.exit();
-            System.exit(0);
-        });
+                new Thread(() -> {
+                    java.util.Scanner sc = new java.util.Scanner(System.in);
+                    ui.console.ConsoleUI consoleUI = new ui.console.ConsoleUI();
+                    consoleUI.start(sc);
+                    System.exit(0);
+                }).start();
+            }
 
-        consoleThread.start();
+        } catch (Exception e) {
+            System.err.println("Erro ao iniciar o terminal: " + e.getMessage());
+            stage.show();
+        }
     }
 }
