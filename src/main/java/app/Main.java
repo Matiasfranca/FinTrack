@@ -7,7 +7,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
@@ -74,26 +73,18 @@ public class Main extends Application {
     @FXML
     private void initialize() {
 
-        Tooltip aviso = new Tooltip("Em desenvolvimento. Por favor, utilize o Terminal nesta versão.");
-        guiButton.setTooltip(aviso);
+        guiPointer.setVisible(true);
+        terminalPointer.setVisible(false);
 
-        guiButton.setOpacity(0.4);
-        guiButton.setOnAction(event -> {
-
+        terminalOption.setOnMouseEntered(e -> {
+        terminalPointer.setVisible(true);
+        guiPointer.setVisible(false);
         });
 
-        guiPointer.setVisible(false);
-        terminalPointer.setVisible(true);
-
-        // terminalOption.setOnMouseEntered(e -> {
-        // terminalPointer.setVisible(true);
-        // guiPointer.setVisible(false);
-        // });
-
-        // guiOption.setOnMouseEntered(e -> {
-        // terminalPointer.setVisible(false);
-        // guiPointer.setVisible(true);
-        // });
+        guiOption.setOnMouseEntered(e -> {
+        terminalPointer.setVisible(false);
+        guiPointer.setVisible(true);
+        });
     }
 
     @FXML

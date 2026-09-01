@@ -44,12 +44,12 @@ public class TransactionRow extends HBox {
         removeItem.getStyleClass().add("danger-item");
         menu.getItems().addAll(editItem, removeItem);
 
-optionsButton.setOnAction(e -> {
-    // if (menu.getStylesheets().isEmpty() && optionsButton.getScene() != null) {
-    //     menu.getStylesheets().addAll(optionsButton.getScene().getStylesheets());
-    // }
-    menu.show(optionsButton, Side.BOTTOM, 0, 0);
-});
+        optionsButton.setOnAction(e -> {
+            // if (menu.getStylesheets().isEmpty() && optionsButton.getScene() != null) {
+            //     menu.getStylesheets().addAll(optionsButton.getScene().getStylesheets());
+            // }
+            menu.show(optionsButton, Side.BOTTOM, 0, 0);
+        });
         getChildren().addAll(description, spacer, value, optionsButton);
     }
 }

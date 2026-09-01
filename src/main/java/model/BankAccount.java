@@ -23,9 +23,18 @@ public class BankAccount {
     public String getName() { return name; }
     public BankAccountType getType() { return type; }
     public boolean isActive() { return isActive; }
-    
+
     @Override
     public String toString() {
-        return name;
+        return name + " (" + translateType(type) + ")";
+    }
+
+    private String translateType(BankAccountType type) {
+        return switch (type) {
+            case CHECKING -> "Corrente";
+            case SAVINGS -> "Poupança";
+            case CASH -> "Dinheiro";
+            case OTHER -> "Outro";
+        };
     }
 }

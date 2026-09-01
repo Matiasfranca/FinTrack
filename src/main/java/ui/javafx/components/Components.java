@@ -11,17 +11,17 @@ public class Components extends VBox {
 
     private static final double CONTENT_WIDTH = 1200;
 
-    public Components() {
-
-        setPrefWidth(CONTENT_WIDTH);
-        setMaxWidth(CONTENT_WIDTH);
-
-        setAlignment(Pos.TOP_CENTER);
+    public Components(Runnable onAddTransaction) {
 
         setSpacing(30);
+        setMaxWidth(CONTENT_WIDTH);
+        setPrefWidth(CONTENT_WIDTH);
+        setAlignment(Pos.TOP_CENTER);
 
-        getChildren().addAll(new Header(), new FinancialCards(), new Charts(), new TransactionList());
-
+        getChildren().addAll(
+                new Header(onAddTransaction),
+                new FinancialCards(),
+                new Charts(),
+                new TransactionList());
     }
-
 }

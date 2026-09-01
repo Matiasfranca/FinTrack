@@ -1,0 +1,226 @@
+.form-card {
+    -fx-background-color: #1C1C1F;
+    -fx-background-radius: 12px;
+    -fx-border-color: #28282C;
+    -fx-border-width: 1px;
+    -fx-border-radius: 12px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 24, 0, 0, 8);
+}
+
+.form-label {
+    -fx-font-size: 11px;
+    -fx-font-weight: 600;
+    -fx-padding: 4px 0 0 2px;
+}
+
+.form-error {
+    -fx-text-fill: #F87171;
+    -fx-font-size: 12px;
+}
+
+/* ---- TextField ---- */
+
+.form-input.text-field {
+    -fx-background-color: #28282C;
+    -fx-text-fill: #F5F5F0;
+    -fx-prompt-text-fill: #6B6B70;
+    -fx-background-radius: 6px;
+    -fx-border-color: transparent;
+    -fx-padding: 8px 10px;
+}
+
+.form-input.text-field:focused {
+    -fx-border-color: #C9A227;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+}
+
+/* ---- TextArea ---- */
+
+.text-area {
+    -fx-background-color: #28282C;
+    -fx-background-radius: 6px;
+}
+
+.text-area .content {
+    -fx-background-color: #28282C;
+    -fx-background-radius: 6px;
+}
+
+.text-area .text {
+    -fx-fill: #F5F5F0;
+}
+
+.text-area:focused .content {
+    -fx-border-color: #C9A227;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+}
+
+.text-area .scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+}
+
+.text-area .scroll-pane .viewport {
+    -fx-background-color: #28282C;
+}
+
+.text-area .corner {
+    -fx-background-color: #28282C;
+}
+
+/* ---- ComboBox ---- */
+
+.combo-box {
+    -fx-background-color: #28282C;
+    -fx-background-radius: 6px;
+    -fx-mark-color: #9A9A9E;
+}
+
+.combo-box .list-cell {
+    -fx-text-fill: #F5F5F0;
+    -fx-background-color: transparent;
+    -fx-padding: 6px 8px;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: #1C1C1F;
+    -fx-border-color: #28282C;
+    -fx-border-width: 1px;
+}
+
+.combo-box-popup .list-cell:filled:hover,
+.combo-box-popup .list-cell:filled:selected {
+    -fx-background-color: #28282C;
+}
+
+/* ---- DatePicker ---- */
+
+.date-picker {
+    -fx-background-color: #28282C;
+    -fx-background-radius: 6px;
+}
+
+.date-picker .text-field {
+    -fx-background-color: #28282C;
+    -fx-text-fill: #F5F5F0;
+    -fx-background-radius: 6px 0 0 6px;
+    -fx-border-color: transparent;
+}
+
+.date-picker .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.date-picker-popup {
+    -fx-background-color: #1C1C1F;
+}
+
+.date-picker-popup .month-year-pane {
+    -fx-background-color: #28282C;
+}
+
+.date-picker-popup .spinner {
+    -fx-background-color: #28282C;
+}
+
+.date-picker-popup .day-name-cell {
+    -fx-background-color: #1C1C1F;
+    -fx-text-fill: #9A9A9E;
+}
+
+.date-picker-popup .day-cell {
+    -fx-background-color: #1C1C1F;
+    -fx-text-fill: #F5F5F0;
+}
+
+.date-picker-popup .day-cell:hover {
+    -fx-background-color: #28282C;
+}
+
+.date-picker-popup .selected {
+    -fx-background-color: #C9A227;
+    -fx-text-fill: #121214;
+}
+
+/* ---- Button ---- */
+
+.form-add-button {
+    -fx-background-color: #28282C;
+    -fx-text-fill: #C9A227;
+    -fx-font-weight: bold;
+    -fx-background-radius: 6px;
+    -fx-min-width: 36px;
+    -fx-cursor: hand;
+}
+
+.form-add-button:hover {
+    -fx-background-color: #C9A227;
+    -fx-text-fill: #121214;
+}
+
+.form-save-button {
+    -fx-background-radius: 8px;
+    -fx-text-fill: #121214;
+    -fx-font-weight: bold;
+    -fx-padding: 10px;
+    -fx-cursor: hand;
+}
+
+.form-cancel-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #9A9A9E;
+    -fx-background-radius: 8px;
+    -fx-padding: 8px;
+    -fx-cursor: hand;
+}
+
+.form-cancel-button:hover {
+    -fx-text-fill: #F5F5F0;
+}
+
+/* ---- Dialog ---- */
+
+.form-dialog .dialog-pane,
+.form-dialog .header-panel {
+    -fx-background-color: #1C1C1F;
+}
+
+.form-dialog .content.label,
+.form-dialog .header-panel .label {
+    -fx-text-fill: #F5F5F0;
+}
+
+.form-dialog .button {
+    -fx-background-color: #28282C;
+    -fx-text-fill: #F5F5F0;
+    -fx-background-radius: 6px;
+}
+
+.form-dialog .button:default {
+    -fx-background-color: #C9A227;
+    -fx-text-fill: #121214;
+}
+
+.form-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 4px 0;
+}
+
+.form-save-button {
+    -fx-background-radius: 6px;
+    -fx-text-fill: #121214;
+    -fx-font-weight: bold;
+    -fx-padding: 8px 20px;
+    -fx-cursor: hand;
+}
+
+.form-cancel-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #9A9A9E;
+    -fx-background-radius: 6px;
+    -fx-padding: 8px 16px;
+    -fx-cursor: hand;
+}

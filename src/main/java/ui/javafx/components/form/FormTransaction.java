@@ -1,0 +1,366 @@
+package ui.javafx.components.form;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+import controller.FinTracker;
+import javafx.animation.PauseTransition;
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.concurrent.Task;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+import javafx.util.Duration;
+import javafx.util.Pair;
+import javafx.util.StringConverter;
+import model.BankAccount;
+import model.BankAccountType;
+import model.Category;
+import model.PaymentMethod;
+import model.TransactionType;
+
+public class FormTransaction extends VBox {
+
+    private final FinTracker finTracker = new FinTracker();
+
+    private final TextField valueField = new TextField();
+    private final ComboBox<TransactionType> typeBox = new ComboBox<>(
+            FXCollections.observableArrayList(TransactionType.values()));
+    private final ComboBox<PaymentMethod> paymentMethodBox = new ComboBox<>(
+            FXCollections.observableArrayList(PaymentMethod.values()));
+    private final TextArea descriptionArea = new TextArea();
+    private final DatePicker datePicker = new DatePicker(LocalDate.now());
+    private final ComboBox<BankAccount> bankAccountBox = new ComboBox<>();
+    private final ComboBox<CategoryOption> categoryBox = new ComboBox<>();
+    private final Button saveButton = new Button("Salvar");
+    private final Button cancelButton = new Button("Cancelar");
+    private final Label statusLabel = new Label();
+
+    public FormTransaction(Runnable onCancelTransaction) {
+
+        getStyleClass().add("form-card");
+        setSpacing(12);
+        setPadding(new Insets(18));
+        setPrefWidth(300);
+        setMaxWidth(300);
+
+        Label title = new Label("Adicionar transação");
+        title.getStyleClass().addAll("text-primary", "form-title");
+
+        valueField.setPromptText("0,00");
+        valueField.getStyleClass().add("form-input");
+
+        descriptionArea.setPromptText("Descrição da transação");
+        descriptionArea.setPrefRowCount(2);
+        descriptionArea.setWrapText(true);
+        descriptionArea.getStyleClass().add("form-input");
+
+        datePicker.getStyleClass().add("form-input");
+        datePicker.setMaxWidth(Double.MAX_VALUE);
+
+        configureEnumBox(typeBox, this::translateType);
+        typeBox.getSelectionModel().selectFirst();
+
+        configureEnumBox(paymentMethodBox, this::translatePaymentMethod);
+        paymentMethodBox.getSelectionModel().selectFirst();
+
+        configureBankAccountBox();
+        configureCategoryOptionBox();
+
+        statusLabel.setWrapText(true);
+        statusLabel.setVisible(false);
+        statusLabel.setManaged(false);
+
+        saveButton.getStyleClass().addAll("primary", "form-save-button");
+        saveButton.setOnAction(e -> createTransaction());
+
+        cancelButton.getStyleClass().add("form-cancel-button");
+        cancelButton.setOnAction(e -> onCancelTransaction.run());
+
+        HBox buttonRow = new HBox(10, cancelButton, saveButton);
+        buttonRow.setAlignment(Pos.CENTER_RIGHT);
+
+        getChildren().addAll(
+                title,
+                formLabel("Valor", true), valueField,
+                formLabel("Tipo", true), typeBox,
+                formLabel("Forma de pagamento", true), paymentMethodBox,
+                formLabel("Descrição", false), descriptionArea,
+                formLabel("Data", false), datePicker,
+                formLabel("Conta", true), rowWithAddButton(bankAccountBox, this::promptNewBankAccount),
+                formLabel("Categoria", false), rowWithAddButton(categoryBox, this::promptNewCategory),
+                statusLabel,
+                buttonRow);
+
+        getStylesheets().add(getClass().getResource("FormTransaction.css").toExternalForm());
+    }
+
+    private Label formLabel(String text, boolean required) {
+        Label label = new Label(required ? text + " *" : text);
+        label.getStyleClass().addAll("text-secondary", "form-label");
+        return label;
+    }
+
+    private HBox rowWithAddButton(ComboBox<?> comboBox, Runnable onAdd) {
+
+        comboBox.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(comboBox, Priority.ALWAYS);
+        comboBox.getStyleClass().add("form-input");
+
+        Button addButton = new Button("+");
+        addButton.getStyleClass().add("form-add-button");
+        addButton.setOnAction(e -> onAdd.run());
+
+        return new HBox(8, comboBox, addButton);
+    }
+
+    private <T> void configureEnumBox(ComboBox<T> box, java.util.function.Function<T, String> translator) {
+        box.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(T value) {
+                return value == null ? "" : translator.apply(value);
+            }
+            @Override
+            public T fromString(String string) {
+                return null;
+            }
+        });
+        box.getStyleClass().add("form-input");
+        box.setMaxWidth(Double.MAX_VALUE);
+    }
+
+    private String translateType(TransactionType type) {
+        return switch (type) {
+            case INCOME -> "Receita";
+            case EXPENSE -> "Despesa";
+            case INVESTMENT -> "Investimento";
+        };
+    }
+
+    private String translatePaymentMethod(PaymentMethod method) {
+        return switch (method) {
+            case PIX -> "Pix";
+            case DEBIT_CARD -> "Cartão de débito";
+            case CREDIT_CARD -> "Cartão de crédito";
+            case CASH -> "Dinheiro";
+            case BANK_TRANSFER -> "Transferência";
+            case BOLETO -> "Boleto";
+        };
+    }
+
+    private void configureBankAccountBox() {
+
+        bankAccountBox.getStyleClass().add("form-input");
+
+        Task<List<BankAccount>> task = new Task<>() {
+            @Override
+            protected List<BankAccount> call() {
+                return finTracker.listActiveBankAccounts();
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            bankAccountBox.getItems().setAll(task.getValue());
+            bankAccountBox.getSelectionModel().selectFirst();
+        });
+
+        task.setOnFailed(e -> task.getException().printStackTrace());
+
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private void configureCategoryOptionBox() {
+
+        categoryBox.getStyleClass().add("form-input");
+        categoryBox.getItems().add(new CategoryOption(null, "Outros"));
+        categoryBox.getSelectionModel().selectFirst();
+
+        Task<List<Category>> task = new Task<>() {
+            @Override
+            protected List<Category> call() {
+                return finTracker.listAllCategories();
+            }
+        };
+
+        task.setOnSucceeded(e -> task.getValue().forEach(category ->
+                categoryBox.getItems().add(new CategoryOption(category, category.getName()))));
+
+        task.setOnFailed(e -> task.getException().printStackTrace());
+
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private void promptNewCategory() {
+
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setHeaderText(null);
+        dialog.setTitle("Nova categoria");
+        dialog.setContentText("Nome:");
+        dialog.getDialogPane().getStylesheets().add(getClass().getResource("FormTransaction.css").toExternalForm());
+        dialog.getDialogPane().getStyleClass().add("form-dialog");
+
+        dialog.showAndWait().ifPresent(name -> {
+            if (name.isBlank()) return;
+
+            // Task<Category> task = new Task<>() {
+            //     @Override
+            //     protected Category call() {
+            //         return finTracker.createCategory(name); // TODO: confirmar nome do método
+            //     }
+            // };
+
+            // task.setOnSucceeded(e -> Platform.runLater(() -> {
+            //     Category created = task.getValue();
+            //     CategoryOption option = new CategoryOption(created, created.getName());
+            //     categoryBox.getItems().add(option);
+            //     categoryBox.getSelectionModel().select(option);
+            // }));
+
+            // task.setOnFailed(e -> task.getException().printStackTrace());
+
+            // Thread thread = new Thread(task);
+            // thread.setDaemon(true);
+            // thread.start();
+        });
+    }
+
+    private void promptNewBankAccount() {
+
+        Dialog<Pair<String, BankAccountType>> dialog = new Dialog<>();
+        dialog.setTitle("Nova conta");
+        dialog.getDialogPane().getStylesheets().add(getClass().getResource("FormTransaction.css").toExternalForm());
+        dialog.getDialogPane().getStyleClass().add("form-dialog");
+
+        ButtonType createButtonType = new ButtonType("Criar", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(createButtonType, ButtonType.CANCEL);
+
+        TextField nameField = new TextField();
+        nameField.setPromptText("Nome (ex: Nubank)");
+        nameField.getStyleClass().add("form-input");
+
+        ComboBox<BankAccountType> typeField = new ComboBox<>(
+                FXCollections.observableArrayList(BankAccountType.values()));
+        configureEnumBox(typeField, type -> switch (type) {
+            case CHECKING -> "Corrente";
+            case SAVINGS -> "Poupança";
+            case CASH -> "Dinheiro";
+            case OTHER -> "Outro";
+        });
+        typeField.getSelectionModel().selectFirst();
+
+        VBox content = new VBox(10, nameField, typeField);
+        content.setPadding(new Insets(10));
+        dialog.getDialogPane().setContent(content);
+
+        dialog.setResultConverter(buttonType ->
+                buttonType == createButtonType ? new Pair<>(nameField.getText(), typeField.getValue()) : null);
+
+        dialog.showAndWait().ifPresent(result -> {
+            if (result.getKey() == null || result.getKey().isBlank()) return;
+
+            // Task<BankAccount> task = new Task<>() {
+            //     @Override
+            //     protected BankAccount call() {
+            //         return finTracker.createBankAccount(result.getKey(), result.getValue()); // TODO: confirmar nome do método
+            //     }
+            // };
+
+            // task.setOnSucceeded(e -> Platform.runLater(() -> {
+            //     BankAccount created = task.getValue();
+            //     bankAccountBox.getItems().add(created);
+            //     bankAccountBox.getSelectionModel().select(created);
+            // }));
+
+            // task.setOnFailed(e -> task.getException().printStackTrace());
+
+            // Thread thread = new Thread(task);
+            // thread.setDaemon(true);
+            // thread.start();
+        });
+    }
+
+    private void createTransaction() {
+
+        BigDecimal value;
+        try {
+            value = getValue();
+        } catch (NumberFormatException e) {
+            showStatus("Informe um valor válido.", false);
+            return; // valor inválido — mantém tudo como está, nem chega a tentar salvar
+        }
+
+        if (bankAccountBox.getValue() == null) {
+            showStatus("Selecione uma conta.", false);
+            return;
+        }
+
+        saveButton.setDisable(true);
+
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                // TODO: substituir pela chamada real, quando o método existir:
+                // finTracker.addTransaction(value, typeBox.getValue(), paymentMethodBox.getValue(),
+                //         descriptionArea.getText(), datePicker.getValue(),
+                //         bankAccountBox.getValue(), categoryBox.getValue().category());
+                return null;
+            }
+        };
+
+        task.setOnSucceeded(e -> Platform.runLater(() -> {
+            saveButton.setDisable(false);
+            clearFields();
+            showStatus("Transação salva com sucesso.", true);
+        }));
+
+        task.setOnFailed(e -> Platform.runLater(() -> {
+            saveButton.setDisable(false);
+            // Erro: mantém os campos exatamente como o usuário deixou.
+            showStatus("Não foi possível salvar. Tente novamente.", false);
+        }));
+
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private void clearFields() {
+        valueField.clear();
+        typeBox.getSelectionModel().selectFirst();
+        paymentMethodBox.getSelectionModel().selectFirst();
+        descriptionArea.clear();
+        datePicker.setValue(LocalDate.now());
+        bankAccountBox.getSelectionModel().selectFirst();
+        categoryBox.getSelectionModel().selectFirst();
+    }
+
+    private void showStatus(String message, boolean success) {
+
+        statusLabel.setText(message);
+        statusLabel.getStyleClass().removeAll("success", "danger");
+        statusLabel.getStyleClass().add(success ? "success" : "danger");
+        statusLabel.setVisible(true);
+        statusLabel.setManaged(true);
+
+        PauseTransition pause = new PauseTransition(Duration.seconds(3));
+        pause.setOnFinished(e -> {
+            statusLabel.setVisible(false);
+            statusLabel.setManaged(false);
+        });
+        pause.play();
+    }
+
+    private BigDecimal getValue() {
+        String text = valueField.getText().trim().replace(",", ".");
+        return new BigDecimal(text);
+    }
+}
