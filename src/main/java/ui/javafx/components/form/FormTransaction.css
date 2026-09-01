@@ -4,7 +4,7 @@
     -fx-border-color: #28282C;
     -fx-border-width: 1px;
     -fx-border-radius: 12px;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 24, 0, 0, 8);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 24, 0, 0, 8);
 }
 
 .form-label {
@@ -182,7 +182,40 @@
 
 /* ---- Dialog ---- */
 
-.form-dialog .dialog-pane,
+.dialog-pane {
+    -fx-background-color: #1C1C1F;
+}
+
+.dialog-pane>.header-panel {
+    -fx-background-color: #1C1C1F;
+}
+
+.dialog-pane>.header-panel .label {
+    -fx-text-fill: #F5F5F0;
+}
+
+.dialog-pane .content.label {
+    -fx-text-fill: #F5F5F0;
+}
+
+.dialog-pane .button-bar .button {
+    -fx-background-color: #28282C;
+    -fx-text-fill: #F5F5F0;
+    -fx-background-radius: 6px;
+    -fx-cursor: hand;
+}
+
+.dialog-pane .button-bar .button:default {
+    -fx-background-color: #C9A227;
+    -fx-text-fill: #121214;
+    -fx-font-weight: bold;
+}
+
+.dialog-pane .button-bar .button:hover {
+    -fx-background-color: #34302C;
+}
+
+/* .form-dialog .dialog-pane,
 .form-dialog .header-panel {
     -fx-background-color: #1C1C1F;
 }
@@ -201,7 +234,7 @@
 .form-dialog .button:default {
     -fx-background-color: #C9A227;
     -fx-text-fill: #121214;
-}
+} */
 
 .form-title {
     -fx-font-size: 15px;
