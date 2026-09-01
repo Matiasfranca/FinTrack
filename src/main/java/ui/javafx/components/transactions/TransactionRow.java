@@ -1,5 +1,7 @@
 package ui.javafx.components.transactions;
 
+import java.util.function.Consumer;
+
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
@@ -11,11 +13,10 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import model.Transaction;
-import ui.javafx.components.FinancialData;
 
 public class TransactionRow extends HBox {
 
-    public TransactionRow(Transaction transaction) {
+    public TransactionRow(Transaction transaction, Consumer<Transaction> onEditTransaction) {
 
         getStyleClass().add("transaction-row");
         setAlignment(Pos.CENTER_LEFT);
@@ -40,16 +41,14 @@ public class TransactionRow extends HBox {
 
         ContextMenu menu = new ContextMenu();
         MenuItem editItem = new MenuItem("Editar");
+        editItem.setOnAction(e -> onEditTransaction.accept(transaction));
         MenuItem removeItem = new MenuItem("Remover");
         removeItem.getStyleClass().add("danger-item");
         menu.getItems().addAll(editItem, removeItem);
 
-        optionsButton.setOnAction(e -> {
-            // if (menu.getStylesheets().isEmpty() && optionsButton.getScene() != null) {
-            //     menu.getStylesheets().addAll(optionsButton.getScene().getStylesheets());
-            // }
-            menu.show(optionsButton, Side.BOTTOM, 0, 0);
-        });
+        optionsButton.setOnAction(e -> menu.show(optionsButton, Side.BOTTOM, 0, 0));
+
         getChildren().addAll(description, spacer, value, optionsButton);
     }
+
 }

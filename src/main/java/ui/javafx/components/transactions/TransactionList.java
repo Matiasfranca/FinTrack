@@ -6,10 +6,11 @@ import model.Transaction;
 import ui.javafx.components.FinancialData;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class TransactionList extends VBox {
 
-    public TransactionList() {
+    public TransactionList(Consumer<Transaction> onEditTransaction) {
 
         setSpacing(10);
         getStyleClass().addAll("chart-card", "surface");
@@ -20,10 +21,10 @@ public class TransactionList extends VBox {
         VBox rows = new VBox();
         rows.getStyleClass().add("transaction-rows");
 
-        // List<Transaction> transactions = FinancialData.sampleTransactions();
-        // for (Transaction transaction : transactions) {
-        //     rows.getChildren().add(new TransactionRow(transaction));
-        // }
+        List<Transaction> transactions = FinancialData.sampleTransactions();
+        for (Transaction transaction : transactions) {
+            rows.getChildren().add(new TransactionRow(transaction, onEditTransaction));
+        }
 
         getChildren().addAll(title, rows);
 

@@ -11,6 +11,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.PopupWindow;
 import javafx.stage.Window;
 import javafx.util.Duration;
+import model.Transaction;
 
 public class TransactionFormOverlay extends StackPane {
 
@@ -19,8 +20,6 @@ public class TransactionFormOverlay extends StackPane {
 
     public TransactionFormOverlay() {
 
-        // Enquanto fechado, essa camada não intercepta NENHUM clique —
-        // o dashboard por baixo continua 100% utilizável.
         setPickOnBounds(false);
         setMouseTransparent(true);
 
@@ -29,8 +28,16 @@ public class TransactionFormOverlay extends StackPane {
     }
 
     public void show() {
+        open(null);
+    }
 
-        form = new FormTransaction(this::hide);
+    public void show(Transaction transactionToEdit) {
+        open(transactionToEdit);
+    }
+
+    private void open(Transaction transactionToEdit) {
+
+        form = new FormTransaction(this::hide, transactionToEdit);
 
         background.widthProperty().bind(widthProperty());
         background.heightProperty().bind(heightProperty());

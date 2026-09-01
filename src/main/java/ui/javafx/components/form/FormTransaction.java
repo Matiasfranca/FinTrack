@@ -22,11 +22,14 @@ import model.BankAccount;
 import model.BankAccountType;
 import model.Category;
 import model.PaymentMethod;
+import model.Transaction;
 import model.TransactionType;
 
 public class FormTransaction extends VBox {
 
     private final FinTracker finTracker = new FinTracker();
+
+    private Transaction editingTransaction;
 
     private final TextField valueField = new TextField();
     private final ComboBox<TransactionType> typeBox = new ComboBox<>(
@@ -100,6 +103,44 @@ public class FormTransaction extends VBox {
         getStylesheets().add(getClass().getResource("FormTransaction.css").toExternalForm());
     }
 
+    public FormTransaction(Runnable onCancelTransaction, Transaction editingTransaction) {
+
+        this(onCancelTransaction); // reaproveita toda a construção normal
+
+        this.editingTransaction = editingTransaction;
+
+        if (editingTransaction != null) {
+
+            Label title = (Label) getChildren().get(0);
+            title.setText("Editar transação");
+
+            valueField.setText(editingTransaction.getValue().toString().replace(".", ","));
+            typeBox.setValue(editingTransaction.getTransactionType());
+            paymentMethodBox.setValue(editingTransaction.getPaymentMethod());
+            descriptionArea.setText(editingTransaction.getDescription());
+            datePicker.setValue(editingTransaction.getDate());
+            saveButton.setText("Salvar alterações");
+
+            // Conta/categoria carregam de forma assíncrona (Task) — a seleção
+            // só pode acontecer DEPOIS que a lista chegar, senão o item ainda
+            // não existe no ComboBox pra ser selecionado.
+            bankAccountBox.getItems().addListener((javafx.collections.ListChangeListener<BankAccount>) change -> {
+                bankAccountBox.getItems().stream()
+                        .filter(account -> account.getId().equals(editingTransaction.getBankAccountId()))
+                        .findFirst()
+                        .ifPresent(bankAccountBox.getSelectionModel()::select);
+            });
+
+            categoryBox.getItems().addListener((javafx.collections.ListChangeListener<CategoryOption>) change -> {
+                categoryBox.getItems().stream()
+                        .filter(option -> option.category() != null
+                                && option.category().getId().equals(editingTransaction.getCategoryId()))
+                        .findFirst()
+                        .ifPresent(categoryBox.getSelectionModel()::select);
+            });
+        }
+    }
+
     private Label formLabel(String text, boolean required) {
         Label label = new Label(required ? text + " *" : text);
         label.getStyleClass().addAll("text-secondary", "form-label");
@@ -125,6 +166,7 @@ public class FormTransaction extends VBox {
             public String toString(T value) {
                 return value == null ? "" : translator.apply(value);
             }
+
             @Override
             public T fromString(String string) {
                 return null;
@@ -189,8 +231,8 @@ public class FormTransaction extends VBox {
             }
         };
 
-        task.setOnSucceeded(e -> task.getValue().forEach(category ->
-                categoryBox.getItems().add(new CategoryOption(category, category.getName()))));
+        task.setOnSucceeded(e -> task.getValue()
+                .forEach(category -> categoryBox.getItems().add(new CategoryOption(category, category.getName()))));
 
         task.setOnFailed(e -> task.getException().printStackTrace());
 
@@ -201,91 +243,73 @@ public class FormTransaction extends VBox {
 
     private void promptNewCategory() {
 
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setHeaderText(null);
-        dialog.setTitle("Nova categoria");
-        dialog.setContentText("Nome:");
-        dialog.getDialogPane().getStylesheets().add(getClass().getResource("FormTransaction.css").toExternalForm());
-        dialog.getDialogPane().getStyleClass().add("form-dialog");
+        CategoryFormCard[] cardRef = new CategoryFormCard[1];
 
-        dialog.showAndWait().ifPresent(name -> {
-            if (name.isBlank()) return;
+        cardRef[0] = new CategoryFormCard(
+                name -> {
+                    // Task<Category> task = new Task<>() {
+                    // @Override
+                    // protected Category call() {
+                    // return finTracker.createCategory(name); // TODO: confirmar nome do método
+                    // }
+                    // };
+                    // task.setOnSucceeded(e -> Platform.runLater(() -> {
+                    // Category created = task.getValue();
+                    // CategoryOption option = new CategoryOption(created, created.getName());
+                    // categoryBox.getItems().add(option);
+                    // categoryBox.getSelectionModel().select(option);
+                    // closeChildCard(cardRef[0]);
+                    // }));
+                    // task.setOnFailed(e -> task.getException().printStackTrace());
+                    // Thread thread = new Thread(task);
+                    // thread.setDaemon(true);
+                    // thread.start();
+                },
+                () -> closeChildCard(cardRef[0]));
 
-            // Task<Category> task = new Task<>() {
-            //     @Override
-            //     protected Category call() {
-            //         return finTracker.createCategory(name); // TODO: confirmar nome do método
-            //     }
-            // };
-
-            // task.setOnSucceeded(e -> Platform.runLater(() -> {
-            //     Category created = task.getValue();
-            //     CategoryOption option = new CategoryOption(created, created.getName());
-            //     categoryBox.getItems().add(option);
-            //     categoryBox.getSelectionModel().select(option);
-            // }));
-
-            // task.setOnFailed(e -> task.getException().printStackTrace());
-
-            // Thread thread = new Thread(task);
-            // thread.setDaemon(true);
-            // thread.start();
-        });
+        showChildCard(cardRef[0]);
     }
 
     private void promptNewBankAccount() {
 
-        Dialog<Pair<String, BankAccountType>> dialog = new Dialog<>();
-        dialog.setTitle("Nova conta");
-        dialog.getDialogPane().getStylesheets().add(getClass().getResource("FormTransaction.css").toExternalForm());
-        dialog.getDialogPane().getStyleClass().add("form-dialog");
+        BankAccountFormCard[] cardRef = new BankAccountFormCard[1];
 
-        ButtonType createButtonType = new ButtonType("Criar", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(createButtonType, ButtonType.CANCEL);
+        cardRef[0] = new BankAccountFormCard(
+                (name, type) -> {
+                    // Task<BankAccount> task = new Task<>() {
+                    // @Override
+                    // protected BankAccount call() {
+                    // return finTracker.createBankAccount(name, type); // TODO: confirmar nome do
+                    // método
+                    // }
+                    // };
+                    // task.setOnSucceeded(e -> Platform.runLater(() -> {
+                    // BankAccount created = task.getValue();
+                    // bankAccountBox.getItems().add(created);
+                    // bankAccountBox.getSelectionModel().select(created);
+                    // closeChildCard(cardRef[0]);
+                    // }));
+                    // task.setOnFailed(e -> task.getException().printStackTrace());
+                    // Thread thread = new Thread(task);
+                    // thread.setDaemon(true);
+                    // thread.start();
+                },
+                () -> closeChildCard(cardRef[0]));
 
-        TextField nameField = new TextField();
-        nameField.setPromptText("Nome (ex: Nubank)");
-        nameField.getStyleClass().add("form-input");
+        showChildCard(cardRef[0]);
+    }
 
-        ComboBox<BankAccountType> typeField = new ComboBox<>(
-                FXCollections.observableArrayList(BankAccountType.values()));
-        configureEnumBox(typeField, type -> switch (type) {
-            case CHECKING -> "Corrente";
-            case SAVINGS -> "Poupança";
-            case CASH -> "Dinheiro";
-            case OTHER -> "Outro";
-        });
-        typeField.getSelectionModel().selectFirst();
+    private void showChildCard(javafx.scene.Node card) {
+        if (getParent() instanceof javafx.scene.layout.StackPane parent) {
+            javafx.scene.layout.StackPane.setAlignment(card, Pos.CENTER);
+            parent.getChildren().add(card);
+        }
+    }
 
-        VBox content = new VBox(10, nameField, typeField);
-        content.setPadding(new Insets(10));
-        dialog.getDialogPane().setContent(content);
-
-        dialog.setResultConverter(buttonType ->
-                buttonType == createButtonType ? new Pair<>(nameField.getText(), typeField.getValue()) : null);
-
-        dialog.showAndWait().ifPresent(result -> {
-            if (result.getKey() == null || result.getKey().isBlank()) return;
-
-            // Task<BankAccount> task = new Task<>() {
-            //     @Override
-            //     protected BankAccount call() {
-            //         return finTracker.createBankAccount(result.getKey(), result.getValue()); // TODO: confirmar nome do método
-            //     }
-            // };
-
-            // task.setOnSucceeded(e -> Platform.runLater(() -> {
-            //     BankAccount created = task.getValue();
-            //     bankAccountBox.getItems().add(created);
-            //     bankAccountBox.getSelectionModel().select(created);
-            // }));
-
-            // task.setOnFailed(e -> task.getException().printStackTrace());
-
-            // Thread thread = new Thread(task);
-            // thread.setDaemon(true);
-            // thread.start();
-        });
+    private void closeChildCard(javafx.scene.Node card) {
+        if (getParent() instanceof javafx.scene.layout.StackPane parent) {
+            parent.getChildren().remove(card);
+        }
     }
 
     private void createTransaction() {
@@ -309,9 +333,10 @@ public class FormTransaction extends VBox {
             @Override
             protected Void call() throws Exception {
                 // TODO: substituir pela chamada real, quando o método existir:
-                // finTracker.addTransaction(value, typeBox.getValue(), paymentMethodBox.getValue(),
-                //         descriptionArea.getText(), datePicker.getValue(),
-                //         bankAccountBox.getValue(), categoryBox.getValue().category());
+                // finTracker.addTransaction(value, typeBox.getValue(),
+                // paymentMethodBox.getValue(),
+                // descriptionArea.getText(), datePicker.getValue(),
+                // bankAccountBox.getValue(), categoryBox.getValue().category());
                 return null;
             }
         };

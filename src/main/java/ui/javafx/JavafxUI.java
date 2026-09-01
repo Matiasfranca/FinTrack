@@ -22,16 +22,14 @@ public class JavafxUI {
 
         TransactionFormOverlay overlay = new TransactionFormOverlay();
 
-        StackPane content = new StackPane(new Components(overlay::show));
+        StackPane content = new StackPane(new Components(overlay::show, overlay::show));
         content.getStyleClass().add("background");
         content.setAlignment(Pos.TOP_CENTER);
 
         ScrollPane scrollPane = new ScrollPane(content);
         scrollPane.setFitToWidth(true);
         scrollPane.getStyleClass().add("main-scroll");
-
-        // appRoot = tamanho da JANELA, sempre. Camada 0 (rolável) e
-        // camada 1 (overlay) nunca influenciam o tamanho uma da outra.
+        
         StackPane appRoot = new StackPane(scrollPane, overlay);
 
         scene.setRoot(appRoot);

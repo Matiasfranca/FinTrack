@@ -1,12 +1,15 @@
 package ui.javafx.components;
 
+import java.math.BigDecimal;
 import java.text.NumberFormat;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
+import model.PaymentMethod;
 import model.Transaction;
-
+import model.TransactionType;
 
 public class FinancialData {
 
@@ -22,13 +25,25 @@ public class FinancialData {
     @SuppressWarnings("deprecation")
     private static final NumberFormat CURRENCY_FORMAT = NumberFormat.getNumberInstance(new Locale("pt", "BR"));
 
-    // private static final List<Transaction> SAMPLE_TRANSACTIONS = List.of(
-    //         new Transaction("Salário", 3200, true),
-    //         new Transaction("Freelance projeto X", 800, true),
-    //         new Transaction("Venda item usado", 150, true),
-    //         new Transaction("Supermercado", -310, false),
-    //         new Transaction("Conta de luz", -180, false),
-    //         new Transaction("Assinatura streaming", -39.90, false));
+    private static final List<Transaction> SAMPLE_TRANSACTIONS = List.of(
+
+            new Transaction(
+                    "Supermercado",
+                    new BigDecimal("310.00"),
+                    TransactionType.EXPENSE,
+                    PaymentMethod.PIX,
+                    LocalDate.now()),
+
+            new Transaction(
+                    42,
+                    "Salário",
+                    new BigDecimal("3200.00"),
+                    TransactionType.INCOME,
+                    PaymentMethod.BANK_TRANSFER,
+                    LocalDate.of(2026, 8, 5),
+                    1, // bankAccountId
+                    3 // categoryId
+            ));
 
     public static double[] dailyBalanceFor(int year, int month) {
 
@@ -45,7 +60,7 @@ public class FinancialData {
     }
 
     static {
-        Random random = new Random(42); 
+        Random random = new Random(42);
         for (int i = 0; i < DAYS; i++) {
             double income = random.nextDouble() * 500; // 0 a 500
             double expense = random.nextDouble() * 400; // 0 a 400
@@ -86,9 +101,9 @@ public class FinancialData {
         return TOTAL_INCOME;
     }
 
-    // public static List<Transaction> sampleTransactions() {
-    //     return SAMPLE_TRANSACTIONS;
-    // }
+    public static List<Transaction> sampleTransactions() {
+    return SAMPLE_TRANSACTIONS;
+    }
 
     public static String formatCurrency(double value) {
         return CURRENCY_FORMAT.format(value);

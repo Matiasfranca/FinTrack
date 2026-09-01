@@ -1,7 +1,10 @@
 package ui.javafx.components;
 
+import java.util.function.Consumer;
+
 import javafx.geometry.Pos;
 import javafx.scene.layout.VBox;
+import model.Transaction;
 import ui.javafx.components.charts.Charts;
 import ui.javafx.components.financialCards.FinancialCards;
 import ui.javafx.components.header.Header;
@@ -11,7 +14,7 @@ public class Components extends VBox {
 
     private static final double CONTENT_WIDTH = 1200;
 
-    public Components(Runnable onAddTransaction) {
+    public Components(Runnable onAddTransaction, Consumer<Transaction> onEditTransaction) {
 
         setSpacing(30);
         setMaxWidth(CONTENT_WIDTH);
@@ -22,6 +25,6 @@ public class Components extends VBox {
                 new Header(onAddTransaction),
                 new FinancialCards(),
                 new Charts(),
-                new TransactionList());
+                new TransactionList(onEditTransaction));
     }
 }
