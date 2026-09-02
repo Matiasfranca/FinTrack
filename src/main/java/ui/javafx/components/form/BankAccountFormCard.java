@@ -5,6 +5,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 import model.BankAccountType;
@@ -20,6 +21,11 @@ public class BankAccountFormCard extends VBox {
         setPadding(new Insets(18));
         setPrefWidth(280);
         setMaxWidth(280);
+
+        setMaxSize(
+            Region.USE_PREF_SIZE,
+            Region.USE_PREF_SIZE
+        );
 
         Label title = new Label("Nova conta");
         title.getStyleClass().addAll("text-primary", "form-title");

@@ -6,6 +6,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.util.function.Consumer;
@@ -19,6 +20,11 @@ public class CategoryFormCard extends VBox {
         setPadding(new Insets(18));
         setPrefWidth(280);
         setMaxWidth(280);
+
+        setMaxSize(
+            Region.USE_PREF_SIZE,
+            Region.USE_PREF_SIZE
+        );
 
         Label title = new Label("Nova categoria");
         title.getStyleClass().addAll("text-primary", "form-title");

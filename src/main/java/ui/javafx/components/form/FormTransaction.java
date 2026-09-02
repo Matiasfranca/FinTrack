@@ -11,21 +11,23 @@ import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
-import javafx.util.Pair;
 import javafx.util.StringConverter;
 import model.BankAccount;
-import model.BankAccountType;
 import model.Category;
 import model.PaymentMethod;
 import model.Transaction;
 import model.TransactionType;
 
 public class FormTransaction extends VBox {
+
+    private Node activeChildCard;
 
     private final FinTracker finTracker = new FinTracker();
 
@@ -299,16 +301,28 @@ public class FormTransaction extends VBox {
         showChildCard(cardRef[0]);
     }
 
-    private void showChildCard(javafx.scene.Node card) {
-        if (getParent() instanceof javafx.scene.layout.StackPane parent) {
-            javafx.scene.layout.StackPane.setAlignment(card, Pos.CENTER);
+    private void showChildCard(Node card) {
+        if (getParent() instanceof StackPane parent) {
+
+            if (activeChildCard != null) {
+                parent.getChildren().remove(activeChildCard);
+            }
+
+            StackPane.setAlignment(card, Pos.CENTER);
+
             parent.getChildren().add(card);
+
+            activeChildCard = card;
         }
     }
 
-    private void closeChildCard(javafx.scene.Node card) {
-        if (getParent() instanceof javafx.scene.layout.StackPane parent) {
+    private void closeChildCard(Node card) {
+        if (getParent() instanceof StackPane parent) {
             parent.getChildren().remove(card);
+
+            if (activeChildCard == card) {
+                activeChildCard = null;
+            }
         }
     }
 

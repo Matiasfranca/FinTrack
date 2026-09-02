@@ -2,14 +2,11 @@ package ui.javafx.components.form;
 
 import javafx.animation.FadeTransition;
 import javafx.animation.TranslateTransition;
-import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.stage.PopupWindow;
-import javafx.stage.Window;
 import javafx.util.Duration;
 import model.Transaction;
 
@@ -24,6 +21,10 @@ public class TransactionFormOverlay extends StackPane {
         setMouseTransparent(true);
 
         background.setFill(Color.rgb(0, 0, 0, 0.35));
+        
+        background.widthProperty().bind(widthProperty());
+        background.heightProperty().bind(heightProperty());
+        
         background.setOnMouseClicked(e -> hide());
     }
 
@@ -36,11 +37,7 @@ public class TransactionFormOverlay extends StackPane {
     }
 
     private void open(Transaction transactionToEdit) {
-
         form = new FormTransaction(this::hide, transactionToEdit);
-
-        background.widthProperty().bind(widthProperty());
-        background.heightProperty().bind(heightProperty());
 
         StackPane.setAlignment(form, Pos.TOP_RIGHT);
         StackPane.setMargin(form, new Insets(90, 20, 20, 20));
@@ -52,7 +49,7 @@ public class TransactionFormOverlay extends StackPane {
     }
 
     private void hide() {
-        getChildren().removeAll(background, form);
+        getChildren().clear();
         form = null;
         setMouseTransparent(true);
     }
