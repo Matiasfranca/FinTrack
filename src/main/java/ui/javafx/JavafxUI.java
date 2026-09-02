@@ -32,6 +32,8 @@ public class JavafxUI {
         
         StackPane appRoot = new StackPane(scrollPane, overlay);
 
+        overlay.setScroolPane(scrollPane);
+
         scene.setRoot(appRoot);
 
         stage.setMaximized(true);

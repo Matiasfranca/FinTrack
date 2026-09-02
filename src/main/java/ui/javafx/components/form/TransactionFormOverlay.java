@@ -4,6 +4,7 @@ import javafx.animation.FadeTransition;
 import javafx.animation.TranslateTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -11,6 +12,8 @@ import javafx.util.Duration;
 import model.Transaction;
 
 public class TransactionFormOverlay extends StackPane {
+
+    private ScrollPane scrollPane;
 
     private final Rectangle background = new Rectangle();
     private FormTransaction form;
@@ -21,11 +24,15 @@ public class TransactionFormOverlay extends StackPane {
         setMouseTransparent(true);
 
         background.setFill(Color.rgb(0, 0, 0, 0.35));
-        
+
         background.widthProperty().bind(widthProperty());
         background.heightProperty().bind(heightProperty());
-        
+
         background.setOnMouseClicked(e -> hide());
+    }
+
+    public void setScroolPane(ScrollPane scrollPane) {
+        this.scrollPane = scrollPane;
     }
 
     public void show() {
@@ -49,6 +56,7 @@ public class TransactionFormOverlay extends StackPane {
     }
 
     private void hide() {
+        scrollPane.setFocusTraversable(true);
         getChildren().clear();
         form = null;
         setMouseTransparent(true);

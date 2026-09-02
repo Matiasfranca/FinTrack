@@ -107,7 +107,7 @@ public class FormTransaction extends VBox {
 
     public FormTransaction(Runnable onCancelTransaction, Transaction editingTransaction) {
 
-        this(onCancelTransaction); // reaproveita toda a construção normal
+        this(onCancelTransaction);
 
         this.editingTransaction = editingTransaction;
 
