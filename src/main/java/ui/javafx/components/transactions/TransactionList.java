@@ -42,8 +42,4 @@ public class TransactionList extends VBox {
 
         getStylesheets().add(getClass().getResource("TransactionList.css").toExternalForm());
     }
-
-    private void removeTransactionRow(TransactionRow transactionRow){
-        getChildren().remove(transactionRow);
-    }
 }

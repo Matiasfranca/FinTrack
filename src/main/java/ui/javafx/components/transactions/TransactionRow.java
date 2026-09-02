@@ -40,6 +40,7 @@ public class TransactionRow extends HBox {
 
         Button optionsButton = new Button("⋮");
         optionsButton.getStyleClass().add("options-button");
+        optionsButton.setFocusTraversable(false);
 
         ContextMenu menu = new ContextMenu();
         MenuItem editItem = new MenuItem("Editar");
