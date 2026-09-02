@@ -31,8 +31,6 @@ public class FormTransaction extends VBox {
 
     private final FinTracker finTracker = new FinTracker();
 
-    private Transaction editingTransaction;
-
     private final TextField valueField = new TextField();
     private final ComboBox<TransactionType> typeBox = new ComboBox<>(
             FXCollections.observableArrayList(TransactionType.values()));
@@ -82,7 +80,8 @@ public class FormTransaction extends VBox {
         statusLabel.setManaged(false);
 
         saveButton.getStyleClass().addAll("primary", "form-save-button");
-        saveButton.setOnAction(e -> createTransaction());
+        saveButton.setOnAction(e -> createTransaction(null));
+        saveButton.setFocusTraversable(false);
 
         cancelButton.getStyleClass().add("form-cancel-button");
         cancelButton.setOnAction(e -> onCancelTransaction.run());
@@ -109,8 +108,6 @@ public class FormTransaction extends VBox {
 
         this(onCancelTransaction);
 
-        this.editingTransaction = editingTransaction;
-
         if (editingTransaction != null) {
 
             Label title = (Label) getChildren().get(0);
@@ -122,10 +119,8 @@ public class FormTransaction extends VBox {
             descriptionArea.setText(editingTransaction.getDescription());
             datePicker.setValue(editingTransaction.getDate());
             saveButton.setText("Salvar alterações");
+            saveButton.setOnAction(e -> createTransaction(editingTransaction));
 
-            // Conta/categoria carregam de forma assíncrona (Task) — a seleção
-            // só pode acontecer DEPOIS que a lista chegar, senão o item ainda
-            // não existe no ComboBox pra ser selecionado.
             bankAccountBox.getItems().addListener((javafx.collections.ListChangeListener<BankAccount>) change -> {
                 bankAccountBox.getItems().stream()
                         .filter(account -> account.getId().equals(editingTransaction.getBankAccountId()))
@@ -252,7 +247,7 @@ public class FormTransaction extends VBox {
                     // Task<Category> task = new Task<>() {
                     // @Override
                     // protected Category call() {
-                    // return finTracker.createCategory(name); // TODO: confirmar nome do método
+                    // return finTracker.createCategory(name);
                     // }
                     // };
                     // task.setOnSucceeded(e -> Platform.runLater(() -> {
@@ -281,7 +276,7 @@ public class FormTransaction extends VBox {
                     // Task<BankAccount> task = new Task<>() {
                     // @Override
                     // protected BankAccount call() {
-                    // return finTracker.createBankAccount(name, type); // TODO: confirmar nome do
+                    // return finTracker.createBankAccount(name, type);
                     // método
                     // }
                     // };
@@ -326,14 +321,27 @@ public class FormTransaction extends VBox {
         }
     }
 
-    private void createTransaction() {
+    private void createTransaction(Transaction editingTransaction) {
+        Transaction transaction;
 
-        BigDecimal value;
-        try {
-            value = getValue();
-        } catch (NumberFormatException e) {
-            showStatus("Informe um valor válido.", false);
-            return; // valor inválido — mantém tudo como está, nem chega a tentar salvar
+        if (editingTransaction != null) {
+            try {
+                transaction = new Transaction(editingTransaction.getId(), descriptionArea.getText(),
+                        getValue(), typeBox.getValue(),
+                        paymentMethodBox.getValue(), datePicker.getValue(),
+                        editingTransaction.getBankAccountId(), editingTransaction.getCategoryId());
+            } catch (NumberFormatException e) {
+                showStatus("Informe um valor válido.", false);
+                return;
+            }
+        } else {
+            try {
+                transaction = new Transaction(descriptionArea.getText(), getValue(), typeBox.getValue(),
+                        paymentMethodBox.getValue(), datePicker.getValue());
+            } catch (NumberFormatException e) {
+                showStatus("Informe um valor válido.", false);
+                return;
+            }
         }
 
         if (bankAccountBox.getValue() == null) {
@@ -346,11 +354,14 @@ public class FormTransaction extends VBox {
         Task<Void> task = new Task<>() {
             @Override
             protected Void call() throws Exception {
-                // TODO: substituir pela chamada real, quando o método existir:
-                // finTracker.addTransaction(value, typeBox.getValue(),
-                // paymentMethodBox.getValue(),
-                // descriptionArea.getText(), datePicker.getValue(),
-                // bankAccountBox.getValue(), categoryBox.getValue().category());
+                if (editingTransaction != null) {
+                    finTracker.updateTransaction(transaction, bankAccountBox.getValue(),
+                            categoryBox.getValue().category());
+                } else {
+                    finTracker.addTransaction(transaction, bankAccountBox.getValue(),
+                            categoryBox.getValue().category());
+
+                }
                 return null;
             }
         };
@@ -363,7 +374,6 @@ public class FormTransaction extends VBox {
 
         task.setOnFailed(e -> Platform.runLater(() -> {
             saveButton.setDisable(false);
-            // Erro: mantém os campos exatamente como o usuário deixou.
             showStatus("Não foi possível salvar. Tente novamente.", false);
         }));
 
