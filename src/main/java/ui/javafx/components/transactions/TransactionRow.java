@@ -12,6 +12,8 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import model.Transaction;
 
 public class TransactionRow extends HBox {
@@ -43,6 +45,11 @@ public class TransactionRow extends HBox {
         MenuItem editItem = new MenuItem("Editar");
         editItem.setOnAction(e -> onEditTransaction.accept(transaction));
         MenuItem removeItem = new MenuItem("Remover");
+        removeItem.setOnAction(e -> {
+            if (getParent() instanceof VBox parent) {
+                parent.getChildren().remove(this);
+            }
+        });
         removeItem.getStyleClass().add("danger-item");
         menu.getItems().addAll(editItem, removeItem);
 
