@@ -258,3 +258,8 @@
     -fx-cursor: hand;
 }
      
+.form-cancel-button, 
+.form-save-button, 
+.form-add-button {
+    -fx-focus-traversable: false;
+}
