@@ -61,10 +61,8 @@ public class SqliteCategoryRepository implements CategoryRepository {
 
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    return new Category(
-                            generatedKeys.getInt(1),
-                            category.getName().trim(),
-                            category.getColor());
+                    category.setId(generatedKeys.getInt(1));
+                    return category;
                 } else {
                     throw new SQLException("Failed to create category, no ID returned.");
                 }

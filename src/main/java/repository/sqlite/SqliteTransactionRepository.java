@@ -45,6 +45,8 @@ public class SqliteTransactionRepository implements TransactionRepository {
             try (java.sql.ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     transaction.setId(generatedKeys.getInt(1));
+                    transaction.setBankAccountId(bankAccountId);
+                    transaction.setCategoryId(categoryId != null ? categoryId : null);
                 }
             }
 
