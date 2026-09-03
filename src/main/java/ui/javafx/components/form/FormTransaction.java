@@ -24,6 +24,8 @@ import model.Category;
 import model.PaymentMethod;
 import model.Transaction;
 import model.TransactionType;
+import ui.javafx.events.TransactionEventBus;
+import ui.javafx.events.TransactionEventBus.Type;
 
 public class FormTransaction extends VBox {
 
@@ -367,6 +369,11 @@ public class FormTransaction extends VBox {
         };
 
         task.setOnSucceeded(e -> Platform.runLater(() -> {
+            if (editingTransaction != null) {
+                TransactionEventBus.getInstance().publish(Type.CREATED, transaction);
+            } else {
+                TransactionEventBus.getInstance().publish(Type.UPDATED, transaction);
+            }
             saveButton.setDisable(false);
             clearFields();
             showStatus("Transação salva com sucesso.", true);

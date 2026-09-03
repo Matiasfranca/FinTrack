@@ -2,6 +2,7 @@ package ui.javafx.components.transactions;
 
 import java.util.function.Consumer;
 
+import controller.FinTracker;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
@@ -12,13 +13,18 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import model.Transaction;
+import ui.javafx.events.TransactionEventBus;
+import ui.javafx.events.TransactionEventBus.Type;
 
 public class TransactionRow extends HBox {
 
+    private final Transaction transaction;
+    private final FinTracker finTracker = new FinTracker();
+
     public TransactionRow(Transaction transaction, Consumer<Transaction> onEditTransaction) {
+
+        this.transaction = transaction;
 
         getStyleClass().add("transaction-row");
         setAlignment(Pos.CENTER_LEFT);
@@ -47,8 +53,11 @@ public class TransactionRow extends HBox {
         editItem.setOnAction(e -> onEditTransaction.accept(transaction));
         MenuItem removeItem = new MenuItem("Remover");
         removeItem.setOnAction(e -> {
-            if (getParent() instanceof VBox parent) {
-                parent.getChildren().remove(this);
+            try {
+                finTracker.deleteTransaction(this.transaction);
+                TransactionEventBus.getInstance().publish(Type.DELETED, transaction);
+            } catch (Exception err) {
+                System.err.println(err);
             }
         });
         removeItem.getStyleClass().add("danger-item");
@@ -57,6 +66,10 @@ public class TransactionRow extends HBox {
         optionsButton.setOnAction(e -> menu.show(optionsButton, Side.BOTTOM, 0, 0));
 
         getChildren().addAll(description, spacer, value, optionsButton);
+    }
+
+    public Transaction getTransaction() {
+        return this.transaction;
     }
 
 }

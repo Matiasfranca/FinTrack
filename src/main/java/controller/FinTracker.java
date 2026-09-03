@@ -93,12 +93,12 @@ public class FinTracker {
         transactionRepository.update(transaction, monthId, accountId, categoryId);
     }
 
-    public void deleteTransaction(int transactionId) throws InvalidInput {
-        if (transactionId <= 0) {
+    public void deleteTransaction(Transaction transaction) throws InvalidInput {
+        if (transaction.getId() <= 0) {
             throw new InvalidInput("Cannot delete a transaction with an invalid ID.");
         }
 
-        transactionRepository.delete(transactionId);
+        transactionRepository.delete(transaction.getId());
     }
 
     // --- LIST ---
