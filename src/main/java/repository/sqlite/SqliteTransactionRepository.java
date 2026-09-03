@@ -26,7 +26,7 @@ public class SqliteTransactionRepository implements TransactionRepository {
                 """;
 
         try (Connection conn = DatabaseConnection.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
 
             stmt.setInt(1, monthId);
             stmt.setInt(2, bankAccountId);
@@ -41,6 +41,12 @@ public class SqliteTransactionRepository implements TransactionRepository {
             stmt.setString(8, transaction.getDescription() != null ? transaction.getDescription().trim() : null);
 
             stmt.executeUpdate();
+
+            try (java.sql.ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    transaction.setId(generatedKeys.getInt(1));
+                }
+            }
 
         } catch (SQLException e) {
             throw new DataAccessException("Failed to save transaction", e);
@@ -105,32 +111,32 @@ public class SqliteTransactionRepository implements TransactionRepository {
 
     @Override
     public void update(Transaction transaction, int monthId, int bankAccountId, Integer categoryId) {
-        
+
         String sql = """
-                UPDATE "TRANSACTION" 
-                SET month_id = ?, bank_account_id = ?, category_id = ?, 
+                UPDATE "TRANSACTION"
+                SET month_id = ?, bank_account_id = ?, category_id = ?,
                     date = ?, value = ?, type = ?, payment_method = ?, description = ?
                 WHERE id = ?
                 """;
 
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, monthId);
             stmt.setInt(2, bankAccountId);
-            
+
             if (categoryId != null) {
                 stmt.setInt(3, categoryId);
             } else {
                 stmt.setNull(3, java.sql.Types.INTEGER);
             }
-            
+
             stmt.setString(4, transaction.getDate().toString());
             stmt.setBigDecimal(5, transaction.getValue());
             stmt.setString(6, transaction.getTransactionType().name());
             stmt.setString(7, transaction.getPaymentMethod().name());
             stmt.setString(8, transaction.getDescription() != null ? transaction.getDescription().trim() : null);
-            
+
             stmt.setInt(9, transaction.getId());
 
             stmt.executeUpdate();

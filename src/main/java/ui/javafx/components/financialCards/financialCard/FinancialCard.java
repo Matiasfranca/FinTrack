@@ -1,5 +1,7 @@
 package ui.javafx.components.financialCards.financialCard;
 
+import java.math.BigDecimal;
+
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
@@ -16,10 +18,12 @@ public abstract class FinancialCard extends VBox {
     private static final double CHART_WIDTH = 333; // The chart width accounts for the card's horizontal padding.
     private static final double CHART_HEIGHT = 50;
 
+    private final Canvas chartCanvas; 
+
     protected Label valueLabel;
     private final ChartMode chartMode;
 
-    public FinancialCard(String title, String value, ChartMode chartMode) {
+    public FinancialCard(String title, BigDecimal value, ChartMode chartMode) {
 
         this.chartMode = chartMode;
 
@@ -32,13 +36,22 @@ public abstract class FinancialCard extends VBox {
         Label titleLabel = new Label(title);
         titleLabel.getStyleClass().addAll("text-primary", "title");
 
-        this.valueLabel = new Label(value);
+        this.valueLabel = new Label(value.toString());
         valueLabel.getStyleClass().addAll("text-primary", "value");
 
-        Canvas chartCanvas = new Canvas(CHART_WIDTH, CHART_HEIGHT);
+        this.chartCanvas = new Canvas(CHART_WIDTH, CHART_HEIGHT);
         drawMiniChart(chartCanvas.getGraphicsContext2D());
 
         getChildren().addAll(titleLabel, valueLabel, chartCanvas);
+    }
+
+    public void refreshData(BigDecimal newValue) {
+        this.valueLabel.setText(newValue.toString());
+
+        GraphicsContext gc = chartCanvas.getGraphicsContext2D();
+        gc.clearRect(0, 0, chartCanvas.getWidth(), chartCanvas.getHeight());
+
+        drawMiniChart(gc);
     }
 
     /**
@@ -186,7 +199,7 @@ public abstract class FinancialCard extends VBox {
 
         for (double v : values)
             max = Math.max(max, Math.abs(v));
-        
+
         // Prevents division by zero when all values are zero.
         return max == 0 ? 1 : max;
     }
