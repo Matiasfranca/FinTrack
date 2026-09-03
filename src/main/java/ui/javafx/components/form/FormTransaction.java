@@ -47,6 +47,10 @@ public class FormTransaction extends VBox {
     private final Label statusLabel = new Label();
 
     public FormTransaction(Runnable onCancelTransaction) {
+        this(onCancelTransaction, null);
+    }
+
+    public FormTransaction(Runnable onCancelTransaction, Transaction editingTransaction) {
 
         getStyleClass().add("form-card");
         setSpacing(12);
@@ -74,15 +78,28 @@ public class FormTransaction extends VBox {
         configureEnumBox(paymentMethodBox, this::translatePaymentMethod);
         paymentMethodBox.getSelectionModel().selectFirst();
 
-        configureBankAccountBox();
-        configureCategoryOptionBox();
+        configureBankAccountBox(editingTransaction);
+        configureCategoryOptionBox(editingTransaction);
+
+        if (editingTransaction != null) {
+            valueField.setText(editingTransaction.getValue().toString().replace(".", ","));
+            typeBox.setValue(editingTransaction.getTransactionType());
+            paymentMethodBox.setValue(editingTransaction.getPaymentMethod());
+            descriptionArea.setText(editingTransaction.getDescription());
+            datePicker.setValue(editingTransaction.getDate());
+            saveButton.setText("Alterar");
+            saveButton.setOnAction(e -> createTransaction(editingTransaction));
+        } else {
+            typeBox.getSelectionModel().selectFirst();
+            paymentMethodBox.getSelectionModel().selectFirst();
+            saveButton.setOnAction(e -> createTransaction(null));
+        }
 
         statusLabel.setWrapText(true);
         statusLabel.setVisible(false);
         statusLabel.setManaged(false);
 
         saveButton.getStyleClass().addAll("primary", "form-save-button");
-        saveButton.setOnAction(e -> createTransaction(null));
         saveButton.setFocusTraversable(false);
 
         cancelButton.getStyleClass().add("form-cancel-button");
@@ -104,40 +121,6 @@ public class FormTransaction extends VBox {
                 buttonRow);
 
         getStylesheets().add(getClass().getResource("FormTransaction.css").toExternalForm());
-    }
-
-    public FormTransaction(Runnable onCancelTransaction, Transaction editingTransaction) {
-
-        this(onCancelTransaction);
-
-        if (editingTransaction != null) {
-
-            Label title = (Label) getChildren().get(0);
-            title.setText("Editar transação");
-
-            valueField.setText(editingTransaction.getValue().toString().replace(".", ","));
-            typeBox.setValue(editingTransaction.getTransactionType());
-            paymentMethodBox.setValue(editingTransaction.getPaymentMethod());
-            descriptionArea.setText(editingTransaction.getDescription());
-            datePicker.setValue(editingTransaction.getDate());
-            saveButton.setText("Salvar alterações");
-            saveButton.setOnAction(e -> createTransaction(editingTransaction));
-
-            bankAccountBox.getItems().addListener((javafx.collections.ListChangeListener<BankAccount>) change -> {
-                bankAccountBox.getItems().stream()
-                        .filter(account -> account.getId().equals(editingTransaction.getBankAccountId()))
-                        .findFirst()
-                        .ifPresent(bankAccountBox.getSelectionModel()::select);
-            });
-
-            categoryBox.getItems().addListener((javafx.collections.ListChangeListener<CategoryOption>) change -> {
-                categoryBox.getItems().stream()
-                        .filter(option -> option.category() != null
-                                && option.category().getId().equals(editingTransaction.getCategoryId()))
-                        .findFirst()
-                        .ifPresent(categoryBox.getSelectionModel()::select);
-            });
-        }
     }
 
     private Label formLabel(String text, boolean required) {
@@ -194,8 +177,7 @@ public class FormTransaction extends VBox {
         };
     }
 
-    private void configureBankAccountBox() {
-
+    private void configureBankAccountBox(Transaction editingTransaction) {
         bankAccountBox.getStyleClass().add("form-input");
 
         Task<List<BankAccount>> task = new Task<>() {
@@ -205,10 +187,18 @@ public class FormTransaction extends VBox {
             }
         };
 
-        task.setOnSucceeded(e -> {
+        task.setOnSucceeded(e -> Platform.runLater(() -> {
             bankAccountBox.getItems().setAll(task.getValue());
-            bankAccountBox.getSelectionModel().selectFirst();
-        });
+
+            if (editingTransaction != null) {
+                bankAccountBox.getItems().stream()
+                        .filter(acc -> acc.getId().equals(editingTransaction.getBankAccountId()))
+                        .findFirst()
+                        .ifPresent(bankAccountBox.getSelectionModel()::select);
+            } else {
+                bankAccountBox.getSelectionModel().selectFirst();
+            }
+        }));
 
         task.setOnFailed(e -> task.getException().printStackTrace());
 
@@ -217,11 +207,9 @@ public class FormTransaction extends VBox {
         thread.start();
     }
 
-    private void configureCategoryOptionBox() {
-
+    private void configureCategoryOptionBox(Transaction editingTransaction) {
         categoryBox.getStyleClass().add("form-input");
         categoryBox.getItems().add(new CategoryOption(null, "Outros"));
-        categoryBox.getSelectionModel().selectFirst();
 
         Task<List<Category>> task = new Task<>() {
             @Override
@@ -230,8 +218,19 @@ public class FormTransaction extends VBox {
             }
         };
 
-        task.setOnSucceeded(e -> task.getValue()
-                .forEach(category -> categoryBox.getItems().add(new CategoryOption(category, category.getName()))));
+        task.setOnSucceeded(e -> Platform.runLater(() -> {
+            task.getValue().forEach(cat -> categoryBox.getItems().add(new CategoryOption(cat, cat.getName())));
+
+            if (editingTransaction != null && editingTransaction.getCategoryId() != null) {
+                categoryBox.getItems().stream()
+                        .filter(opt -> opt.category() != null
+                                && opt.category().getId().equals(editingTransaction.getCategoryId()))
+                        .findFirst()
+                        .ifPresent(categoryBox.getSelectionModel()::select);
+            } else {
+                categoryBox.getSelectionModel().selectFirst();
+            }
+        }));
 
         task.setOnFailed(e -> task.getException().printStackTrace());
 
@@ -246,23 +245,22 @@ public class FormTransaction extends VBox {
 
         cardRef[0] = new CategoryFormCard(
                 name -> {
-                    // Task<Category> task = new Task<>() {
-                    // @Override
-                    // protected Category call() {
-                    // return finTracker.createCategory(name);
-                    // }
-                    // };
-                    // task.setOnSucceeded(e -> Platform.runLater(() -> {
-                    // Category created = task.getValue();
-                    // CategoryOption option = new CategoryOption(created, created.getName());
-                    // categoryBox.getItems().add(option);
-                    // categoryBox.getSelectionModel().select(option);
-                    // closeChildCard(cardRef[0]);
-                    // }));
-                    // task.setOnFailed(e -> task.getException().printStackTrace());
-                    // Thread thread = new Thread(task);
-                    // thread.setDaemon(true);
-                    // thread.start();
+                    Task<Category> task = new Task<>() {
+                        @Override
+                        protected Category call() {
+                            return finTracker.getOrCreateCategory(new Category(name, null));
+                        }
+                    };
+                    task.setOnSucceeded(e -> {
+                        CategoryOption option = new CategoryOption(task.getValue(), task.getValue().getName());
+                        categoryBox.getItems().add(option);
+                        categoryBox.getSelectionModel().select(option);
+                        closeChildCard(cardRef[0]);
+                    });
+                    task.setOnFailed(e -> task.getException().printStackTrace());
+                    Thread thread = new Thread(task);
+                    thread.setDaemon(true);
+                    thread.start();
                 },
                 () -> closeChildCard(cardRef[0]));
 
@@ -275,23 +273,21 @@ public class FormTransaction extends VBox {
 
         cardRef[0] = new BankAccountFormCard(
                 (name, type) -> {
-                    // Task<BankAccount> task = new Task<>() {
-                    // @Override
-                    // protected BankAccount call() {
-                    // return finTracker.createBankAccount(name, type);
-                    // método
-                    // }
-                    // };
-                    // task.setOnSucceeded(e -> Platform.runLater(() -> {
-                    // BankAccount created = task.getValue();
-                    // bankAccountBox.getItems().add(created);
-                    // bankAccountBox.getSelectionModel().select(created);
-                    // closeChildCard(cardRef[0]);
-                    // }));
-                    // task.setOnFailed(e -> task.getException().printStackTrace());
-                    // Thread thread = new Thread(task);
-                    // thread.setDaemon(true);
-                    // thread.start();
+                    Task<BankAccount> task = new Task<>() {
+                        @Override
+                        protected BankAccount call() {
+                            return finTracker.getOrCreateBankAccount(new BankAccount(name, type));
+                        }
+                    };
+                    task.setOnSucceeded(e -> Platform.runLater(() -> {
+                        bankAccountBox.getItems().add(task.getValue());
+                        bankAccountBox.getSelectionModel().select(task.getValue());
+                        closeChildCard(cardRef[0]);
+                    }));
+                    task.setOnFailed(e -> task.getException().printStackTrace());
+                    Thread thread = new Thread(task);
+                    thread.setDaemon(true);
+                    thread.start();
                 },
                 () -> closeChildCard(cardRef[0]));
 
@@ -326,24 +322,35 @@ public class FormTransaction extends VBox {
     private void createTransaction(Transaction editingTransaction) {
         Transaction transaction;
 
-        if (editingTransaction != null) {
-            try {
-                transaction = new Transaction(editingTransaction.getId(), descriptionArea.getText(),
-                        getValue(), typeBox.getValue(),
-                        paymentMethodBox.getValue(), datePicker.getValue(),
-                        editingTransaction.getBankAccountId(), editingTransaction.getCategoryId());
-            } catch (NumberFormatException e) {
-                showStatus("Informe um valor válido.", false);
-                return;
+        Integer selectedBankAccountId = bankAccountBox.getValue() != null ? bankAccountBox.getValue().getId() : null;
+
+        Category selectedCategoryObj = categoryBox.getValue() != null ? categoryBox.getValue().category() : null;
+        Integer selectedCategoryId = selectedCategoryObj != null ? selectedCategoryObj.getId() : null;
+
+        try {
+            BigDecimal val = getValue();
+
+            if (editingTransaction != null) {
+                transaction = new Transaction(
+                        editingTransaction.getId(),
+                        descriptionArea.getText(),
+                        val,
+                        typeBox.getValue(),
+                        paymentMethodBox.getValue(),
+                        datePicker.getValue(),
+                        selectedBankAccountId,
+                        selectedCategoryId);
+            } else {
+                transaction = new Transaction(
+                        descriptionArea.getText(),
+                        val,
+                        typeBox.getValue(),
+                        paymentMethodBox.getValue(),
+                        datePicker.getValue());
             }
-        } else {
-            try {
-                transaction = new Transaction(descriptionArea.getText(), getValue(), typeBox.getValue(),
-                        paymentMethodBox.getValue(), datePicker.getValue());
-            } catch (NumberFormatException e) {
-                showStatus("Informe um valor válido.", false);
-                return;
-            }
+        } catch (NumberFormatException e) {
+            showStatus("Informe um valor válido.", false);
+            return;
         }
 
         if (bankAccountBox.getValue() == null) {
@@ -357,12 +364,9 @@ public class FormTransaction extends VBox {
             @Override
             protected Void call() throws Exception {
                 if (editingTransaction != null) {
-                    finTracker.updateTransaction(transaction, bankAccountBox.getValue(),
-                            categoryBox.getValue().category());
+                    finTracker.updateTransaction(transaction, bankAccountBox.getValue(), selectedCategoryObj);
                 } else {
-                    finTracker.addTransaction(transaction, bankAccountBox.getValue(),
-                            categoryBox.getValue().category());
-
+                    finTracker.addTransaction(transaction, bankAccountBox.getValue(), selectedCategoryObj);
                 }
                 return null;
             }
@@ -370,9 +374,9 @@ public class FormTransaction extends VBox {
 
         task.setOnSucceeded(e -> Platform.runLater(() -> {
             if (editingTransaction != null) {
-                TransactionEventBus.getInstance().publish(Type.CREATED, transaction);
-            } else {
                 TransactionEventBus.getInstance().publish(Type.UPDATED, transaction);
+            } else {
+                TransactionEventBus.getInstance().publish(Type.CREATED, transaction);
             }
             saveButton.setDisable(false);
             clearFields();

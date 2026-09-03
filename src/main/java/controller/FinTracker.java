@@ -111,7 +111,8 @@ public class FinTracker {
         return transactionRepository.findByMonth(yearMonth);
     }
 
-    public List<CategoryChartData> getCategoryDistribution(YearMonth yearMonth, TransactionType type) throws InvalidInput {
+    public List<CategoryChartData> getCategoryDistribution(YearMonth yearMonth, TransactionType type)
+            throws InvalidInput {
         if (yearMonth == null || type == null) {
             throw new InvalidInput("YearMonth and TransactionType cannot be null.");
         }
@@ -139,6 +140,10 @@ public class FinTracker {
 
     // --- CATEGORIES ---
 
+    public Category getOrCreateCategory(Category category) {
+        return categoryRepository.getOrCreate(category);
+    }
+
     public List<Category> listAllCategories() {
         return categoryRepository.findAll();
     }
@@ -158,6 +163,10 @@ public class FinTracker {
     }
 
     // --- BANK ACCOUNTS ---
+
+    public BankAccount getOrCreateBankAccount(BankAccount account) {
+        return bankAccountRepository.getOrCreate(account);
+    }
 
     public List<BankAccount> listAllBankAccounts() {
         return bankAccountRepository.findAll();
