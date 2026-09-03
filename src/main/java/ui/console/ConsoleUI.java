@@ -189,13 +189,13 @@ public class ConsoleUI {
             int id = ConsoleInput.readInt(sc, transactions.size());
 
             try {
-                finTracker.deleteTransaction(transactions.get(id));
+                finTracker.deleteTransaction(transactions.get(id - 1));
                 ConsoleFormatter.showSuccess("Transação removida com sucesso!");
                 return;
             } catch (InvalidInput e) {
-                e.printStackTrace();
+                ConsoleFormatter.showError(e.getMessage());
             }
-            
+
         } catch (InvalidInput e) {
             ConsoleFormatter.showError(e.getMessage());
         }
