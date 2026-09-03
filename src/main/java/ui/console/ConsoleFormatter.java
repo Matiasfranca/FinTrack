@@ -65,6 +65,8 @@ public class ConsoleFormatter {
     }
     
     public static void showTransactions(List<Transaction> transactions) {
+        int i = 1;
+
         System.out.print("""
                 
         ──────────────────────────────────────────────────────────────────────────────
@@ -81,12 +83,14 @@ public class ConsoleFormatter {
 
             System.out.printf(
                 " %-4d │ %-12s │ R$ %8.2f │ %s │ %s%n",
-                transaction.getId(),
+                i,
                 tipoTraduzido,
                 transaction.getValue(),
                 transaction.getDate(),
                 transaction.getDescription() != null ? transaction.getDescription() : "-"
             );
+
+            i++;
         }
         System.out.println("──────────────────────────────────────────────────────────────────────────────");
     }

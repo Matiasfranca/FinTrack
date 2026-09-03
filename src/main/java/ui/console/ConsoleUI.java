@@ -186,11 +186,16 @@ public class ConsoleUI {
 
             ConsoleFormatter.showTransactions(transactions);
             System.out.print("\nDigite o ID da transação a ser apagada: ");
-            int id = ConsoleInput.readInt(sc, 1);
+            int id = ConsoleInput.readInt(sc, transactions.size());
 
-            finTracker.deleteTransaction(id);
-            ConsoleFormatter.showSuccess("Transação removida com sucesso!");
-
+            try {
+                finTracker.deleteTransaction(transactions.get(id));
+                ConsoleFormatter.showSuccess("Transação removida com sucesso!");
+                return;
+            } catch (InvalidInput e) {
+                e.printStackTrace();
+            }
+            
         } catch (InvalidInput e) {
             ConsoleFormatter.showError(e.getMessage());
         }
