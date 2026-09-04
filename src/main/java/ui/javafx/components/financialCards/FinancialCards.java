@@ -20,7 +20,7 @@ public class FinancialCards extends HBox {
 
     private final FinTracker fintracker = new FinTracker();
     private CardData cardData;
-    private List<DailyFinancialData> dailyFinancialData;
+    private List<DailyFinancialData> newDailyData;
 
     private BalanceCard balanceCard;
     private IncomeCard incomeCard;
@@ -32,14 +32,14 @@ public class FinancialCards extends HBox {
 
         try {
             this.cardData = fintracker.getMonthlyCard(YearMonth.now());
-            this.dailyFinancialData = fintracker.getMonthlyOverview(YearMonth.now());
+            this.newDailyData = fintracker.getMonthlyOverview(YearMonth.now());
         } catch (InvalidInput e) {
             e.printStackTrace();
         }
 
-        this.balanceCard = new BalanceCard(cardData, dailyFinancialData);
-        this.incomeCard = new IncomeCard(cardData, dailyFinancialData);
-        this.expenseCard = new ExpenseCard(cardData, dailyFinancialData);
+        this.balanceCard = new BalanceCard(cardData, newDailyData);
+        this.incomeCard = new IncomeCard(cardData, newDailyData);
+        this.expenseCard = new ExpenseCard(cardData, newDailyData);
 
         getChildren().addAll(balanceCard, incomeCard, expenseCard);
 
@@ -56,9 +56,10 @@ public class FinancialCards extends HBox {
         CardData newData = this.cardData;
         try {
             newData = fintracker.getMonthlyCard(YearMonth.now());
-            balanceCard.refreshData(newData.getCashFlowBalance());
-            incomeCard.refreshData(newData.getTotalIncome());
-            expenseCard.refreshData(newData.getTotalExpense());
+            List<DailyFinancialData> newDailyData = fintracker.getMonthlyOverview(YearMonth.now());
+            balanceCard.refreshData(newData.getCashFlowBalance(), newDailyData);
+            incomeCard.refreshData(newData.getTotalIncome(), newDailyData);
+            expenseCard.refreshData(newData.getTotalExpense(), newDailyData);
         } catch (InvalidInput e1) {
             e1.printStackTrace();
         }

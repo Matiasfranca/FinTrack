@@ -1,7 +1,9 @@
 package ui.javafx.components.charts.monthlyOverview;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
+import java.util.List;
 import java.util.Locale;
 
 import javafx.geometry.Pos;
@@ -15,6 +17,8 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import model.TransactionType;
+import model.dto.DailyFinancialData;
 import ui.javafx.components.values;
 
 // import java.util.Random;
@@ -30,16 +34,20 @@ public class MonthlyOverview extends VBox {
     private static final double CHART_HALF_HEIGHT = 150;
 
     private static final double CANDLE_WIDTH = 12;
-    private static final int DAYS_IN_MONTH = 31;
+    private static final int DAYS_IN_MONTH = LocalDate.now().lengthOfMonth();
 
-    private double[] dailyValues = ui.javafx.components.values.dailyBalance();
+    private List<DailyFinancialData> dailyFinancialData;
+    private double[] dailyValuesTotal;
     private Canvas canvas;
 
     private LocalDate currentMonth = LocalDate.now().withDayOfMonth(1);
 
-    public MonthlyOverview() {
+    public MonthlyOverview(List<DailyFinancialData> dailyFinancialData) {
 
         setSpacing(10);
+
+        this.dailyFinancialData = dailyFinancialData;
+        this.dailyValuesTotal = getChartValuesAsArray();
 
         this.canvas = new Canvas(CANVAS_WIDTH, CANVAS_HEIGHT);
         this.canvas.getStyleClass().add("monthly-chart");
@@ -75,10 +83,31 @@ public class MonthlyOverview extends VBox {
         return header;
     }
 
+    private double[] getChartValuesAsArray() {
+        if (this.dailyFinancialData == null || this.dailyFinancialData.isEmpty()) {
+            return new double[] { 0.0 };
+        }
+
+        double[] list = new double[DAYS_IN_MONTH];
+        this.dailyFinancialData.forEach(data -> {
+            list[data.getDayOfMonth() - 1] = data.getBalance().doubleValue();
+        });
+
+        return list;
+    }
+
+    public void refreshData(List<DailyFinancialData> dailyFinancialData) {
+
+        this.dailyFinancialData = dailyFinancialData;
+        this.dailyValuesTotal = getChartValuesAsArray();
+
+        this.drawChart();
+    }
+
     private void changeMonth(int delta) {
         currentMonth = currentMonth.plusMonths(delta);
-        this.dailyValues = values.dailyBalanceFor(currentMonth.getYear(), currentMonth.getMonthValue());
-        drawChart();
+        // this.dailyValues = values.dailyBalanceFor(currentMonth.getYear(), currentMonth.getMonthValue());
+        // this.drawChart();
     }
 
     private String formatMonth(LocalDate date) {
@@ -92,7 +121,7 @@ public class MonthlyOverview extends VBox {
         gc.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
         double maxAbsValue = 0;
-        for (double v : dailyValues) {
+        for (double v : dailyValuesTotal) {
             maxAbsValue = Math.max(maxAbsValue, Math.abs(v));
         }
 
@@ -135,10 +164,10 @@ public class MonthlyOverview extends VBox {
         double chartWidth = CHART_END_X - CHART_START_X;
         double dayWidth = chartWidth / DAYS_IN_MONTH;
 
-        for (int day = 0; day < DAYS_IN_MONTH; day++) {
+        for (int day = 0; day < dailyValuesTotal.length; day++) {
 
             double x = CHART_START_X + 10 + day * dayWidth * 0.95;
-            double value = dailyValues[day];
+            double value = dailyValuesTotal[day];
             double height = (Math.abs(value) / scale.maxTick) * CHART_HALF_HEIGHT;
 
             if (value >= 0) {

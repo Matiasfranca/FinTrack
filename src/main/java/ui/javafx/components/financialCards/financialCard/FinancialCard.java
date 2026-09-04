@@ -20,7 +20,7 @@ public abstract class FinancialCard extends VBox {
     private static final double CHART_HEIGHT = 50;
 
     private final Canvas chartCanvas;
-    private final List<DailyFinancialData> dailyFinancialData;
+    private List<DailyFinancialData> dailyFinancialData;
 
     protected Label valueLabel;
     private final ChartMode chartMode;
@@ -44,38 +44,44 @@ public abstract class FinancialCard extends VBox {
         valueLabel.getStyleClass().addAll("text-primary", "value");
 
         this.chartCanvas = new Canvas(CHART_WIDTH, CHART_HEIGHT);
-        drawMiniChart(chartCanvas.getGraphicsContext2D());
+        drawMiniChart();
 
         getChildren().addAll(titleLabel, valueLabel, chartCanvas);
     }
 
-    public void refreshData(BigDecimal newValue) {
+    public void refreshData(BigDecimal newValue, List<DailyFinancialData> dailyFinancialData) {
         this.valueLabel.setText(newValue.toString());
-
-        GraphicsContext gc = chartCanvas.getGraphicsContext2D();
-        gc.clearRect(0, 0, chartCanvas.getWidth(), chartCanvas.getHeight());
-
-        drawMiniChart(gc);
+        this.dailyFinancialData = dailyFinancialData;
+        
+        drawMiniChart();
     }
 
     private double[] getChartValuesAsArray() {
-        if (dailyFinancialData == null || dailyFinancialData.isEmpty()) {
-            return new double[] { 0.0 };
-        }
+        int daysInMonth = java.time.LocalDate.now().lengthOfMonth();
+        double[] monthValues = new double[daysInMonth];
 
-        return dailyFinancialData.stream()
-                .mapToDouble(data -> switch (chartMode) {
+        if (dailyFinancialData != null) {
+            dailyFinancialData.forEach(data -> {
+                int index = data.getDayOfMonth() - 1;
+
+                monthValues[index] = switch (chartMode) {
                     case BALANCE -> data.getBalance().doubleValue();
                     case INCOME -> data.getIncome().doubleValue();
                     case EXPENSE -> data.getExpense().doubleValue();
-                })
-                .toArray();
+                };
+            });
+        }
+        return monthValues;
     }
 
     /**
      * Selects the appropriate chart according to the card's purpose.
      */
-    private void drawMiniChart(GraphicsContext gc) {
+    private void drawMiniChart() {
+        //Reset Graphic
+        GraphicsContext gc = chartCanvas.getGraphicsContext2D();
+        gc.clearRect(0, 0, chartCanvas.getWidth(), chartCanvas.getHeight());
+
         double[] values = getChartValuesAsArray();
         switch (chartMode) {
             case BALANCE -> drawBalanceChart(gc, values);
