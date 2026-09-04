@@ -116,7 +116,7 @@ public class MonthlyOverview extends VBox {
     }
 
     private void drawChart() {
-        GraphicsContext gc = canvas.getGraphicsContext2D();
+        GraphicsContext gc = this.canvas.getGraphicsContext2D();
 
         gc.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
