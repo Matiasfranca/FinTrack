@@ -121,7 +121,7 @@ public class MonthlyOverview extends VBox {
             maxAbsValue = Math.max(maxAbsValue, Math.abs(v));
         }
 
-        AxisScale scale = new AxisScale(maxAbsValue, 4); //
+        AxisScale scale = new AxisScale(maxAbsValue, 4);
 
         drawGrid(gc, scale);
         drawAxisLines(gc);
@@ -132,6 +132,7 @@ public class MonthlyOverview extends VBox {
     }
 
     private void drawGrid(GraphicsContext gc, AxisScale scale) {
+        gc.save();
 
         gc.setStroke(Color.web("#28282C"));
         gc.setLineWidth(1);
@@ -143,9 +144,12 @@ public class MonthlyOverview extends VBox {
                 gc.strokeLine(CHART_START_X, CENTER_Y + offset, CHART_END_X, CENTER_Y + offset);
             }
         }
+
+        gc.restore();
     }
 
     private void drawAxisLines(GraphicsContext gc) {
+        gc.save();
 
         gc.setLineWidth(1);
         gc.setStroke(Color.web("#9A9A9E"));
@@ -153,9 +157,12 @@ public class MonthlyOverview extends VBox {
         gc.strokeLine(CHART_START_X, CENTER_Y, CHART_END_X, CENTER_Y);
         gc.strokeLine(CHART_START_X, CENTER_Y - CHART_HALF_HEIGHT - 15,
                 CHART_START_X, CENTER_Y + CHART_HALF_HEIGHT + 15);
+
+        gc.restore();
     }
 
     private void drawCandles(GraphicsContext gc, AxisScale scale) {
+        gc.save();
 
         double chartWidth = CHART_END_X - CHART_START_X;
         double dayWidth = chartWidth / DAYS_IN_MONTH;
@@ -165,7 +172,10 @@ public class MonthlyOverview extends VBox {
             double centerX = CHART_START_X + (day * dayWidth) + (dayWidth / 2.0);
             double x = centerX - (CANDLE_WIDTH / 2.0);
             double value = dailyValuesTotal[day];
-            double height = (Math.abs(value) / scale.maxTick) * CHART_HALF_HEIGHT;
+
+            double height = Math.min(
+                    (Math.abs(value) / scale.maxTick) * CHART_HALF_HEIGHT,
+                    CHART_HALF_HEIGHT);
 
             if (value >= 0) {
                 gc.setFill(Color.web("#34D399"));
@@ -175,12 +185,16 @@ public class MonthlyOverview extends VBox {
                 gc.fillRect(x, CENTER_Y, CANDLE_WIDTH, height);
             }
         }
+
+        gc.restore();
     }
 
     private void drawYAxisLabels(GraphicsContext gc, AxisScale scale) {
+        gc.save();
 
         gc.setFill(Color.web("#9A9A9E"));
         gc.setFont(Font.font(11));
+        gc.setTextAlign(javafx.scene.text.TextAlignment.LEFT); // explícito, não depende do que sobrou antes
 
         for (double tick : scale.ticks) {
             double offset = (tick / scale.maxTick) * CHART_HALF_HEIGHT;
@@ -191,9 +205,12 @@ public class MonthlyOverview extends VBox {
                 gc.fillText("-" + label, 2, CENTER_Y + offset + 4);
             }
         }
+
+        gc.restore();
     }
 
     private void drawXAxisLabels(GraphicsContext gc) {
+        gc.save();
 
         gc.setFill(Color.web("#9A9A9E"));
         gc.setFont(Font.font(11));
@@ -221,6 +238,8 @@ public class MonthlyOverview extends VBox {
             double centerX = CHART_START_X + (index * dayWidth) + (dayWidth / 2.0);
             gc.fillText(String.valueOf(day), centerX, CENTER_Y + CHART_HALF_HEIGHT + 30);
         }
+
+        gc.restore();
     }
 
     private String formatCurrency(double value) {
