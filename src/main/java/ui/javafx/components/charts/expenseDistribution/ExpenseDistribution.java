@@ -1,5 +1,7 @@
 package ui.javafx.components.charts.expenseDistribution;
 
+import java.util.List;
+
 import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -12,9 +14,27 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.ArcType;
-import ui.javafx.components.financialCards.financialCard.FinancialCard.ChartMode;
+import model.dto.CategoryChartData;
 
 public class ExpenseDistribution extends VBox {
+
+    private enum ChartMode {
+        EXPENSE, INVESTMENT
+    }
+
+    private static final String[] FALLBACK_PALETTE = {
+            "#C9A227",
+            "#A8894A",
+            "#7E8B5A",
+            "#628B78",
+            "#647A8A",
+            "#7A708C",
+            "#986B73",
+            "#A56F4F",
+            "#7B7770"
+    };
+
+    private static final double SLICE_SEPARATOR_WIDTH = 1.0;
 
     private static final double CANVAS_WIDTH = 380;
     private static final double CANVAS_HEIGHT = 420;
@@ -25,29 +45,25 @@ public class ExpenseDistribution extends VBox {
 
     private final Canvas canvas;
 
-    private static final String[] CATEGORY_COLORS = {
-            "#C9A227", "#E0B84B", "#9A9A9E", "#4A4A4E"
-    };
-    private static final String[] CATEGORY_NAMES = {
-            "Alimentação", "Cartão", "Pix", "Outros"
-    };
-    private static final double[] CATEGORY_VALUES = {
-            40, 30, 20, 10 
-    };
+    private List<CategoryChartData> expenseData;
+    private List<CategoryChartData> investmentData;
 
-    public ExpenseDistribution() {
+    private ChartMode currentMode = ChartMode.EXPENSE;
+
+    public ExpenseDistribution(List<CategoryChartData> expenseData, List<CategoryChartData> investmentData) {
 
         setSpacing(10);
 
         this.canvas = new Canvas(CANVAS_WIDTH, CANVAS_HEIGHT);
 
+        this.expenseData = expenseData;
+        this.investmentData = investmentData;
+
         getStyleClass().addAll("chart-card", "surface");
         getChildren().addAll(this.buildToggle(), this.canvas);
 
-        this.drawChart();
+        this.drawChart(this.currentMode);
     }
-
-    private ChartMode mode = ChartMode.EXPENSE;
 
     private HBox buildToggle() {
 
@@ -69,14 +85,13 @@ public class ExpenseDistribution extends VBox {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         expenseTab.setOnAction(e -> {
-            mode = ChartMode.EXPENSE;
-            this.drawChart();
+            this.currentMode = ChartMode.EXPENSE;
+            this.drawChart(this.currentMode);
         });
-        investmentTab.setOnAction(e -> {
-            // mode = ChartMode.INVESTMENT;
-            GraphicsContext gc = this.canvas.getGraphicsContext2D();
 
-            gc.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        investmentTab.setOnAction(e -> {
+            this.currentMode = ChartMode.INVESTMENT;
+            this.drawChart(this.currentMode);
         });
 
         HBox toggle = new HBox(8, title, spacer, expenseTab, investmentTab);
@@ -85,44 +100,120 @@ public class ExpenseDistribution extends VBox {
         return toggle;
     }
 
-    private void drawChart() {
-
+    private void drawChart(ChartMode mode) {
         GraphicsContext gc = this.canvas.getGraphicsContext2D();
-
         gc.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+        List<CategoryChartData> activeList = (mode == ChartMode.EXPENSE) ? expenseData : investmentData;
+
+        if (activeList == null || activeList.isEmpty()) {
+            return;
+        }
+
+        double totalSum = activeList.stream().mapToDouble(data -> data.getTotalValue().doubleValue()).sum();
+
+        if (totalSum == 0)
+            return;
 
         double startAngle = 0;
 
-        for (int i = 0; i < CATEGORY_VALUES.length; i++) {
+        for (int i = 0; i < activeList.size(); i++) {
+            CategoryChartData data = activeList.get(i);
 
-            double arcExtent = CATEGORY_VALUES[i] * 3.6; 
+            double value = data.getTotalValue().doubleValue();
+            double arcExtent = (value / totalSum) * 360.0;
 
-            gc.setFill(Color.web(CATEGORY_COLORS[i]));
+            Color color = getCategoryColor(data.getCategoryColor(), i);
+
+            gc.setFill(color);
             gc.fillArc(CHART_X, CHART_Y, CHART_SIZE, CHART_SIZE, startAngle, arcExtent, ArcType.ROUND);
 
             startAngle += arcExtent;
         }
 
-        drawLegend(gc);
-
+        drawSliceSeparators(gc, activeList, totalSum);
     }
 
-    private void drawLegend(GraphicsContext gc) {
+    private void drawSliceSeparators(GraphicsContext gc, List<CategoryChartData> activeList, double totalSum) {
 
+        double centerX = CHART_X + CHART_SIZE / 2;
+        double centerY = CHART_Y + CHART_SIZE / 2;
+        double radius = CHART_SIZE / 2;
+
+        double angle = 0;
+
+        gc.setStroke(Color.web("#1C1C1F"));
+        gc.setLineWidth(SLICE_SEPARATOR_WIDTH);
+
+        for (CategoryChartData data : activeList) {
+
+            double value = data.getTotalValue().doubleValue();
+            double arcExtent = (value / totalSum) * 360.0;
+
+            double radians = Math.toRadians(angle);
+
+            double x = centerX + Math.cos(radians) * radius;
+            double y = centerY - Math.sin(radians) * radius;
+
+            gc.strokeLine(centerX, centerY, x, y);
+
+            angle += arcExtent;
+        }
+
+        drawLegend(gc, activeList, totalSum);
+    }
+
+    private void drawLegend(GraphicsContext gc, List<CategoryChartData> activeList, double totalSum) {
         double legendY = CHART_Y + CHART_SIZE + 30;
         double dotSize = 10;
 
-        for (int i = 0; i < CATEGORY_NAMES.length; i++) {
-
+        for (int i = 0; i < activeList.size(); i++) {
+            CategoryChartData data = activeList.get(i);
             double y = legendY + i * 22;
 
-            gc.setFill(Color.web(CATEGORY_COLORS[i]));
+            Color color = getCategoryColor(data.getCategoryColor(), i);
+
+            gc.setFill(color);
             gc.fillOval(20, y, dotSize, dotSize);
+
+            double percentage = (data.getTotalValue().doubleValue() / totalSum) * 100.0;
 
             gc.setFill(Color.web("#F5F5F0"));
             gc.setFont(javafx.scene.text.Font.font(13));
-            gc.fillText(CATEGORY_NAMES[i] + "  " + (int) CATEGORY_VALUES[i] + "%", 40, y + dotSize);
+
+            String labelText = String.format("%s  %.1f%%", data.getCategoryName(), percentage);
+            gc.fillText(labelText, 40, y + dotSize);
         }
     }
 
+    private Color getCategoryColor(String hexColor, int index) {
+        try {
+            if (hexColor != null && !hexColor.equalsIgnoreCase("#A9A9A9")) {
+                return Color.web(hexColor);
+            }
+        } catch (IllegalArgumentException e) {
+        }
+
+        if (index < FALLBACK_PALETTE.length) {
+            return Color.web(FALLBACK_PALETTE[index]);
+        }
+
+        Color base = Color.web(
+                FALLBACK_PALETTE[FALLBACK_PALETTE.length - 1]);
+
+        double hue = (base.getHue() + index * 137.5) % 360;
+
+        return Color.hsb(
+                hue,
+                base.getSaturation(),
+                base.getBrightness());
+
+    }
+
+    public void refreshData(List<CategoryChartData> expenseData, List<CategoryChartData> investmentData) {
+        this.expenseData = expenseData;
+        this.investmentData = investmentData;
+
+        this.drawChart(this.currentMode);
+    }
 }

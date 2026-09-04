@@ -6,6 +6,7 @@ import java.util.List;
 import controller.FinTracker;
 import javafx.scene.layout.HBox;
 import model.TransactionType;
+import model.dto.CategoryChartData;
 import model.dto.DailyFinancialData;
 import ui.javafx.components.charts.expenseDistribution.ExpenseDistribution;
 import ui.javafx.components.charts.monthlyOverview.MonthlyOverview;
@@ -18,23 +19,22 @@ public class Charts extends HBox {
     private final FinTracker finTracker = new FinTracker();
 
     private List<DailyFinancialData> dailyFinancialData;
-    MonthlyOverview monthlyOverview;
+    private List<CategoryChartData> expenseData;
+    private List<CategoryChartData> investmentData;
+
+    private MonthlyOverview monthlyOverview;
+    private ExpenseDistribution expenseDistribution;
 
     public Charts() {
 
-        try {
-            this.dailyFinancialData = finTracker.getMonthlyOverview(YearMonth.now());
-            finTracker.getCategoryDistribution(YearMonth.now(), TransactionType.EXPENSE);
-            finTracker.getCategoryDistribution(YearMonth.now(), TransactionType.INVESTMENT);
-        } catch (Exception e) {
-
-        }
+        fetchData();
 
         setSpacing(40);
 
         this.monthlyOverview = new MonthlyOverview(dailyFinancialData);
+        this.expenseDistribution = new ExpenseDistribution(expenseData, investmentData);
 
-        getChildren().addAll(monthlyOverview, new ExpenseDistribution());
+        getChildren().addAll(this.monthlyOverview, this.expenseDistribution);
 
         // Component stylesheet
         getStylesheets().add(getClass().getResource("Charts.css").toExternalForm());
@@ -46,15 +46,23 @@ public class Charts extends HBox {
 
     }
 
-    private void updateCharts(Event e) {
+    private void fetchData() {
         try {
-            this.dailyFinancialData = finTracker.getMonthlyOverview(YearMonth.now());
-            this.monthlyOverview.refreshData(dailyFinancialData);
-            finTracker.getCategoryDistribution(YearMonth.now(), TransactionType.EXPENSE);
-            finTracker.getCategoryDistribution(YearMonth.now(), TransactionType.INVESTMENT);
-        } catch (Exception err) {
-
+            YearMonth now = YearMonth.now();
+            this.dailyFinancialData = finTracker.getMonthlyOverview(now);
+            this.expenseData = finTracker.getCategoryDistribution(now, TransactionType.EXPENSE);
+            this.investmentData = finTracker.getCategoryDistribution(now, TransactionType.INVESTMENT);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+    }
+
+    private void updateCharts(Event e) {
+        fetchData();
+
+        this.monthlyOverview.refreshData(dailyFinancialData);
+
+        this.expenseDistribution.refreshData(expenseData, investmentData);
     }
 
 }
