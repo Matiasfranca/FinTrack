@@ -1,6 +1,5 @@
 package ui.javafx.components.charts.monthlyOverview;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.List;
@@ -17,11 +16,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import model.TransactionType;
 import model.dto.DailyFinancialData;
-import ui.javafx.components.values;
-
-// import java.util.Random;
 
 public class MonthlyOverview extends VBox {
 
@@ -106,7 +101,8 @@ public class MonthlyOverview extends VBox {
 
     private void changeMonth(int delta) {
         currentMonth = currentMonth.plusMonths(delta);
-        // this.dailyValues = values.dailyBalanceFor(currentMonth.getYear(), currentMonth.getMonthValue());
+        // this.dailyValues = values.dailyBalanceFor(currentMonth.getYear(),
+        // currentMonth.getMonthValue());
         // this.drawChart();
     }
 
@@ -166,7 +162,8 @@ public class MonthlyOverview extends VBox {
 
         for (int day = 0; day < dailyValuesTotal.length; day++) {
 
-            double x = CHART_START_X + 10 + day * dayWidth * 0.95;
+            double centerX = CHART_START_X + (day * dayWidth) + (dayWidth / 2.0);
+            double x = centerX - (CANDLE_WIDTH / 2.0);
             double value = dailyValuesTotal[day];
             double height = (Math.abs(value) / scale.maxTick) * CHART_HALF_HEIGHT;
 
@@ -200,13 +197,29 @@ public class MonthlyOverview extends VBox {
 
         gc.setFill(Color.web("#9A9A9E"));
         gc.setFont(Font.font(11));
+        gc.setTextAlign(javafx.scene.text.TextAlignment.CENTER);
 
         double chartWidth = CHART_END_X - CHART_START_X;
         double dayWidth = chartWidth / DAYS_IN_MONTH;
 
+        List<Integer> labelDays = new java.util.ArrayList<>();
         for (int day = 1; day <= DAYS_IN_MONTH; day += 5) {
-            double x = CHART_START_X + day * dayWidth;
-            gc.fillText(String.valueOf(day), x, CENTER_Y + CHART_HALF_HEIGHT + 30);
+            labelDays.add(day);
+        }
+
+        int lastLabeled = labelDays.get(labelDays.size() - 1);
+        if (lastLabeled != DAYS_IN_MONTH) {
+            if (DAYS_IN_MONTH - lastLabeled < 3) {
+                labelDays.set(labelDays.size() - 1, DAYS_IN_MONTH);
+            } else {
+                labelDays.add(DAYS_IN_MONTH);
+            }
+        }
+
+        for (int day : labelDays) {
+            int index = day - 1;
+            double centerX = CHART_START_X + (index * dayWidth) + (dayWidth / 2.0);
+            gc.fillText(String.valueOf(day), centerX, CENTER_Y + CHART_HALF_HEIGHT + 30);
         }
     }
 

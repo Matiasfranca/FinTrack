@@ -1,6 +1,5 @@
 package ui.javafx.components.financialCards;
 
-import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 
