@@ -1,13 +1,14 @@
 package ui.javafx.components.financialCards.financialCard;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import ui.javafx.components.FinancialData;
+import model.dto.DailyFinancialData;
 
 public abstract class FinancialCard extends VBox {
 
@@ -18,14 +19,17 @@ public abstract class FinancialCard extends VBox {
     private static final double CHART_WIDTH = 333; // The chart width accounts for the card's horizontal padding.
     private static final double CHART_HEIGHT = 50;
 
-    private final Canvas chartCanvas; 
+    private final Canvas chartCanvas;
+    private final List<DailyFinancialData> dailyFinancialData;
 
     protected Label valueLabel;
     private final ChartMode chartMode;
 
-    public FinancialCard(String title, BigDecimal value, ChartMode chartMode) {
+    public FinancialCard(String title, BigDecimal value, ChartMode chartMode,
+            List<DailyFinancialData> dailyFinancialData) {
 
         this.chartMode = chartMode;
+        this.dailyFinancialData = dailyFinancialData;
 
         setSpacing(14);
 
@@ -54,14 +58,29 @@ public abstract class FinancialCard extends VBox {
         drawMiniChart(gc);
     }
 
+    private double[] getChartValuesAsArray() {
+        if (dailyFinancialData == null || dailyFinancialData.isEmpty()) {
+            return new double[] { 0.0 };
+        }
+
+        return dailyFinancialData.stream()
+                .mapToDouble(data -> switch (chartMode) {
+                    case BALANCE -> data.getBalance().doubleValue();
+                    case INCOME -> data.getIncome().doubleValue();
+                    case EXPENSE -> data.getExpense().doubleValue();
+                })
+                .toArray();
+    }
+
     /**
      * Selects the appropriate chart according to the card's purpose.
      */
     private void drawMiniChart(GraphicsContext gc) {
+        double[] values = getChartValuesAsArray();
         switch (chartMode) {
-            case BALANCE -> drawBalanceChart(gc);
-            case INCOME -> drawSingleColorChart(gc, FinancialData.dailyIncome(), "#34D399");
-            case EXPENSE -> drawSingleColorChart(gc, FinancialData.dailyExpense(), "#F87171");
+            case BALANCE -> drawBalanceChart(gc, values);
+            case INCOME -> drawSingleColorChart(gc, values, "#34D399");
+            case EXPENSE -> drawSingleColorChart(gc, values, "#F87171");
         }
     }
 
@@ -72,11 +91,10 @@ public abstract class FinancialCard extends VBox {
      * while negative values are represented by a red filled area.
      * The zero line is positioned at the vertical center of the chart.
      */
-    private void drawBalanceChart(GraphicsContext gc) {
+    private void drawBalanceChart(GraphicsContext gc, double[] values) {
 
-        double[] values = FinancialData.dailyBalance();
         double maxAbs = maxAbs(values);
-        double baseline = CHART_HEIGHT / 2.0; // linha do zero fica no meio do canvas
+        double baseline = CHART_HEIGHT / 2.0;
         double stepX = CHART_WIDTH / (values.length - 1);
 
         gc.setFill(Color.web("#34D399", 0.25));

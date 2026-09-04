@@ -11,7 +11,7 @@ import model.PaymentMethod;
 import model.Transaction;
 import model.TransactionType;
 
-public class FinancialData {
+public class values {
 
     public static final int DAYS = 31;
 

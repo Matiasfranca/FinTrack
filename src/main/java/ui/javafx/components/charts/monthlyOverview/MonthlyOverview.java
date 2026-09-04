@@ -15,7 +15,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import ui.javafx.components.FinancialData;
+import ui.javafx.components.values;
 
 // import java.util.Random;
 
@@ -32,7 +32,7 @@ public class MonthlyOverview extends VBox {
     private static final double CANDLE_WIDTH = 12;
     private static final int DAYS_IN_MONTH = 31;
 
-    private double[] dailyValues = ui.javafx.components.FinancialData.dailyBalance();
+    private double[] dailyValues = ui.javafx.components.values.dailyBalance();
     private Canvas canvas;
 
     private LocalDate currentMonth = LocalDate.now().withDayOfMonth(1);
@@ -77,7 +77,7 @@ public class MonthlyOverview extends VBox {
 
     private void changeMonth(int delta) {
         currentMonth = currentMonth.plusMonths(delta);
-        this.dailyValues = FinancialData.dailyBalanceFor(currentMonth.getYear(), currentMonth.getMonthValue());
+        this.dailyValues = values.dailyBalanceFor(currentMonth.getYear(), currentMonth.getMonthValue());
         drawChart();
     }
 

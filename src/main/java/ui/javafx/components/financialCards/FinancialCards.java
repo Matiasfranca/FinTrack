@@ -2,11 +2,13 @@ package ui.javafx.components.financialCards;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.List;
 
 import controller.FinTracker;
 import exceptions.InvalidInput;
 import javafx.scene.layout.HBox;
 import model.dto.CardData;
+import model.dto.DailyFinancialData;
 import ui.javafx.components.financialCards.financialCard.balanceCard.BalanceCard;
 import ui.javafx.components.financialCards.financialCard.expenseCard.ExpenseCard;
 import ui.javafx.components.financialCards.financialCard.incomeCard.IncomeCard;
@@ -18,6 +20,7 @@ public class FinancialCards extends HBox {
 
     private final FinTracker fintracker = new FinTracker();
     private CardData cardData;
+    private List<DailyFinancialData> dailyFinancialData;
 
     private BalanceCard balanceCard;
     private IncomeCard incomeCard;
@@ -29,13 +32,14 @@ public class FinancialCards extends HBox {
 
         try {
             this.cardData = fintracker.getMonthlyCard(YearMonth.now());
+            this.dailyFinancialData = fintracker.getMonthlyOverview(YearMonth.now());
         } catch (InvalidInput e) {
             e.printStackTrace();
         }
 
-        this.balanceCard = new BalanceCard(cardData);
-        this.incomeCard = new IncomeCard(cardData);
-        this.expenseCard = new ExpenseCard(cardData);
+        this.balanceCard = new BalanceCard(cardData, dailyFinancialData);
+        this.incomeCard = new IncomeCard(cardData, dailyFinancialData);
+        this.expenseCard = new ExpenseCard(cardData, dailyFinancialData);
 
         getChildren().addAll(balanceCard, incomeCard, expenseCard);
 
@@ -52,13 +56,11 @@ public class FinancialCards extends HBox {
         CardData newData = this.cardData;
         try {
             newData = fintracker.getMonthlyCard(YearMonth.now());
-        } catch (InvalidInput e1) {
-            e1.printStackTrace();
-        }
-        if (newData != null) {
             balanceCard.refreshData(newData.getCashFlowBalance());
             incomeCard.refreshData(newData.getTotalIncome());
             expenseCard.refreshData(newData.getTotalExpense());
+        } catch (InvalidInput e1) {
+            e1.printStackTrace();
         }
 
     }

@@ -60,7 +60,8 @@ public class SqliteDashboardRepository implements DashboardRepository {
             SELECT 
                 CAST(strftime('%d', date) AS INTEGER) as day_of_month,
                 IFNULL( SUM(CASE WHEN type = 'INCOME' THEN value ELSE 0 END), 0 ) as daily_income,
-                IFNULL( SUM(CASE WHEN type = 'EXPENSE' THEN value ELSE 0 END), 0 ) as daily_expense
+                IFNULL( SUM(CASE WHEN type = 'EXPENSE' THEN value ELSE 0 END), 0 ) as daily_expense,
+                IFNULL( SUM(CASE WHEN type = 'INVESTMENT' THEN value ELSE 0 END), 0 ) as daily_investment
             FROM "TRANSACTION"
             WHERE month_id = ?
             GROUP BY day_of_month
@@ -79,7 +80,8 @@ public class SqliteDashboardRepository implements DashboardRepository {
                     result.add(new DailyFinancialData(
                         rs.getInt("day_of_month"),
                         rs.getBigDecimal("daily_income"),
-                        rs.getBigDecimal("daily_expense")
+                        rs.getBigDecimal("daily_expense"),
+                        rs.getBigDecimal("daily_investment")    
                     ));
                 }
             }
