@@ -1,10 +1,13 @@
 package ui.javafx.components.charts.monthlyOverview;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.format.TextStyle;
 import java.util.List;
 import java.util.Locale;
 
+import controller.FinTracker;
+import exceptions.InvalidInput;
 import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -29,7 +32,11 @@ public class MonthlyOverview extends VBox {
     private static final double CHART_HALF_HEIGHT = 150;
 
     private static final double CANDLE_WIDTH = 12;
-    private static final int DAYS_IN_MONTH = LocalDate.now().lengthOfMonth();
+
+    //Days for month
+    private int daysInMonth = LocalDate.now().lengthOfMonth();
+
+    private final FinTracker finTracker;
 
     private List<DailyFinancialData> dailyFinancialData;
     private double[] dailyValuesTotal;
@@ -37,12 +44,13 @@ public class MonthlyOverview extends VBox {
 
     private LocalDate currentMonth = LocalDate.now().withDayOfMonth(1);
 
-    public MonthlyOverview(List<DailyFinancialData> dailyFinancialData) {
+    public MonthlyOverview(List<DailyFinancialData> dailyFinancialData, FinTracker finTracker) {
 
         setSpacing(10);
 
         this.dailyFinancialData = dailyFinancialData;
         this.dailyValuesTotal = getChartValuesAsArray();
+        this.finTracker = finTracker;
 
         this.canvas = new Canvas(CANVAS_WIDTH, CANVAS_HEIGHT);
         this.canvas.getStyleClass().add("monthly-chart");
@@ -58,16 +66,22 @@ public class MonthlyOverview extends VBox {
         Label title = new Label("Balanço Mensal");
         title.getStyleClass().addAll("title", "text-primary");
 
+        Label periodLabel = new Label(formatMonth(this.currentMonth));
+        periodLabel.getStyleClass().addAll("text-secondary", "month-label");
+
         Button prevButton = new Button("‹");
         prevButton.getStyleClass().add("month-nav-button");
-        prevButton.setOnAction(e -> changeMonth(-1));
-
-        Label periodLabel = new Label(formatMonth(currentMonth));
-        periodLabel.getStyleClass().addAll("text-secondary", "month-label");
+        prevButton.setOnAction(e -> {
+            changeMonth(-1);
+            periodLabel.setText(formatMonth(this.currentMonth));
+        });
 
         Button nextButton = new Button("›");
         nextButton.getStyleClass().add("month-nav-button");
-        nextButton.setOnAction(e -> changeMonth(1));
+        nextButton.setOnAction(e -> {
+            changeMonth(1);
+            periodLabel.setText(formatMonth(this.currentMonth));
+        });
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -83,7 +97,7 @@ public class MonthlyOverview extends VBox {
             return new double[] { 0.0 };
         }
 
-        double[] list = new double[DAYS_IN_MONTH];
+        double[] list = new double[daysInMonth];
         this.dailyFinancialData.forEach(data -> {
             list[data.getDayOfMonth() - 1] = data.getBalance().doubleValue();
         });
@@ -93,6 +107,7 @@ public class MonthlyOverview extends VBox {
 
     public void refreshData(List<DailyFinancialData> dailyFinancialData) {
 
+        this.daysInMonth = this.currentMonth.lengthOfMonth();
         this.dailyFinancialData = dailyFinancialData;
         this.dailyValuesTotal = getChartValuesAsArray();
 
@@ -100,10 +115,12 @@ public class MonthlyOverview extends VBox {
     }
 
     private void changeMonth(int delta) {
-        currentMonth = currentMonth.plusMonths(delta);
-        // this.dailyValues = values.dailyBalanceFor(currentMonth.getYear(),
-        // currentMonth.getMonthValue());
-        // this.drawChart();
+        this.currentMonth = currentMonth.plusMonths(delta);
+        try {
+            this.refreshData(this.finTracker.getMonthlyOverview(YearMonth.from(currentMonth)));
+        } catch (InvalidInput e) {
+            e.printStackTrace();
+        }
     }
 
     private String formatMonth(LocalDate date) {
@@ -165,7 +182,7 @@ public class MonthlyOverview extends VBox {
         gc.save();
 
         double chartWidth = CHART_END_X - CHART_START_X;
-        double dayWidth = chartWidth / DAYS_IN_MONTH;
+        double dayWidth = chartWidth / daysInMonth;
 
         for (int day = 0; day < dailyValuesTotal.length; day++) {
 
@@ -217,19 +234,19 @@ public class MonthlyOverview extends VBox {
         gc.setTextAlign(javafx.scene.text.TextAlignment.CENTER);
 
         double chartWidth = CHART_END_X - CHART_START_X;
-        double dayWidth = chartWidth / DAYS_IN_MONTH;
+        double dayWidth = chartWidth / daysInMonth;
 
         List<Integer> labelDays = new java.util.ArrayList<>();
-        for (int day = 1; day <= DAYS_IN_MONTH; day += 5) {
+        for (int day = 1; day <= daysInMonth; day += 5) {
             labelDays.add(day);
         }
 
         int lastLabeled = labelDays.get(labelDays.size() - 1);
-        if (lastLabeled != DAYS_IN_MONTH) {
-            if (DAYS_IN_MONTH - lastLabeled < 3) {
-                labelDays.set(labelDays.size() - 1, DAYS_IN_MONTH);
+        if (lastLabeled != daysInMonth) {
+            if (daysInMonth - lastLabeled < 3) {
+                labelDays.set(labelDays.size() - 1, daysInMonth);
             } else {
-                labelDays.add(DAYS_IN_MONTH);
+                labelDays.add(daysInMonth);
             }
         }
 

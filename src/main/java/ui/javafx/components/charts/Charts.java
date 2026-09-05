@@ -31,8 +31,8 @@ public class Charts extends HBox {
 
         setSpacing(40);
 
-        this.monthlyOverview = new MonthlyOverview(dailyFinancialData);
-        this.expenseDistribution = new ExpenseDistribution(expenseData, investmentData);
+        this.monthlyOverview = new MonthlyOverview(this.dailyFinancialData, this.finTracker);
+        this.expenseDistribution = new ExpenseDistribution(this.expenseData, this.investmentData);
 
         getChildren().addAll(this.monthlyOverview, this.expenseDistribution);
 
@@ -49,9 +49,9 @@ public class Charts extends HBox {
     private void fetchData() {
         try {
             YearMonth now = YearMonth.now();
-            this.dailyFinancialData = finTracker.getMonthlyOverview(now);
-            this.expenseData = finTracker.getCategoryDistribution(now, TransactionType.EXPENSE);
-            this.investmentData = finTracker.getCategoryDistribution(now, TransactionType.INVESTMENT);
+            this.dailyFinancialData = this.finTracker.getMonthlyOverview(now);
+            this.expenseData = this.finTracker.getCategoryDistribution(now, TransactionType.EXPENSE);
+            this.investmentData = this.finTracker.getCategoryDistribution(now, TransactionType.INVESTMENT);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -60,9 +60,9 @@ public class Charts extends HBox {
     private void updateCharts(Event e) {
         fetchData();
 
-        this.monthlyOverview.refreshData(dailyFinancialData);
+        this.monthlyOverview.refreshData(this.dailyFinancialData);
 
-        this.expenseDistribution.refreshData(expenseData, investmentData);
+        this.expenseDistribution.refreshData(this.expenseData, this.investmentData);
     }
 
 }
