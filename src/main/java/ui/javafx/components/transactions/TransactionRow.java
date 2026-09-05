@@ -16,6 +16,7 @@ import javafx.scene.layout.Region;
 import model.Transaction;
 import ui.javafx.events.TransactionEventBus;
 import ui.javafx.events.TransactionEventBus.Type;
+import utils.FormatCurrency;
 
 public class TransactionRow extends HBox {
 
@@ -39,7 +40,7 @@ public class TransactionRow extends HBox {
 
         boolean isIncome = transaction.isReceipt();
         String sign = isIncome ? "+ " : "- ";
-        String formatted = sign + (transaction.getValue());
+        String formatted = sign + (FormatCurrency.formatCurrency(transaction.getValue()));
 
         Label value = new Label(formatted);
         value.getStyleClass().addAll(isIncome ? "success" : "danger", "transaction-value");

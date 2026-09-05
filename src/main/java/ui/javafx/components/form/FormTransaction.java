@@ -26,6 +26,7 @@ import model.Transaction;
 import model.TransactionType;
 import ui.javafx.events.TransactionEventBus;
 import ui.javafx.events.TransactionEventBus.Type;
+import utils.FormatCurrency;
 
 public class FormTransaction extends VBox {
 
@@ -61,63 +62,62 @@ public class FormTransaction extends VBox {
         Label title = new Label("Adicionar transação");
         title.getStyleClass().addAll("text-primary", "form-title");
 
-        valueField.setPromptText("0,00");
-        valueField.getStyleClass().add("form-input");
+        this.configureValueField(this.valueField);
 
-        descriptionArea.setPromptText("Descrição da transação");
-        descriptionArea.setPrefRowCount(2);
-        descriptionArea.setWrapText(true);
-        descriptionArea.getStyleClass().add("form-input");
+        this.descriptionArea.setPromptText("Descrição da transação");
+        this.descriptionArea.setPrefRowCount(2);
+        this.descriptionArea.setWrapText(true);
+        this.descriptionArea.getStyleClass().add("form-input");
 
-        datePicker.getStyleClass().add("form-input");
-        datePicker.setMaxWidth(Double.MAX_VALUE);
+        this.datePicker.getStyleClass().add("form-input");
+        this.datePicker.setMaxWidth(Double.MAX_VALUE);
 
-        configureEnumBox(typeBox, this::translateType);
-        typeBox.getSelectionModel().selectFirst();
+        this.configureEnumBox(this.typeBox, this::translateType);
+        this.typeBox.getSelectionModel().selectFirst();
 
-        configureEnumBox(paymentMethodBox, this::translatePaymentMethod);
-        paymentMethodBox.getSelectionModel().selectFirst();
+        this.configureEnumBox(this.paymentMethodBox, this::translatePaymentMethod);
+        this.paymentMethodBox.getSelectionModel().selectFirst();
 
-        configureBankAccountBox(editingTransaction);
-        configureCategoryOptionBox(editingTransaction);
+        this.configureBankAccountBox(editingTransaction);
+        this.configureCategoryOptionBox(editingTransaction);
 
         if (editingTransaction != null) {
-            valueField.setText(editingTransaction.getValue().toString().replace(".", ","));
-            typeBox.setValue(editingTransaction.getTransactionType());
-            paymentMethodBox.setValue(editingTransaction.getPaymentMethod());
-            descriptionArea.setText(editingTransaction.getDescription());
-            datePicker.setValue(editingTransaction.getDate());
-            saveButton.setText("Alterar");
-            saveButton.setOnAction(e -> createTransaction(editingTransaction));
+            this.valueField.setText(FormatCurrency.formatCurrency(editingTransaction.getValue()).substring(3));
+            this.typeBox.setValue(editingTransaction.getTransactionType());
+            this.paymentMethodBox.setValue(editingTransaction.getPaymentMethod());
+            this.descriptionArea.setText(editingTransaction.getDescription());
+            this.datePicker.setValue(editingTransaction.getDate());
+            this.saveButton.setText("Alterar");
+            this.saveButton.setOnAction(e -> this.createTransaction(editingTransaction));
         } else {
-            typeBox.getSelectionModel().selectFirst();
-            paymentMethodBox.getSelectionModel().selectFirst();
-            saveButton.setOnAction(e -> createTransaction(null));
+            this.typeBox.getSelectionModel().selectFirst();
+            this.paymentMethodBox.getSelectionModel().selectFirst();
+            this.saveButton.setOnAction(e -> this.createTransaction(null));
         }
 
-        statusLabel.setWrapText(true);
-        statusLabel.setVisible(false);
-        statusLabel.setManaged(false);
+        this.statusLabel.setWrapText(true);
+        this.statusLabel.setVisible(false);
+        this.statusLabel.setManaged(false);
 
-        saveButton.getStyleClass().addAll("primary", "form-save-button");
-        saveButton.setFocusTraversable(false);
+        this.saveButton.getStyleClass().addAll("primary", "form-save-button");
+        this.saveButton.setFocusTraversable(false);
 
-        cancelButton.getStyleClass().add("form-cancel-button");
-        cancelButton.setOnAction(e -> onCancelTransaction.run());
+        this.cancelButton.getStyleClass().add("form-cancel-button");
+        this.cancelButton.setOnAction(e -> onCancelTransaction.run());
 
         HBox buttonRow = new HBox(10, cancelButton, saveButton);
         buttonRow.setAlignment(Pos.CENTER_RIGHT);
 
         getChildren().addAll(
                 title,
-                formLabel("Valor", true), valueField,
-                formLabel("Tipo", true), typeBox,
-                formLabel("Forma de pagamento", true), paymentMethodBox,
-                formLabel("Descrição", false), descriptionArea,
-                formLabel("Data", false), datePicker,
-                formLabel("Conta", true), rowWithAddButton(bankAccountBox, this::promptNewBankAccount),
-                formLabel("Categoria", false), rowWithAddButton(categoryBox, this::promptNewCategory),
-                statusLabel,
+                this.formLabel("Valor", true), this.valueField,
+                this.formLabel("Tipo", true), this.typeBox,
+                this.formLabel("Forma de pagamento", true), this.paymentMethodBox,
+                this.formLabel("Descrição", false), this.descriptionArea,
+                this.formLabel("Data", false), this.datePicker,
+                this.formLabel("Conta", true), this.rowWithAddButton(bankAccountBox, this::promptNewBankAccount),
+                this.formLabel("Categoria", false), this.rowWithAddButton(categoryBox, this::promptNewCategory),
+                this.statusLabel,
                 buttonRow);
 
         getStylesheets().add(getClass().getResource("FormTransaction.css").toExternalForm());
@@ -140,6 +140,43 @@ public class FormTransaction extends VBox {
         addButton.setOnAction(e -> onAdd.run());
 
         return new HBox(8, comboBox, addButton);
+    }
+
+    private void configureValueField(TextField valueField) {
+        java.util.function.UnaryOperator<TextFormatter.Change> filter = change -> {
+            String text = change.getControlNewText();
+            if (text.matches("[0-9.,]*")) {
+                return change;
+            }
+            return null;
+        };
+
+        valueField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+            if (!isNowFocused) {
+                try {
+                    String texto = valueField.getText();
+                    if (texto == null || texto.isEmpty())
+                        return;
+
+                    String textoLimpo = texto.replace(".", "").replace(",", ".");
+                    BigDecimal valorDigitado = new BigDecimal(textoLimpo);
+
+                    java.text.NumberFormat format = java.text.NumberFormat
+                            .getNumberInstance(java.util.Locale.of("pt", "BR"));
+                    format.setMinimumFractionDigits(2);
+                    format.setMaximumFractionDigits(2);
+
+                    valueField.setText(format.format(valorDigitado));
+
+                } catch (NumberFormatException e) {
+
+                }
+            }
+        });
+
+        valueField.setTextFormatter(new TextFormatter<>(filter));
+        valueField.setPromptText("0,00");
+        valueField.getStyleClass().add("form-input");
     }
 
     private <T> void configureEnumBox(ComboBox<T> box, java.util.function.Function<T, String> translator) {
@@ -420,7 +457,11 @@ public class FormTransaction extends VBox {
     }
 
     private BigDecimal getValue() {
-        String text = valueField.getText().trim().replace(",", ".");
-        return new BigDecimal(text);
+        String text = valueField.getText().trim();
+
+        String textoSemPontos = text.replace(".", "");
+        String textoLimpo = textoSemPontos.replace(",", ".");
+
+        return new BigDecimal(textoLimpo);
     }
 }

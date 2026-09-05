@@ -2,7 +2,7 @@ package ui.javafx.components.financialCards.financialCard;
 
 import java.math.BigDecimal;
 import java.util.List;
-
+import utils.FormatCurrency;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
@@ -40,7 +40,7 @@ public abstract class FinancialCard extends VBox {
         Label titleLabel = new Label(title);
         titleLabel.getStyleClass().addAll("text-primary", "title");
 
-        this.valueLabel = new Label(value.toString());
+        this.valueLabel = new Label(FormatCurrency.formatCurrency(value));
         valueLabel.getStyleClass().addAll("text-primary", "value");
 
         this.chartCanvas = new Canvas(CHART_WIDTH, CHART_HEIGHT);
@@ -49,10 +49,11 @@ public abstract class FinancialCard extends VBox {
         getChildren().addAll(titleLabel, valueLabel, chartCanvas);
     }
 
+
     public void refreshData(BigDecimal newValue, List<DailyFinancialData> dailyFinancialData) {
-        this.valueLabel.setText(newValue.toString());
+        this.valueLabel.setText(FormatCurrency.formatCurrency(newValue));
         this.dailyFinancialData = dailyFinancialData;
-        
+
         drawMiniChart();
     }
 
@@ -78,7 +79,7 @@ public abstract class FinancialCard extends VBox {
      * Selects the appropriate chart according to the card's purpose.
      */
     private void drawMiniChart() {
-        //Reset Graphic
+        // Reset Graphic
         GraphicsContext gc = chartCanvas.getGraphicsContext2D();
         gc.clearRect(0, 0, chartCanvas.getWidth(), chartCanvas.getHeight());
 

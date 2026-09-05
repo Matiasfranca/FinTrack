@@ -33,7 +33,7 @@ public class MonthlyOverview extends VBox {
 
     private static final double CANDLE_WIDTH = 12;
 
-    //Days for month
+    // Days for month
     private int daysInMonth = LocalDate.now().lengthOfMonth();
 
     private final FinTracker finTracker;
@@ -124,7 +124,7 @@ public class MonthlyOverview extends VBox {
     }
 
     private String formatMonth(LocalDate date) {
-        String month = date.getMonth().getDisplayName(TextStyle.FULL, new Locale("pt", "BR"));
+        String month = date.getMonth().getDisplayName(TextStyle.FULL, Locale.of("pt", "BR"));
         return Character.toUpperCase(month.charAt(0)) + month.substring(1) + " " + date.getYear();
     }
 
