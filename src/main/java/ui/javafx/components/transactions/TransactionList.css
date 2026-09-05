@@ -68,3 +68,25 @@
     -fx-background-radius: 8px;
     -fx-padding: 20px;
 }
+
+/* =========================
+   Transactions list
+   ========================= */
+
+.transaction-main-row {
+    -fx-cursor: hand; 
+}
+
+.transaction-main-row:hover {
+    -fx-background-color: #28282C;
+    -fx-background-radius: 4px;
+}
+
+.detail-label {
+    -fx-font-size: 12px;
+}
+
+.detail-value {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}

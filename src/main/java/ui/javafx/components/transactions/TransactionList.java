@@ -2,13 +2,17 @@ package ui.javafx.components.transactions;
 
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
+import model.BankAccount;
+import model.Category;
 import model.Transaction;
 import ui.javafx.events.TransactionEventBus;
 import ui.javafx.events.TransactionEventBus.Event;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import controller.FinTracker;
@@ -18,6 +22,9 @@ public class TransactionList extends VBox {
 
     private final FinTracker finTracker = new FinTracker();
     private final VBox rows = new VBox();
+
+    private final Map<Integer, String> accountMap = new HashMap<>();
+    private final Map<Integer, String> categoryMap = new HashMap<>();
 
     public TransactionList(Consumer<Transaction> onEditTransaction) {
 
@@ -29,17 +36,29 @@ public class TransactionList extends VBox {
 
         this.rows.getStyleClass().add("transaction-rows");
 
-        List<Transaction> transactions = null;
         try {
-            transactions = finTracker.listTransactionsByMonth(YearMonth.from(LocalDate.now()));
+            List<Transaction> transactions = finTracker.listTransactionsByMonth(YearMonth.from(LocalDate.now()));
+            List<BankAccount> bankAccounts = finTracker.listActiveBankAccounts();
+
+            for (BankAccount acc : bankAccounts) {
+                accountMap.put(acc.getId(), acc.getName());
+            }
+
+            List<Category> categories = finTracker.listAllCategories();
+            for (Category cat : categories) {
+                categoryMap.put(cat.getId(), cat.getName());
+            }
+
+            for (Transaction transaction : transactions) {
+                this.rows.getChildren()
+                        .add(new TransactionRow(transaction, accountMap, categoryMap, onEditTransaction));
+            }
+
         } catch (InvalidInput e) {
             e.printStackTrace();
         }
-        for (Transaction transaction : transactions) {
-            this.rows.getChildren().add(new TransactionRow(transaction, onEditTransaction));
-        }
 
-        //Events
+        // Os eventos continuam os MESMOS!
         TransactionEventBus.getInstance().subscribe(TransactionEventBus.Type.CREATED, e -> {
             this.addList(e, onEditTransaction);
         });
@@ -53,31 +72,40 @@ public class TransactionList extends VBox {
         });
 
         getChildren().addAll(title, this.rows);
-
         getStylesheets().add(getClass().getResource("TransactionList.css").toExternalForm());
     }
 
     private void addList(Event e, Consumer<Transaction> onEditTransaction) {
-
         Transaction novaTransacao = e.transaction();
-        TransactionRow linhaNova = new TransactionRow(novaTransacao, onEditTransaction);
+
+        if (novaTransacao.getCategoryId() != null && !categoryMap.containsKey(novaTransacao.getCategoryId())) {
+            List<Category> categories = finTracker.listAllCategories();
+            for (Category cat : categories) {
+                categoryMap.put(cat.getId(), cat.getName());
+            }
+        }
+
+        if (novaTransacao.getBankAccountId() != null && !accountMap.containsKey(novaTransacao.getBankAccountId())) {
+            List<BankAccount> bankAccounts = finTracker.listActiveBankAccounts();
+            for (BankAccount acc : bankAccounts) {
+                accountMap.put(acc.getId(), acc.getName());
+            }
+        }
+        
+        TransactionRow linhaNova = new TransactionRow(novaTransacao, accountMap, categoryMap, onEditTransaction);
 
         int posicaoParaInserir = this.rows.getChildren().size();
 
         for (int i = 0; i < this.rows.getChildren().size(); i++) {
-
             if (this.rows.getChildren().get(i) instanceof TransactionRow linhaAtual) {
                 Transaction transacaoAtual = linhaAtual.getTransaction();
-
                 if (novaTransacao.getDate().isAfter(transacaoAtual.getDate()) ||
                         novaTransacao.getDate().isEqual(transacaoAtual.getDate())) {
-
                     posicaoParaInserir = i;
                     break;
                 }
             }
         }
-
         this.rows.getChildren().add(posicaoParaInserir, linhaNova);
     }
 
