@@ -62,17 +62,18 @@ public class ConsoleUI {
         BigDecimal value = BigDecimal.valueOf(val);
 
         ConsoleFormatter.showInputType();
-        int typeOpt = ConsoleInput.readInt(sc, 3);
+        int typeOpt = ConsoleInput.readInt(sc, 4);
         TransactionType type = switch (typeOpt) {
             case 1 -> TransactionType.INCOME;
             case 3 -> TransactionType.INVESTMENT;
+            case 4 -> TransactionType.REDEMPTION;
             default -> TransactionType.EXPENSE;
         };
 
         List<BankAccount> activeAccounts = finTracker.listActiveBankAccounts();
         BankAccount account = null;
 
-        if (activeAccounts.isEmpty()) {
+        if (activeAccounts.isEmpty() && type != TransactionType.REDEMPTION) {
             System.out.println("\nNenhuma conta cadastrada. Vamos criar uma nova.");
             System.out.print("Nome da Conta (ex: Nubank): ");
             String bankName = ConsoleInput.readString(sc);
@@ -82,9 +83,15 @@ public class ConsoleUI {
             BankAccountType accType = mapBankAccountType(typeAccOpt);
 
             account = new BankAccount(bankName, accType);
+        } else if (activeAccounts.isEmpty()) {
+            ConsoleFormatter.showError("Você precisa ter contas cadastradas para realizar um resgate.");
+            ConsoleFormatter.pause(sc);
+            return;
         } else {
             ConsoleFormatter.showBankAccounts(activeAccounts);
-            int accOpt = ConsoleInput.readInt(sc, activeAccounts.size() + 1);
+            int maxOpt = (type == TransactionType.REDEMPTION) ? activeAccounts.size() : activeAccounts.size() + 1;
+            int accOpt = ConsoleInput.readInt(sc, maxOpt);
+
             if (accOpt == activeAccounts.size() + 1) {
                 System.out.print("Nome da Nova Conta: ");
                 String bankName = ConsoleInput.readString(sc);
@@ -92,7 +99,6 @@ public class ConsoleUI {
                 ConsoleFormatter.showBankAccountTypes();
                 int typeAccOpt = ConsoleInput.readInt(sc, 4);
                 BankAccountType accType = mapBankAccountType(typeAccOpt);
-
                 account = new BankAccount(bankName, accType);
             } else if (accOpt > 0 && accOpt <= activeAccounts.size()) {
                 account = activeAccounts.get(accOpt - 1);
@@ -114,15 +120,21 @@ public class ConsoleUI {
 
         List<Category> categories = finTracker.listAllCategories();
         Category category = null;
-        if (categories.isEmpty()) {
-            System.out.println("\nNenhuma categoria cadastrada.");
-            System.out.print("Deseja criar uma categoria agora? [1] Sim / [2] Não (Deixar em branco): ");
-            int createCat = ConsoleInput.readInt(sc, 2);
 
-            if (createCat == 1) {
-                System.out.print("Nome da Nova Categoria (ex: Alimentação): ");
+        if (!categories.isEmpty()) {
+            ConsoleFormatter.showCategories(categories);
+
+            int maxCatOpt = (type == TransactionType.REDEMPTION) ? categories.size() + 1 : categories.size() + 2;
+            int catOpt = ConsoleInput.readInt(sc, maxCatOpt);
+
+            if (catOpt == categories.size() + 2 && type != TransactionType.REDEMPTION) {
+                System.out.print("Nome da Nova Categoria: ");
                 String catName = ConsoleInput.readString(sc);
                 category = new Category(catName, "#CCCCCC");
+            } else if (catOpt == categories.size() + 1 && type != TransactionType.REDEMPTION) {
+                category = null;
+            } else if (catOpt > 0 && catOpt <= categories.size()) {
+                category = categories.get(catOpt - 1);
             }
         } else {
             ConsoleFormatter.showCategories(categories);
