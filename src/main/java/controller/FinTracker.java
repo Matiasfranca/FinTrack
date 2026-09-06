@@ -101,7 +101,7 @@ public class FinTracker {
         transactionRepository.delete(transaction.getId());
     }
 
-    // --- LIST ---
+    // --- List transactions ---
 
     public List<Transaction> listTransactionsByMonth(YearMonth yearMonth) throws InvalidInput {
         if (yearMonth == null) {
@@ -110,6 +110,12 @@ public class FinTracker {
 
         return transactionRepository.findByMonth(yearMonth);
     }
+
+    public List<Transaction> listGlobalTransactions(int limit, int offset) {
+        return transactionRepository.listGlobalTransactions(limit, offset);
+    }
+
+    // List of dashboard
 
     public List<CategoryChartData> getCategoryDistribution(YearMonth yearMonth, TransactionType type)
             throws InvalidInput {
@@ -120,15 +126,13 @@ public class FinTracker {
         return dashboardRepository.getCategoryDistribution(monthId, type);
     }
 
-    public List<DailyFinancialData> getMonthlyOverview(YearMonth yearMonth) throws InvalidInput {
-        if (yearMonth == null) {
-            throw new InvalidInput("YearMonth cannot be null.");
+    public List<CategoryChartData> getGlobalCategoryDistribution(TransactionType type)
+            throws InvalidInput {
+        if (type == null) {
+            throw new InvalidInput("TransactionType cannot be null.");
         }
-        int monthId = monthRepository.getOrCreate(yearMonth).getId();
-        return dashboardRepository.getMonthlyOverview(monthId);
+        return dashboardRepository.getGlobalCategoryDistribution(type);
     }
-
-    // --- CARD ---
 
     public CardData getMonthlyCard(YearMonth yearMonth) throws InvalidInput {
         if (yearMonth == null) {
@@ -136,6 +140,18 @@ public class FinTracker {
         }
         int monthId = monthRepository.getOrCreate(yearMonth).getId();
         return dashboardRepository.getMonthlyCard(monthId);
+    }
+
+    public CardData getGlobalCard() throws InvalidInput {
+        return dashboardRepository.getGlobalCard();
+    }
+
+    public List<DailyFinancialData> getMonthlyOverview(YearMonth yearMonth) throws InvalidInput {
+        if (yearMonth == null) {
+            throw new InvalidInput("YearMonth cannot be null.");
+        }
+        int monthId = monthRepository.getOrCreate(yearMonth).getId();
+        return dashboardRepository.getMonthlyOverview(monthId);
     }
 
     // --- CATEGORIES ---

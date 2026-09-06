@@ -100,6 +100,49 @@ public class SqliteTransactionRepository implements TransactionRepository {
     }
 
     @Override
+    public List<Transaction> listGlobalTransactions(int limit, int offset) {
+        
+        String sql = """
+                SELECT id, date, description, value, type, payment_method, bank_account_id, category_id
+                FROM "TRANSACTION"
+                ORDER BY date DESC, id DESC
+                LIMIT ? OFFSET ?
+                """;
+
+        List<Transaction> result = new ArrayList<>();
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, limit);
+            stmt.setInt(2, offset);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+
+                    int rawCategoryId = rs.getInt("category_id");
+                    Integer categoryId = rs.wasNull() ? null : rawCategoryId;
+
+                    result.add(new Transaction(
+                            rs.getInt("id"),
+                            rs.getString("description"),
+                            rs.getBigDecimal("value"),
+                            TransactionType.valueOf(rs.getString("type")),
+                            PaymentMethod.valueOf(rs.getString("payment_method")),
+                            LocalDate.parse(rs.getString("date")),
+                            rs.getInt("bank_account_id"),
+                            categoryId));
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to retrieve global transactions", e);
+        }
+
+        return result;
+    }
+
+    @Override
     public void delete(int transactionId) {
         String sql = "DELETE FROM \"TRANSACTION\" WHERE id = ?";
         try (Connection conn = DatabaseConnection.getConnection();

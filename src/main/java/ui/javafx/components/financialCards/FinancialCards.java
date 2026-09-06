@@ -13,12 +13,12 @@ import ui.javafx.components.financialCards.financialCard.expenseCard.ExpenseCard
 import ui.javafx.components.financialCards.financialCard.incomeCard.IncomeCard;
 import ui.javafx.events.TransactionEventBus;
 import ui.javafx.events.TransactionEventBus.Event;
-import ui.javafx.events.TransactionEventBus.Type;
 
 public class FinancialCards extends HBox {
 
     private final FinTracker fintracker = new FinTracker();
     private CardData cardData;
+    private CardData globCardData;
     private List<DailyFinancialData> newDailyData;
 
     private BalanceCard balanceCard;
@@ -29,40 +29,37 @@ public class FinancialCards extends HBox {
 
         setSpacing(40);
 
-        try {
-            this.cardData = fintracker.getMonthlyCard(YearMonth.now());
-            this.newDailyData = fintracker.getMonthlyOverview(YearMonth.now());
-        } catch (InvalidInput e) {
-            e.printStackTrace();
-        }
+        this.fetchData();
 
-        this.balanceCard = new BalanceCard(cardData, newDailyData);
-        this.incomeCard = new IncomeCard(cardData, newDailyData);
-        this.expenseCard = new ExpenseCard(cardData, newDailyData);
+        this.balanceCard = new BalanceCard(this.globCardData, newDailyData);
+        this.incomeCard = new IncomeCard(this.cardData, newDailyData);
+        this.expenseCard = new ExpenseCard(this.cardData, newDailyData);
 
-        getChildren().addAll(balanceCard, incomeCard, expenseCard);
+        getChildren().addAll(this.balanceCard, this.incomeCard, this.expenseCard);
 
-        TransactionEventBus.getInstance().subscribe(Type.CREATED, this::updateAllCards);
-        TransactionEventBus.getInstance().subscribe(Type.UPDATED, this::updateAllCards);
-        TransactionEventBus.getInstance().subscribe(Type.DELETED, this::updateAllCards);
+        TransactionEventBus.getInstance().subscribe(this::updateAllCards);
 
         // Component stylesheet
         getStylesheets().add(getClass().getResource("FinancialCards.css").toExternalForm());
 
     }
 
-    private void updateAllCards(Event e) {
-        CardData newData = this.cardData;
+    private void fetchData() {
         try {
-            newData = fintracker.getMonthlyCard(YearMonth.now());
-            List<DailyFinancialData> newDailyData = fintracker.getMonthlyOverview(YearMonth.now());
-            balanceCard.refreshData(newData.getCashFlowBalance(), newDailyData);
-            incomeCard.refreshData(newData.getTotalIncome(), newDailyData);
-            expenseCard.refreshData(newData.getTotalExpense(), newDailyData);
-        } catch (InvalidInput e1) {
-            e1.printStackTrace();
+            this.cardData = this.fintracker.getMonthlyCard(YearMonth.now());
+            this.globCardData = this.fintracker.getGlobalCard();
+            this.newDailyData = this.fintracker.getMonthlyOverview(YearMonth.now());
+        } catch (InvalidInput e) {
+            e.printStackTrace();
         }
+    }
 
+    private void updateAllCards(Event e) {
+        this.fetchData();
+
+        this.balanceCard.refreshData(this.globCardData.getCashFlowBalance(), this.newDailyData);
+        this.incomeCard.refreshData(this.cardData.getTotalIncome(), this.newDailyData);
+        this.expenseCard.refreshData(this.cardData.getTotalExpense(), this.newDailyData);
     }
 
 }

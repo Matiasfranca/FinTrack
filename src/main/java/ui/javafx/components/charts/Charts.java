@@ -12,7 +12,6 @@ import ui.javafx.components.charts.expenseDistribution.ExpenseDistribution;
 import ui.javafx.components.charts.monthlyOverview.MonthlyOverview;
 import ui.javafx.events.TransactionEventBus;
 import ui.javafx.events.TransactionEventBus.Event;
-import ui.javafx.events.TransactionEventBus.Type;
 
 public class Charts extends HBox {
 
@@ -30,6 +29,7 @@ public class Charts extends HBox {
         fetchData();
 
         setSpacing(40);
+        setAlignment(javafx.geometry.Pos.TOP_LEFT);
 
         this.monthlyOverview = new MonthlyOverview(this.dailyFinancialData, this.finTracker);
         this.expenseDistribution = new ExpenseDistribution(this.expenseData, this.investmentData);
@@ -40,9 +40,7 @@ public class Charts extends HBox {
         getStylesheets().add(getClass().getResource("Charts.css").toExternalForm());
 
         // Events
-        TransactionEventBus.getInstance().subscribe(Type.CREATED, this::updateCharts);
-        TransactionEventBus.getInstance().subscribe(Type.UPDATED, this::updateCharts);
-        TransactionEventBus.getInstance().subscribe(Type.DELETED, this::updateCharts);
+        TransactionEventBus.getInstance().subscribe(this::updateCharts);
 
     }
 
@@ -51,7 +49,7 @@ public class Charts extends HBox {
             YearMonth now = YearMonth.now();
             this.dailyFinancialData = this.finTracker.getMonthlyOverview(now);
             this.expenseData = this.finTracker.getCategoryDistribution(now, TransactionType.EXPENSE);
-            this.investmentData = this.finTracker.getCategoryDistribution(now, TransactionType.INVESTMENT);
+            this.investmentData = this.finTracker.getGlobalCategoryDistribution(TransactionType.INVESTMENT);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -22,22 +22,12 @@ public class ExpenseDistribution extends VBox {
         EXPENSE, INVESTMENT
     }
 
-    private static final String[] FALLBACK_PALETTE = {
-            "#C9A227",
-            "#A8894A",
-            "#7E8B5A",
-            "#628B78",
-            "#647A8A",
-            "#7A708C",
-            "#986B73",
-            "#A56F4F",
-            "#7B7770"
-    };
-
     private static final double SLICE_SEPARATOR_WIDTH = 1.0;
 
     private static final double CANVAS_WIDTH = 380;
-    private static final double CANVAS_HEIGHT = 420;
+    private static final double MIN_CANVAS_HEIGHT = 420;
+    private static final double LEGEND_ITEM_HEIGHT = 22;
+    private static final double LEGEND_BOTTOM_PADDING = 20;
 
     private static final double CHART_SIZE = 250;
     private static final double CHART_X = (CANVAS_WIDTH - CHART_SIZE) / 2;
@@ -54,7 +44,7 @@ public class ExpenseDistribution extends VBox {
 
         setSpacing(10);
 
-        this.canvas = new Canvas(CANVAS_WIDTH, CANVAS_HEIGHT);
+        this.canvas = new Canvas(CANVAS_WIDTH, MIN_CANVAS_HEIGHT);
 
         this.expenseData = expenseData;
         this.investmentData = investmentData;
@@ -101,19 +91,32 @@ public class ExpenseDistribution extends VBox {
     }
 
     private void drawChart(ChartMode mode) {
-        GraphicsContext gc = this.canvas.getGraphicsContext2D();
-        gc.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
         List<CategoryChartData> activeList = (mode == ChartMode.EXPENSE) ? expenseData : investmentData;
 
+        double legendHeight = (activeList == null || activeList.isEmpty())
+                ? 0
+                : activeList.size() * LEGEND_ITEM_HEIGHT;
+
+        double requiredHeight = CHART_Y + CHART_SIZE + 30 + legendHeight + LEGEND_BOTTOM_PADDING;
+        this.canvas.setHeight(Math.max(MIN_CANVAS_HEIGHT, requiredHeight));
+
+        GraphicsContext gc = this.canvas.getGraphicsContext2D();
+        gc.clearRect(0, 0, CANVAS_WIDTH, this.canvas.getHeight());
+
         if (activeList == null || activeList.isEmpty()) {
+            drawEmptyState(gc);
             return;
         }
 
         double totalSum = activeList.stream().mapToDouble(data -> data.getTotalValue().doubleValue()).sum();
 
-        if (totalSum == 0)
+        if (totalSum == 0) {
+            drawEmptyState(gc);
             return;
+        }
+
+        gc.save();
 
         double startAngle = 0;
 
@@ -131,39 +134,52 @@ public class ExpenseDistribution extends VBox {
             startAngle += arcExtent;
         }
 
+        gc.restore();
+
         drawSliceSeparators(gc, activeList, totalSum);
     }
 
     private void drawSliceSeparators(GraphicsContext gc, List<CategoryChartData> activeList, double totalSum) {
 
-        double centerX = CHART_X + CHART_SIZE / 2;
-        double centerY = CHART_Y + CHART_SIZE / 2;
-        double radius = CHART_SIZE / 2;
+        if (activeList.size() > 1) {
 
-        double angle = 0;
+            gc.save();
 
-        gc.setStroke(Color.web("#1C1C1F"));
-        gc.setLineWidth(SLICE_SEPARATOR_WIDTH);
+            double centerX = CHART_X + CHART_SIZE / 2;
+            double centerY = CHART_Y + CHART_SIZE / 2;
+            double radius = CHART_SIZE / 2;
 
-        for (CategoryChartData data : activeList) {
+            double angle = 0;
 
-            double value = data.getTotalValue().doubleValue();
-            double arcExtent = (value / totalSum) * 360.0;
+            gc.setStroke(Color.web("#1C1C1F"));
+            gc.setLineWidth(SLICE_SEPARATOR_WIDTH);
 
-            double radians = Math.toRadians(angle);
+            for (CategoryChartData data : activeList) {
 
-            double x = centerX + Math.cos(radians) * radius;
-            double y = centerY - Math.sin(radians) * radius;
+                double value = data.getTotalValue().doubleValue();
+                double arcExtent = (value / totalSum) * 360.0;
 
-            gc.strokeLine(centerX, centerY, x, y);
+                double radians = Math.toRadians(angle);
+                double x = centerX + Math.cos(radians) * radius;
+                double y = centerY - Math.sin(radians) * radius;
 
-            angle += arcExtent;
+                gc.strokeLine(centerX, centerY, x, y);
+
+                angle += arcExtent;
+            }
+
+            gc.restore();
         }
 
         drawLegend(gc, activeList, totalSum);
     }
 
     private void drawLegend(GraphicsContext gc, List<CategoryChartData> activeList, double totalSum) {
+
+        gc.save();
+
+        gc.setTextAlign(javafx.scene.text.TextAlignment.LEFT);
+
         double legendY = CHART_Y + CHART_SIZE + 30;
         double dotSize = 10;
 
@@ -184,6 +200,25 @@ public class ExpenseDistribution extends VBox {
             String labelText = String.format("%s  %.1f%%", data.getCategoryName(), percentage);
             gc.fillText(labelText, 40, y + dotSize);
         }
+
+        gc.restore();
+    }
+
+    private void drawEmptyState(GraphicsContext gc) {
+
+        gc.save();
+
+        gc.setStroke(Color.web("#28282C"));
+        gc.setLineWidth(1.5);
+        gc.strokeOval(CHART_X, CHART_Y, CHART_SIZE, CHART_SIZE);
+
+        gc.setFill(Color.web("#9A9A9E"));
+        gc.setFont(javafx.scene.text.Font.font(13));
+        gc.setTextAlign(javafx.scene.text.TextAlignment.CENTER);
+        gc.fillText("Nenhum dado nesse período",
+                CHART_X + CHART_SIZE / 2, CHART_Y + CHART_SIZE / 2);
+
+        gc.restore();
     }
 
     private Color getCategoryColor(String hexColor, int index) {
@@ -194,20 +229,7 @@ public class ExpenseDistribution extends VBox {
         } catch (IllegalArgumentException e) {
         }
 
-        if (index < FALLBACK_PALETTE.length) {
-            return Color.web(FALLBACK_PALETTE[index]);
-        }
-
-        Color base = Color.web(
-                FALLBACK_PALETTE[FALLBACK_PALETTE.length - 1]);
-
-        double hue = (base.getHue() + index * 137.5) % 360;
-
-        return Color.hsb(
-                hue,
-                base.getSaturation(),
-                base.getBrightness());
-
+        return ColorGenerator.get(index);
     }
 
     public void refreshData(List<CategoryChartData> expenseData, List<CategoryChartData> investmentData) {
