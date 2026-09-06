@@ -79,6 +79,7 @@ public class ConsoleFormatter {
                 case INCOME -> "Receita";
                 case EXPENSE -> "Despesa";
                 case INVESTMENT -> "Investimento";
+                case REDEMPTION -> "resgate";
             };
 
             System.out.printf(

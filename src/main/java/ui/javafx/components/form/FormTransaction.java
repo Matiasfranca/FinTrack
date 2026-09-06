@@ -200,6 +200,7 @@ public class FormTransaction extends VBox {
             case INCOME -> "Receita";
             case EXPENSE -> "Despesa";
             case INVESTMENT -> "Investimento";
+            case REDEMPTION -> "Resgate";
         };
     }
 

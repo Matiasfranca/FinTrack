@@ -161,7 +161,8 @@ public class SqliteDashboardRepository implements DashboardRepository {
         String sql = "SELECT " +
                 "IFNULL(SUM(CASE WHEN type = 'INCOME' THEN value ELSE 0 END), 0) AS total_income, " +
                 "IFNULL(SUM(CASE WHEN type = 'EXPENSE' THEN value ELSE 0 END), 0) AS total_expense, " +
-                "IFNULL(SUM(CASE WHEN type = 'INVESTMENT' THEN value ELSE 0 END), 0) AS total_investment " +
+                "IFNULL(SUM(CASE WHEN type = 'INVESTMENT' THEN value ELSE 0 END), 0) AS total_investment, " +
+                "IFNULL(SUM(CASE WHEN type = 'REDEMPTION' THEN value ELSE 0 END), 0) AS total_redemption " +
                 "FROM \"TRANSACTION\"";
 
         try (Connection conn = DatabaseConnection.getConnection();
@@ -172,8 +173,10 @@ public class SqliteDashboardRepository implements DashboardRepository {
                 BigDecimal income = rs.getBigDecimal("total_income");
                 BigDecimal expense = rs.getBigDecimal("total_expense");
                 BigDecimal investment = rs.getBigDecimal("total_investment");
+                BigDecimal redemption = rs.getBigDecimal("total_redemption");
 
-                return new CardData(income, expense, investment);
+
+                return new CardData(income, expense, investment, redemption);
             }
         } catch (SQLException e) {
             throw new DataAccessException("Failed to generate global card summary data", e);

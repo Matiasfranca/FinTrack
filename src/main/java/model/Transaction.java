@@ -68,7 +68,7 @@ public class Transaction {
     }
 
     public boolean isReceipt() {
-        return type == TransactionType.INCOME;
+        return type == TransactionType.INCOME || type == TransactionType.REDEMPTION;
     }
 
     public void setId(Integer id) {

@@ -21,6 +21,6 @@ public class DailyFinancialData {
     public BigDecimal getInvestment() { return investment; }
     
     public BigDecimal getBalance() {
-        return income.subtract(expense).subtract(investment);
+        return income.subtract(expense);
     }
 }

@@ -52,7 +52,8 @@ CREATE TABLE IF NOT EXISTS "TRANSACTION" (
         type IN (
             'INCOME',
             'EXPENSE',
-            'INVESTMENT'
+            'INVESTMENT',
+            'REDEMPTION'
         )
     ),
     payment_method TEXT NOT NULL CHECK (
