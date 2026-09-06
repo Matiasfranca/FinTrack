@@ -39,7 +39,11 @@
 
 .text-area {
     -fx-background-color: #28282C;
+    -fx-text-fill: #F5F5F0;          
+    -fx-prompt-text-fill: #6B6B70;   
     -fx-background-radius: 6px;
+    -fx-border-color: transparent;
+    -fx-padding: 4px; 
 }
 
 .text-area .content {
@@ -51,7 +55,7 @@
     -fx-fill: #F5F5F0;
 }
 
-.text-area:focused .content {
+.text-area:focused {
     -fx-border-color: #C9A227;
     -fx-border-width: 1px;
     -fx-border-radius: 6px;
@@ -64,6 +68,37 @@
 
 .text-area .scroll-pane .viewport {
     -fx-background-color: #28282C;
+}
+
+.text-area .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 10px;
+}
+
+.text-area .scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.text-area .scroll-bar:vertical .thumb {
+    -fx-background-color: #6B6B70;
+    -fx-background-radius: 5px;
+}
+
+.text-area .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #9A9A9E;
+}
+
+.text-area .scroll-bar:vertical .increment-button,
+.text-area .scroll-bar:vertical .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.text-area .scroll-bar:vertical .increment-arrow,
+.text-area .scroll-bar:vertical .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0;
 }
 
 .text-area .corner {
