@@ -3,6 +3,7 @@ package repository.sqlite;
 import database.DatabaseConnection;
 import exceptions.DataAccessException;
 import model.Category;
+import model.TransactionType;
 import repository.CategoryRepository;
 
 import java.sql.*;
@@ -121,6 +122,38 @@ public class SqliteCategoryRepository implements CategoryRepository {
             }
         } catch (SQLException e) {
             throw new DataAccessException("Failed to retrieve categories", e);
+        }
+
+        return categories;
+    }
+
+    @Override
+    public List<Category> findByTransactionType(TransactionType type) {
+        String sql = """
+                SELECT DISTINCT c.id, c.name, c.color
+                FROM CATEGORY c
+                INNER JOIN "TRANSACTION" t ON t.category_id = c.id
+                WHERE t.type = ?
+                ORDER BY c.name ASC
+                """;
+
+        List<Category> categories = new ArrayList<>();
+
+        try (Connection conn = DatabaseConnection.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, type.name());
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    categories.add(new Category(
+                            rs.getInt("id"),
+                            rs.getString("name"),
+                            rs.getString("color")));
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to retrieve categories for transaction type: " + type, e);
         }
 
         return categories;

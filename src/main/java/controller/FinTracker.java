@@ -164,6 +164,10 @@ public class FinTracker {
         return categoryRepository.findAll();
     }
 
+    public List<Category> listCategoriesByTransactionType(TransactionType query) {
+        return categoryRepository.findByTransactionType(query);
+    }
+
     public void updateCategory(Category category) throws InvalidInput {
         if (category == null || category.getId() <= 0 || category.getName() == null || category.getName().isBlank()) {
             throw new InvalidInput("Cannot update category with invalid ID or name.");

@@ -47,6 +47,9 @@ public class FormTransaction extends VBox {
     private final Button cancelButton = new Button("Cancelar");
     private final Label statusLabel = new Label();
 
+    private final Button addBankAccountButton = new Button("+");
+    private final Button addCategoryButton = new Button("+");
+
     public FormTransaction(Runnable onCancelTransaction) {
         this(onCancelTransaction, null);
     }
@@ -73,13 +76,25 @@ public class FormTransaction extends VBox {
         this.datePicker.setMaxWidth(Double.MAX_VALUE);
 
         this.configureEnumBox(this.typeBox, this::translateType);
-        this.typeBox.getSelectionModel().selectFirst();
+        TransactionType initialType = (editingTransaction != null)
+                ? editingTransaction.getTransactionType()
+                : TransactionType.INCOME;
+        this.typeBox.setValue(initialType);
+
+        this.loadCategoriesForType(initialType, editingTransaction);
+        this.toggleAddButtons(initialType);
+
+        this.typeBox.valueProperty().addListener((obs, oldType, newType) -> {
+            if (newType != null && newType != oldType) {
+                this.loadCategoriesForType(newType, null);
+                this.toggleAddButtons(newType);
+            }
+        });
 
         this.configureEnumBox(this.paymentMethodBox, this::translatePaymentMethod);
         this.paymentMethodBox.getSelectionModel().selectFirst();
 
         this.configureBankAccountBox(editingTransaction);
-        this.configureCategoryOptionBox(editingTransaction);
 
         if (editingTransaction != null) {
             this.valueField.setText(FormatCurrency.formatCurrency(editingTransaction.getValue()).substring(3));
@@ -115,12 +130,21 @@ public class FormTransaction extends VBox {
                 this.formLabel("Forma de pagamento", true), this.paymentMethodBox,
                 this.formLabel("Descrição", false), this.descriptionArea,
                 this.formLabel("Data", false), this.datePicker,
-                this.formLabel("Conta", true), this.rowWithAddButton(bankAccountBox, this::promptNewBankAccount),
-                this.formLabel("Categoria", false), this.rowWithAddButton(categoryBox, this::promptNewCategory),
+                this.formLabel("Conta", true),
+                this.rowWithAddButton(bankAccountBox, addBankAccountButton, this::promptNewBankAccount),
+                this.formLabel("Categoria", false),
+                this.rowWithAddButton(categoryBox, addCategoryButton, this::promptNewCategory),
                 this.statusLabel,
                 buttonRow);
 
         getStylesheets().add(getClass().getResource("FormTransaction.css").toExternalForm());
+    }
+
+    private void toggleAddButtons(TransactionType type) {
+        boolean isRedemption = (type == TransactionType.REDEMPTION);
+
+        addBankAccountButton.setDisable(isRedemption);
+        addCategoryButton.setDisable(isRedemption);
     }
 
     private Label formLabel(String text, boolean required) {
@@ -129,13 +153,12 @@ public class FormTransaction extends VBox {
         return label;
     }
 
-    private HBox rowWithAddButton(ComboBox<?> comboBox, Runnable onAdd) {
+    private HBox rowWithAddButton(ComboBox<?> comboBox, Button addButton, Runnable onAdd) {
 
         comboBox.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(comboBox, Priority.ALWAYS);
         comboBox.getStyleClass().add("form-input");
 
-        Button addButton = new Button("+");
         addButton.getStyleClass().add("form-add-button");
         addButton.setOnAction(e -> onAdd.run());
 
@@ -245,26 +268,33 @@ public class FormTransaction extends VBox {
         thread.start();
     }
 
-    private void configureCategoryOptionBox(Transaction editingTransaction) {
-        categoryBox.getStyleClass().add("form-input");
+    private void loadCategoriesForType(TransactionType selectedType, Transaction editingTransaction) {
+        categoryBox.getItems().clear();
         categoryBox.getItems().add(new CategoryOption(null, "Outros"));
+
+        TransactionType queryType = (selectedType == TransactionType.REDEMPTION)
+                ? TransactionType.INVESTMENT
+                : selectedType;
 
         Task<List<Category>> task = new Task<>() {
             @Override
             protected List<Category> call() {
-                return finTracker.listAllCategories();
+                return finTracker.listCategoriesByTransactionType(queryType);
             }
         };
 
         task.setOnSucceeded(e -> Platform.runLater(() -> {
-            task.getValue().forEach(cat -> categoryBox.getItems().add(new CategoryOption(cat, cat.getName())));
-
+            if (task.getValue() != null) {
+                task.getValue().forEach(cat -> categoryBox.getItems().add(new CategoryOption(cat, cat.getName())));
+            }
             if (editingTransaction != null && editingTransaction.getCategoryId() != null) {
                 categoryBox.getItems().stream()
                         .filter(opt -> opt.category() != null
                                 && opt.category().getId().equals(editingTransaction.getCategoryId()))
                         .findFirst()
-                        .ifPresent(categoryBox.getSelectionModel()::select);
+                        .ifPresentOrElse(
+                                categoryBox.getSelectionModel()::select,
+                                () -> categoryBox.getSelectionModel().selectFirst());
             } else {
                 categoryBox.getSelectionModel().selectFirst();
             }
@@ -289,12 +319,15 @@ public class FormTransaction extends VBox {
                             return finTracker.getOrCreateCategory(new Category(name, null));
                         }
                     };
-                    task.setOnSucceeded(e -> {
-                        CategoryOption option = new CategoryOption(task.getValue(), task.getValue().getName());
+                    task.setOnSucceeded(e -> Platform.runLater(() -> {
+                        Category newCategory = task.getValue();
+                        CategoryOption option = new CategoryOption(newCategory, newCategory.getName());
+
                         categoryBox.getItems().add(option);
                         categoryBox.getSelectionModel().select(option);
+
                         closeChildCard(cardRef[0]);
-                    });
+                    }));
                     task.setOnFailed(e -> task.getException().printStackTrace());
                     Thread thread = new Thread(task);
                     thread.setDaemon(true);
