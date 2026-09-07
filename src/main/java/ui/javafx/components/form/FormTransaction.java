@@ -143,7 +143,6 @@ public class FormTransaction extends VBox {
     private void toggleAddButtons(TransactionType type) {
         boolean isRedemption = (type == TransactionType.REDEMPTION);
 
-        addBankAccountButton.setDisable(isRedemption);
         addCategoryButton.setDisable(isRedemption);
     }
 
