@@ -118,7 +118,7 @@ public class ConsoleUI {
             default -> PaymentMethod.BOLETO;
         };
 
-        List<Category> categories = finTracker.listAllCategories();
+        List<Category> categories = finTracker.listCategoriesByTransactionType(type == TransactionType.REDEMPTION ? TransactionType.INVESTMENT : type);
         Category category = null;
 
         if (!categories.isEmpty()) {
