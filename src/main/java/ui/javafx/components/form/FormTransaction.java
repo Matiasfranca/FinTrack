@@ -181,16 +181,25 @@ public class FormTransaction extends VBox {
                     if (texto == null || texto.isEmpty())
                         return;
 
+                    texto = texto.trim();
+
+                    if (texto.contains(".") && !texto.contains(",")) {
+                        if (texto.matches(".*\\.\\d{1,2}$")) {
+                            int lastDot = texto.lastIndexOf('.');
+                            texto = texto.substring(0, lastDot) + "," + texto.substring(lastDot + 1);
+                        }
+                    }
+
                     String textoLimpo = texto.replace(".", "").replace(",", ".");
                     BigDecimal valorDigitado = new BigDecimal(textoLimpo);
 
-                    java.text.NumberFormat format = java.text.NumberFormat
-                            .getNumberInstance(java.util.Locale.of("pt", "BR"));
-                    format.setMinimumFractionDigits(2);
-                    format.setMaximumFractionDigits(2);
+                    java.text.DecimalFormatSymbols symbols = new java.text.DecimalFormatSymbols(
+                            java.util.Locale.of("pt", "BR"));
+                    symbols.setDecimalSeparator(',');
+                    symbols.setGroupingSeparator('.');
+                    java.text.DecimalFormat df = new java.text.DecimalFormat("#,##0.00", symbols);
 
-                    valueField.setText(format.format(valorDigitado));
-
+                    valueField.setText(df.format(valorDigitado));
                 } catch (NumberFormatException e) {
 
                 }
@@ -270,11 +279,8 @@ public class FormTransaction extends VBox {
 
     private void loadCategoriesForType(TransactionType selectedType, Transaction editingTransaction) {
         categoryBox.getItems().clear();
-        categoryBox.getItems().add(new CategoryOption(null, "Outros"));
 
-        TransactionType queryType = (selectedType == TransactionType.REDEMPTION)
-                ? TransactionType.INVESTMENT
-                : selectedType;
+        TransactionType queryType = selectedType;
 
         Task<List<Category>> task = new Task<>() {
             @Override
@@ -285,6 +291,9 @@ public class FormTransaction extends VBox {
 
         task.setOnSucceeded(e -> Platform.runLater(() -> {
             if (task.getValue() != null) {
+                if (task.getValue().isEmpty() && queryType != TransactionType.REDEMPTION) {
+                    categoryBox.getItems().add(new CategoryOption(null, "Outros"));
+                }
                 task.getValue().forEach(cat -> categoryBox.getItems().add(new CategoryOption(cat, cat.getName())));
             }
             if (editingTransaction != null && editingTransaction.getCategoryId() != null) {
@@ -297,6 +306,13 @@ public class FormTransaction extends VBox {
                                 () -> categoryBox.getSelectionModel().selectFirst());
             } else {
                 categoryBox.getSelectionModel().selectFirst();
+            }
+
+            if (selectedType == TransactionType.REDEMPTION && categoryBox.getItems().isEmpty()) {
+                saveButton.setDisable(true);
+                showStatus("Nenhum investimento disponível para resgatar.", false);
+            } else {
+                saveButton.setDisable(false);
             }
         }));
 
@@ -492,6 +508,13 @@ public class FormTransaction extends VBox {
 
     private BigDecimal getValue() {
         String text = valueField.getText().trim();
+
+        if (text.contains(".") && !text.contains(",")) {
+            if (text.matches(".*\\.\\d{1,2}$")) {
+                int lastDot = text.lastIndexOf('.');
+                text = text.substring(0, lastDot) + "," + text.substring(lastDot + 1);
+            }
+        }
 
         String textoSemPontos = text.replace(".", "");
         String textoLimpo = textoSemPontos.replace(",", ".");

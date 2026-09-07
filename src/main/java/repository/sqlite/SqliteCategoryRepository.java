@@ -130,11 +130,20 @@ public class SqliteCategoryRepository implements CategoryRepository {
     @Override
     public List<Category> findByTransactionType(TransactionType type) {
         String sql = """
-                SELECT DISTINCT c.id, c.name, c.color
+                SELECT c.id, c.name, c.color
                 FROM CATEGORY c
                 INNER JOIN "TRANSACTION" t ON t.category_id = c.id
                 WHERE t.type = ?
-                ORDER BY c.name ASC
+
+                UNION
+
+                SELECT NULL AS id, 'Outros' AS name, NULL AS color
+                WHERE EXISTS (
+                    SELECT 1 FROM "TRANSACTION" t
+                    WHERE t.type = ? AND t.category_id IS NULL
+                )
+
+                ORDER BY name ASC
                 """;
 
         List<Category> categories = new ArrayList<>();
@@ -143,13 +152,16 @@ public class SqliteCategoryRepository implements CategoryRepository {
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, type.name());
+            stmt.setString(2, type.name());
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    categories.add(new Category(
-                            rs.getInt("id"),
-                            rs.getString("name"),
-                            rs.getString("color")));
+
+                    Integer id = rs.getObject("id") != null ? rs.getInt("id") : null;
+                    String name = rs.getString("name");
+                    String color = rs.getString("color");
+
+                    categories.add(new Category(id, name, color));
                 }
             }
         } catch (SQLException e) {

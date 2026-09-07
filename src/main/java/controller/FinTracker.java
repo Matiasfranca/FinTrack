@@ -165,7 +165,11 @@ public class FinTracker {
     }
 
     public List<Category> listCategoriesByTransactionType(TransactionType query) {
-        return categoryRepository.findByTransactionType(query);
+        TransactionType queryType = (query == TransactionType.REDEMPTION)
+                ? TransactionType.INVESTMENT
+                : query;
+
+        return categoryRepository.findByTransactionType(queryType);
     }
 
     public void updateCategory(Category category) throws InvalidInput {
