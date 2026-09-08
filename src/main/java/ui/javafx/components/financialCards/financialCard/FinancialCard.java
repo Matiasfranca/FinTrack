@@ -13,10 +13,10 @@ import model.dto.DailyFinancialData;
 public abstract class FinancialCard extends VBox {
 
     public enum ChartMode {
-        BALANCE, INCOME, EXPENSE
+        BALANCE, INCOME, EXPENSE, INVESTMENT
     }
 
-    private static final double CHART_WIDTH = 333; // The chart width accounts for the card's horizontal padding.
+    private static final double CHART_WIDTH = 220; // The chart width accounts for the card's horizontal padding.
     private static final double CHART_HEIGHT = 50;
 
     private final Canvas chartCanvas;
@@ -37,11 +37,29 @@ public abstract class FinancialCard extends VBox {
         Label titleLabel = new Label(title);
         titleLabel.getStyleClass().addAll("text-primary", "title");
 
-        this.valueLabel = new Label(FormatCurrency.formatCurrency(value));
+        String formattedValue = FormatCurrency.formatCurrency(value);
+        this.valueLabel = new Label(formattedValue);
         valueLabel.getStyleClass().addAll("text-primary", "value");
+        updateValueFontSize(formattedValue);
 
         this.chartCanvas = new Canvas(CHART_WIDTH, CHART_HEIGHT);
+        chartCanvas.setOpacity(0);
+
         drawMiniChart();
+
+        widthProperty().addListener((obs, oldW, newW) -> {
+            // Account for the card's horizontal padding (20px on each side).
+            double innerWidth = newW.doubleValue() - 40;
+
+            // Redraw on any real change — canvas redraw is cheap, no need
+            // for a large epsilon that was hiding sub-pixel updates on
+            // cards other than the last one in the row.
+            if (innerWidth > 0 && innerWidth != chartCanvas.getWidth()) {
+                chartCanvas.setWidth(innerWidth);
+                drawMiniChart();
+            }
+            chartCanvas.setOpacity(1);
+        });
 
         getChildren().add(titleLabel);
         getChildren().add(valueLabel);
@@ -60,8 +78,37 @@ public abstract class FinancialCard extends VBox {
         this(title, value, chartMode, dailyFinancialData, null);
     }
 
+    /**
+     * Shrinks the value label's font size when the formatted number gets
+     * long (e.g. "R$ 12.345.678,90"), and restores the base size for
+     * shorter values. This keeps every card readable regardless of the
+     * magnitude of the number it displays.
+     */
+    private void updateValueFontSize(String formattedValue) {
+
+        // Balance keeps a larger base size (set via CSS ".balance-card .value"),
+        // the other three cards share the default ".value" size.
+        double baseSize = this.getStyleClass().contains("balance-card") ? 34 : 26;
+        double minSize = 16;
+
+        int length = formattedValue.length();
+
+        // Every 2 extra characters beyond 8 shrinks the font by 2px,
+        // never going below minSize.
+        int extraChars = Math.max(0, length - 8);
+        double shrinkSteps = extraChars / 2;
+        double newSize = Math.max(minSize, baseSize - (shrinkSteps * 2));
+
+        // Inline style intentionally overrides the CSS-defined size —
+        // this is the one property meant to vary per-instance, at runtime.
+        valueLabel.setStyle("-fx-font-size: " + newSize + "px;");
+    }
+
     public void refreshData(BigDecimal newValue, List<DailyFinancialData> dailyFinancialData) {
-        this.valueLabel.setText(FormatCurrency.formatCurrency(newValue));
+        String formattedValue = FormatCurrency.formatCurrency(newValue);
+        this.valueLabel.setText(formattedValue);
+        updateValueFontSize(formattedValue);
+
         this.dailyFinancialData = dailyFinancialData;
 
         drawMiniChart();
@@ -79,6 +126,7 @@ public abstract class FinancialCard extends VBox {
                     case BALANCE -> data.getBalance().doubleValue();
                     case INCOME -> data.getIncome().doubleValue();
                     case EXPENSE -> data.getExpense().doubleValue();
+                    case INVESTMENT -> data.getInvestment().doubleValue();
                 };
             });
         }
@@ -98,6 +146,7 @@ public abstract class FinancialCard extends VBox {
             case BALANCE -> drawBalanceChart(gc, values);
             case INCOME -> drawSingleColorChart(gc, values, "#34D399");
             case EXPENSE -> drawSingleColorChart(gc, values, "#F87171");
+            case INVESTMENT -> drawSingleColorChart(gc, values, "#7E8B5A");
         }
     }
 

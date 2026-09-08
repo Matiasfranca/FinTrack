@@ -25,7 +25,7 @@ public class CardData {
     //Getters
     public BigDecimal getTotalIncome() { return income; }
     public BigDecimal getTotalExpense() { return expense; }
-    public BigDecimal getTotalInvestment() { return investment; }
+    public BigDecimal getTotalInvestment() { return investment.subtract(redemption); }
     
     //Setters
     public void setTotalIncome(BigDecimal income) { this.income = income; }

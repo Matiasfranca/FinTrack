@@ -6,11 +6,14 @@ import java.util.List;
 import controller.FinTracker;
 import exceptions.InvalidInput;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import model.dto.CardData;
 import model.dto.DailyFinancialData;
+import ui.javafx.components.financialCards.financialCard.FinancialCard;
 import ui.javafx.components.financialCards.financialCard.balanceCard.BalanceCard;
 import ui.javafx.components.financialCards.financialCard.expenseCard.ExpenseCard;
 import ui.javafx.components.financialCards.financialCard.incomeCard.IncomeCard;
+import ui.javafx.components.financialCards.financialCard.investmentCard.InvestmentCard;
 import ui.javafx.events.TransactionEventBus;
 import ui.javafx.events.TransactionEventBus.Event;
 
@@ -21,9 +24,10 @@ public class FinancialCards extends HBox {
     private CardData globCardData;
     private List<DailyFinancialData> newDailyData;
 
-    private BalanceCard balanceCard;
-    private IncomeCard incomeCard;
-    private ExpenseCard expenseCard;
+    private FinancialCard balanceCard;
+    private FinancialCard incomeCard;
+    private FinancialCard expenseCard;
+    private FinancialCard investmentCard;
 
     public FinancialCards() {
 
@@ -34,8 +38,14 @@ public class FinancialCards extends HBox {
         this.balanceCard = new BalanceCard(this.globCardData, newDailyData);
         this.incomeCard = new IncomeCard(this.cardData, newDailyData);
         this.expenseCard = new ExpenseCard(this.cardData, newDailyData);
+        this.investmentCard = new InvestmentCard(this.globCardData, newDailyData);
 
-        getChildren().addAll(this.balanceCard, this.incomeCard, this.expenseCard);
+        for (var card : List.of(balanceCard, incomeCard, expenseCard, investmentCard)) {
+            HBox.setHgrow(card, Priority.ALWAYS);
+            card.setMaxWidth(Double.MAX_VALUE);
+        }
+
+        getChildren().addAll(balanceCard, incomeCard, expenseCard, investmentCard);
 
         TransactionEventBus.getInstance().subscribe(this::updateAllCards);
 
@@ -60,6 +70,7 @@ public class FinancialCards extends HBox {
         this.balanceCard.refreshData(this.globCardData.getCashFlowBalance(), this.newDailyData);
         this.incomeCard.refreshData(this.cardData.getTotalIncome(), this.newDailyData);
         this.expenseCard.refreshData(this.cardData.getTotalExpense(), this.newDailyData);
+        this.investmentCard.refreshData(this.globCardData.getTotalInvestment(), this.newDailyData);
     }
 
 }
