@@ -7,8 +7,9 @@ import model.dto.DailyFinancialData;
 import ui.javafx.components.financialCards.financialCard.FinancialCard;
 
 public class BalanceCard extends FinancialCard {
-    public BalanceCard(CardData cardData, List<DailyFinancialData> dailyFinancialData) {
-        super("Saldo", cardData.getCashFlowBalance(), ChartMode.BALANCE, dailyFinancialData);
+    public BalanceCard(CardData globalData, List<DailyFinancialData> monthlyData) {
+        super("Saldo", globalData.getCashFlowBalance(), ChartMode.BALANCE, monthlyData,
+                "evolução do mês");
         getStyleClass().add("balance-card");
     }
 

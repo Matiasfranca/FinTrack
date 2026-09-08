@@ -26,17 +26,14 @@ public abstract class FinancialCard extends VBox {
     private final ChartMode chartMode;
 
     public FinancialCard(String title, BigDecimal value, ChartMode chartMode,
-            List<DailyFinancialData> dailyFinancialData) {
+            List<DailyFinancialData> dailyFinancialData, String scopeHint) {
 
         this.chartMode = chartMode;
         this.dailyFinancialData = dailyFinancialData;
 
         setSpacing(14);
-
-        // CSS
         getStyleClass().addAll("card", "surface");
 
-        // Content
         Label titleLabel = new Label(title);
         titleLabel.getStyleClass().addAll("text-primary", "title");
 
@@ -46,9 +43,22 @@ public abstract class FinancialCard extends VBox {
         this.chartCanvas = new Canvas(CHART_WIDTH, CHART_HEIGHT);
         drawMiniChart();
 
-        getChildren().addAll(titleLabel, valueLabel, chartCanvas);
+        getChildren().add(titleLabel);
+        getChildren().add(valueLabel);
+
+        if (scopeHint != null) {
+            Label hint = new Label(scopeHint);
+            hint.getStyleClass().addAll("text-secondary", "scope-hint");
+            getChildren().add(hint);
+        }
+
+        getChildren().add(chartCanvas);
     }
 
+    public FinancialCard(String title, BigDecimal value, ChartMode chartMode,
+            List<DailyFinancialData> dailyFinancialData) {
+        this(title, value, chartMode, dailyFinancialData, null);
+    }
 
     public void refreshData(BigDecimal newValue, List<DailyFinancialData> dailyFinancialData) {
         this.valueLabel.setText(FormatCurrency.formatCurrency(newValue));
