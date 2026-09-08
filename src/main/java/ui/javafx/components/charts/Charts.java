@@ -1,6 +1,8 @@
 package ui.javafx.components.charts;
 
+import java.math.BigDecimal;
 import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.List;
 
 import controller.FinTracker;
@@ -19,7 +21,9 @@ public class Charts extends HBox {
 
     private List<DailyFinancialData> dailyFinancialData;
     private List<CategoryChartData> expenseData;
-    private List<CategoryChartData> investmentData;
+    private List<CategoryChartData> investmentData = new ArrayList<>();
+    private List<CategoryChartData> redemptions;
+    private List<CategoryChartData> netInvestments = new ArrayList<>();
 
     private MonthlyOverview monthlyOverview;
     private ExpenseDistribution expenseDistribution;
@@ -50,6 +54,33 @@ public class Charts extends HBox {
             this.dailyFinancialData = this.finTracker.getMonthlyOverview(now);
             this.expenseData = this.finTracker.getCategoryDistribution(now, TransactionType.EXPENSE);
             this.investmentData = this.finTracker.getGlobalCategoryDistribution(TransactionType.INVESTMENT);
+            this.redemptions = finTracker.getGlobalCategoryDistribution(TransactionType.REDEMPTION);
+
+            this.netInvestments.clear();
+
+            for (CategoryChartData inv : investmentData) {
+                String catName = inv.getCategoryName();
+                BigDecimal currentTotal = inv.getTotalValue();
+
+                BigDecimal totalRedeemed = BigDecimal.ZERO;
+                for (CategoryChartData red : redemptions) {
+                    if (red.getCategoryName().equals(catName)) {
+                        totalRedeemed = totalRedeemed.add(red.getTotalValue());
+                    }
+                }
+
+                BigDecimal netValue = currentTotal.subtract(totalRedeemed);
+
+                if (netValue.compareTo(BigDecimal.ZERO) > 0) {
+                    netInvestments.add(new CategoryChartData(
+                            catName,
+                            inv.getCategoryColor(),
+                            netValue
+                    ));
+                }
+            }
+
+            this.investmentData = netInvestments;
         } catch (Exception e) {
             e.printStackTrace();
         }
