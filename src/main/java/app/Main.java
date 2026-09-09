@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Scanner;
 
 public class Main extends Application {
 
@@ -52,9 +53,17 @@ public class Main extends Application {
     }
 
     private static void runConsole() {
-        java.util.Scanner sc = new java.util.Scanner(System.in);
+        System.out.println("Iniciando modo console...");
+
+        Scanner sc = new Scanner(System.in);
+
+        System.out.println("Criando ConsoleUI...");
         ui.console.ConsoleUI consoleUI = new ui.console.ConsoleUI();
+
+        System.out.println("Iniciando menu...");
         consoleUI.start(sc);
+
+        System.out.println("Console finalizado.");
     }
 
     @Override
@@ -65,8 +74,7 @@ public class Main extends Application {
 
         this.stage = primaryStage;
 
-        FXMLLoader loader =
-                new FXMLLoader(getClass().getResource("Main.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("Main.fxml"));
 
         loader.setController(this);
 
@@ -77,8 +85,7 @@ public class Main extends Application {
         scene.getStylesheets().add(
                 getClass()
                         .getResource("Main.css")
-                        .toExternalForm()
-        );
+                        .toExternalForm());
 
         primaryStage.setTitle("FinTrack");
         primaryStage.setScene(scene);
@@ -141,8 +148,7 @@ public class Main extends Application {
 
             System.err.println(
                     "Failed to open terminal mode: "
-                            + e.getMessage()
-            );
+                            + e.getMessage());
 
             e.printStackTrace();
 
@@ -180,8 +186,7 @@ public class Main extends Application {
 
         if (executable == null) {
             throw new IOException(
-                    "Could not locate the FinTrack executable."
-            );
+                    "Could not locate the FinTrack executable.");
         }
 
         /*
@@ -199,8 +204,7 @@ public class Main extends Application {
                 "cmd.exe",
                 "/k",
                 executable,
-                "--console"
-        ).start();
+                "--console").start();
     }
 
     // ============================================================
@@ -226,9 +230,7 @@ public class Main extends Application {
                             List.of(
                                     "-e",
                                     executable,
-                                    "--console"
-                            )
-                    ),
+                                    "--console")),
 
                     // GNOME
                     new TerminalCommand(
@@ -236,9 +238,7 @@ public class Main extends Application {
                             List.of(
                                     "--",
                                     executable,
-                                    "--console"
-                            )
-                    ),
+                                    "--console")),
 
                     // KDE
                     new TerminalCommand(
@@ -246,18 +246,14 @@ public class Main extends Application {
                             List.of(
                                     "-e",
                                     executable,
-                                    "--console"
-                            )
-                    ),
+                                    "--console")),
 
                     // XFCE
                     new TerminalCommand(
                             "xfce4-terminal",
                             List.of(
                                     "--command",
-                                    executable + " --console"
-                            )
-                    ),
+                                    executable + " --console")),
 
                     // MATE
                     new TerminalCommand(
@@ -265,18 +261,14 @@ public class Main extends Application {
                             List.of(
                                     "--",
                                     executable,
-                                    "--console"
-                            )
-                    ),
+                                    "--console")),
 
                     // LXDE
                     new TerminalCommand(
                             "lxterminal",
                             List.of(
                                     "-e",
-                                    executable + " --console"
-                            )
-                    ),
+                                    executable + " --console")),
 
                     // Universal X11 fallback
                     new TerminalCommand(
@@ -284,10 +276,7 @@ public class Main extends Application {
                             List.of(
                                     "-e",
                                     executable,
-                                    "--console"
-                            )
-                    )
-            );
+                                    "--console")));
 
             for (TerminalCommand terminal : terminals) {
 
@@ -314,8 +303,7 @@ public class Main extends Application {
             }
 
             throw new IOException(
-                    "No compatible terminal emulator was found."
-            );
+                    "No compatible terminal emulator was found.");
         }
 
         /*
@@ -338,10 +326,9 @@ public class Main extends Application {
 
     private String getCurrentExecutable() {
 
-        Optional<String> command =
-                ProcessHandle.current()
-                        .info()
-                        .command();
+        Optional<String> command = ProcessHandle.current()
+                .info()
+                .command();
 
         if (command.isEmpty()) {
             return null;
@@ -354,10 +341,9 @@ public class Main extends Application {
          * Java/Maven, this is likely the Java executable rather
          * than the FinTrack executable.
          */
-        String fileName =
-                new File(executable)
-                        .getName()
-                        .toLowerCase(Locale.ROOT);
+        String fileName = new File(executable)
+                .getName()
+                .toLowerCase(Locale.ROOT);
 
         if (fileName.equals("java")
                 || fileName.equals("java.exe")
@@ -383,16 +369,14 @@ public class Main extends Application {
 
                 process = new ProcessBuilder(
                         "where",
-                        command
-                ).start();
+                        command).start();
 
             } else {
 
                 process = new ProcessBuilder(
                         "sh",
                         "-c",
-                        "command -v " + command
-                ).start();
+                        "command -v " + command).start();
             }
 
             return process.waitFor() == 0;
@@ -414,11 +398,9 @@ public class Main extends Application {
 
             try {
 
-                java.util.Scanner sc =
-                        new java.util.Scanner(System.in);
+                java.util.Scanner sc = new java.util.Scanner(System.in);
 
-                ui.console.ConsoleUI consoleUI =
-                        new ui.console.ConsoleUI();
+                ui.console.ConsoleUI consoleUI = new ui.console.ConsoleUI();
 
                 consoleUI.start(sc);
 
@@ -442,7 +424,6 @@ public class Main extends Application {
 
     private record TerminalCommand(
             String command,
-            List<String> arguments
-    ) {
+            List<String> arguments) {
     }
 }
