@@ -92,6 +92,12 @@ jobs:
             --icon src/main/java/app/assets/fintrack_ico.ico `
             --add-launcher FinTrack-CLI=cli.properties
 
+      - name: Clean extra desktop shortcut
+        run: |
+          # Remove o atalho do CLI da área de trabalho pública ou do usuário se ele for criado
+          Remove-Item -Path "C:\Users\Public\Desktop\FinTrack-CLI.lnk" -ErrorAction SilentlyContinue
+          Remove-Item -Path "$env:USERPROFILE\Desktop\FinTrack-CLI.lnk" -ErrorAction SilentlyContinue
+
       - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:

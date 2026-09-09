@@ -16,6 +16,9 @@ import ui.javafx.JavafxUI;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -181,32 +184,32 @@ public class Main extends Application {
     // ============================================================
 
     private void openWindowsTerminal() throws IOException {
-
-        String executable = getCurrentExecutable();
-
-        if (executable == null) {
-            throw new IOException(
-                    "Could not locate the FinTrack executable.");
+        if (detectOperatingSystem() != OperatingSystem.WINDOWS) {
+            throw new UnsupportedOperationException("Windows terminal is not supported on this OS.");
         }
 
-        File currentExeFile = new File(executable);
-        File cliExecutableFile = new File(currentExeFile.getParent(), "FinTrack-CLI.exe");
+        Optional<String> comandoAtual = ProcessHandle.current().info().command();
+        Path installDir = null;
 
-        if (cliExecutableFile.exists()) {
-            new ProcessBuilder(cliExecutableFile.getAbsolutePath()).start();
+        if (comandoAtual.isPresent()) {
+            Path currentExe = Paths.get(comandoAtual.get());
+            installDir = currentExe.getParent();
+        } else if (getCurrentExecutable() != null) {
+            installDir = new File(getCurrentExecutable()).toPath().getParent();
+        }
+
+        if (installDir == null) {
+            throw new IOException("Could not locate the FinTrack installation directory.");
+        }
+
+        Path cliExe = installDir.resolve("FinTrack-CLI.exe");
+
+        if (Files.exists(cliExe)) {
+            ProcessBuilder pb = new ProcessBuilder("cmd", "/c", "start", "FinTrack Terminal", cliExe.toString());
+            pb.directory(installDir.toFile());
+            pb.start();
         } else {
-            /*
-             * Fallback
-             */
-            new ProcessBuilder(
-                    "cmd.exe",
-                    "/c",
-                    "start",
-                    "\"FinTrack\"",
-                    "cmd.exe",
-                    "/k",
-                    executable,
-                    "--console").start();
+            throw new IOException("CLI executable not found at: " + cliExe);
         }
     }
 

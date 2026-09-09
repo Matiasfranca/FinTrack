@@ -41,8 +41,11 @@ public class ConsoleUI {
                 case 2 -> this.listTransaction(sc);
                 case 3 -> this.removeTransaction(sc);
                 case 4 -> this.showDashboard(sc);
-                case 5 -> System.out.println("\nSaindo do FinTrack. Até logo! 👋");
-
+                case 5 -> {
+                    System.out.println("\nSaindo do FinTrack. Até logo! 👋");
+                    sc.close();
+                    System.exit(0);
+                }
             }
         } while (option != 5);
 
@@ -118,7 +121,8 @@ public class ConsoleUI {
             default -> PaymentMethod.BOLETO;
         };
 
-        List<Category> categories = finTracker.listCategoriesByTransactionType(type == TransactionType.REDEMPTION ? TransactionType.INVESTMENT : type);
+        List<Category> categories = finTracker.listCategoriesByTransactionType(
+                type == TransactionType.REDEMPTION ? TransactionType.INVESTMENT : type);
         Category category = null;
 
         if (!categories.isEmpty()) {
