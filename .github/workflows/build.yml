@@ -43,7 +43,7 @@ jobs:
             --add-modules javafx.controls,javafx.fxml,java.sql \
             --resource-dir resources-linux \
             --dest target/package \
-            --icon src/main/java/app/assets/fintrack_app_icon.png \
+            --icon src/main/java/app/assets/fintrack_ico.ico \
             --linux-shortcut
 
       - name: Upload DEB
@@ -83,7 +83,8 @@ jobs:
             --add-modules javafx.controls,javafx.fxml,java.sql `
             --dest target/package `
             --win-menu `
-            --win-shortcut
+            --win-shortcut `
+            --icon src/main/java/app/assets/fintrack.ico 
 
       - name: Upload EXE
         uses: actions/upload-artifact@v4
