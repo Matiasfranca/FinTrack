@@ -189,22 +189,25 @@ public class Main extends Application {
                     "Could not locate the FinTrack executable.");
         }
 
-        /*
-         * cmd.exe /c start:
-         *
-         * Opens a new CMD window.
-         *
-         * /k keeps the window open after the command finishes.
-         */
-        new ProcessBuilder(
-                "cmd.exe",
-                "/c",
-                "start",
-                "\"FinTrack\"",
-                "cmd.exe",
-                "/k",
-                executable,
-                "--console").start();
+        File currentExeFile = new File(executable);
+        File cliExecutableFile = new File(currentExeFile.getParent(), "FinTrack-CLI.exe");
+
+        if (cliExecutableFile.exists()) {
+            new ProcessBuilder(cliExecutableFile.getAbsolutePath()).start();
+        } else {
+            /*
+             * Fallback
+             */
+            new ProcessBuilder(
+                    "cmd.exe",
+                    "/c",
+                    "start",
+                    "\"FinTrack\"",
+                    "cmd.exe",
+                    "/k",
+                    executable,
+                    "--console").start();
+        }
     }
 
     // ============================================================
