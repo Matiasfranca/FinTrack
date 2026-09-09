@@ -16,11 +16,12 @@ public class DatabaseInitializer {
     }
 
     public static void initialize() {
+
         // Selects the appropriate schema file based on the environment mode
         String schemaPath = testMode ? "/database/schemas/reset.sql" : "/database/schemas/schema.sql";
 
         try (Connection connection = DatabaseConnection.getConnection();
-             InputStream input = DatabaseInitializer.class.getResourceAsStream(schemaPath)) {
+                InputStream input = DatabaseInitializer.class.getResourceAsStream(schemaPath)) {
 
             if (input == null) {
                 throw new IllegalStateException("Schema file not found: " + schemaPath);
@@ -28,8 +29,7 @@ public class DatabaseInitializer {
 
             String schema = new String(
                     input.readAllBytes(),
-                    StandardCharsets.UTF_8
-            );
+                    StandardCharsets.UTF_8);
 
             for (String sql : schema.split(";")) {
                 String statement = sql.trim();
