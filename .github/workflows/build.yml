@@ -53,55 +53,47 @@ jobs:
           path: target/package/*.deb
 
   build-windows:
-      name: Build Windows installer
-      runs-on: windows-latest
+        name: Build Windows installer
+        runs-on: windows-latest
 
-      steps:
-        - name: Checkout
-          uses: actions/checkout@v5
+        steps:
+          - name: Checkout
+            uses: actions/checkout@v5
 
-        - name: Setup Java
-          uses: actions/setup-java@v5
-          with:
-            distribution: temurin
-            java-version: '25'
-            cache: maven
+          - name: Setup Java
+            uses: actions/setup-java@v5
+            with:
+              distribution: temurin
+              java-version: '25'
+              cache: maven
 
-        - name: Build application
-          run: mvn clean package
+          - name: Build application
+            run: mvn clean package
 
-        - name: Prepare CLI Launcher
-          run: |
-            echo "win-console=true" > cli.properties
-            echo "arguments=--console" >> cli.properties
-            echo "icon=src/main/java/app/assets/fintrack_ico.ico" >> cli.properties
+          - name: Prepare CLI Launcher
+            run: |
+              echo "win-console=true" > cli.properties
+              echo "arguments=--console" >> cli.properties
 
-        - name: Build EXE
-          run: |
-            jpackage `
-              --type exe `
-              --name FinTrack `
-              --app-version 2.0.0 `
-              --input target/app `
-              --main-jar fintrack-2.0.0-SNAPSHOT.jar `
-              --main-class app.Main `
-              --module-path target/app/lib `
-              --add-modules javafx.controls,javafx.fxml,java.sql `
-              --dest target/package `
-              --win-menu `
-              --icon src/main/java/app/assets/fintrack_ico.ico `
-              --add-launcher FinTrack-CLI=cli.properties
+          - name: Build EXE
+            run: |
+              jpackage `
+                --type exe `
+                --name FinTrack `
+                --app-version 2.0.0 `
+                --input target/app `
+                --main-jar fintrack-2.0.0-SNAPSHOT.jar `
+                --main-class app.Main `
+                --module-path target/app/lib `
+                --add-modules javafx.controls,javafx.fxml,java.sql `
+                --dest target/package `
+                --win-menu `
+                --win-shortcut `
+                --icon src/main/java/app/assets/fintrack_ico.ico `
+                --add-launcher FinTrack-CLI=cli.properties
 
-        - name: Create Desktop Shortcut for Main App Only
-          run: |
-            $WshShell = New-Object -ComObject WScript.Shell
-            $Shortcut = $WshShell.CreateShortcut("$env:Public\Desktop\FinTrack.lnk")
-            $Shortcut.TargetPath = "C:\Program Files\FinTrack\FinTrack.exe"
-            $Shortcut.WorkingDirectory = "C:\Program Files\FinTrack"
-            $Shortcut.Save()
-
-        - name: Upload EXE
-          uses: actions/upload-artifact@v4
-          with:
-            name: fintrack-windows
-            path: target/package/*.exe
+          - name: Upload EXE
+            uses: actions/upload-artifact@v4
+            with:
+              name: fintrack-windows
+              path: target/package/*.exe
