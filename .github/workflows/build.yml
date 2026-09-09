@@ -92,7 +92,6 @@ jobs:
               --icon src/main/java/app/assets/fintrack_ico.ico `
               --add-launcher FinTrack-CLI=cli.properties
 
-        # 3. Criamos manualmente o atalho apenas para o executável principal na Área de Trabalho
         - name: Create Desktop Shortcut for Main App Only
           run: |
             $WshShell = New-Object -ComObject WScript.Shell
