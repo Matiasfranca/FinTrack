@@ -97,3 +97,48 @@ jobs:
             with:
               name: fintrack-windows
               path: target/package/*.exe
+
+  build-rpm:
+    name: Build Fedora package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+
+      - name: Install packaging dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm fakeroot
+
+      - name: Build application
+        run: mvn clean package
+
+      - name: Build RPM
+        run: |
+          jpackage \
+            --type rpm \
+            --name fintrack \
+            --app-version 2.0.0 \
+            --input target/app \
+            --main-jar fintrack-2.0.0-SNAPSHOT.jar \
+            --main-class app.Main \
+            --module-path target/app/lib \
+            --add-modules javafx.controls,javafx.fxml,java.sql \
+            --resource-dir resources-linux \
+            --dest target/package \
+            --icon src/main/java/app/assets/fintrack_ico.png \
+            --linux-shortcut
+
+      - name: Upload RPM
+        uses: actions/upload-artifact@v4
+        with:
+          name: fintrack-rpm
+          path: target/package/*.rpm
