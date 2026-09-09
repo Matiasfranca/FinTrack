@@ -43,7 +43,7 @@ jobs:
             --add-modules javafx.controls,javafx.fxml,java.sql \
             --resource-dir resources-linux \
             --dest target/package \
-            --icon src/main/java/app/assets/fintrack_ico.ico \
+            --icon src/main/java/app/assets/fintrack_ico.png \
             --linux-shortcut
 
       - name: Upload DEB
