@@ -84,7 +84,7 @@ jobs:
             --dest target/package `
             --win-menu `
             --win-shortcut `
-            --icon src/main/java/app/assets/fintrack.ico 
+            --icon src/main/java/app/assets/fintrack_ico.ico 
 
       - name: Upload EXE
         uses: actions/upload-artifact@v4
