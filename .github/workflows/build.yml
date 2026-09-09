@@ -70,6 +70,11 @@ jobs:
       - name: Build application
         run: mvn clean package
 
+      - name: Prepare CLI Launcher
+        run: |
+          echo "win-console=true" > cli.properties
+          echo "arguments=--console" >> cli.properties
+
       - name: Build EXE
         run: |
           jpackage `
@@ -84,7 +89,8 @@ jobs:
             --dest target/package `
             --win-menu `
             --win-shortcut `
-            --icon src/main/java/app/assets/fintrack_ico.ico 
+            --icon src/main/java/app/assets/fintrack_ico.ico `
+            --add-launcher FinTrack-CLI=cli.properties
 
       - name: Upload EXE
         uses: actions/upload-artifact@v4
