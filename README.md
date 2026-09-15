@@ -230,8 +230,10 @@ Or build and run the packaged application through your IDE's Maven integration, 
 
 ## License
 
-FinTrack **is not an Open Source project**.
+**Copyright (c) 2026 Matias Saraiva de França. All Rights Reserved.**
 
-The source code is made available under the **Software Use and Study License, Version 1.0**.
+FinTrack **is not an Open Source project**. The source code is made publicly available **strictly for academic study, portfolio evaluation, and technical review**.
 
-See the [`LICENSE`](LICENSE) file for the complete license terms.
+No license is granted to copy, distribute, modify, reuse, or commercialize this code (in whole or in part) for any other projects. 
+
+For detailed terms and conditions, including permitted local execution for testing, please see the [`LICENSE`](LICENSE) file. To request authorization for any other use, please contact me directly at **[contato.matias7@gmail.com](mailto:contato.matias7@gmail.com)** or via my **[LinkedIn](https://linkedin.com/in/matias-saraiva-943110236)**.
