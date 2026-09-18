@@ -5,8 +5,6 @@ import java.util.List;
 
 import controller.FinTracker;
 import exceptions.InvalidInput;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import model.dto.CardData;
 import model.dto.DailyFinancialData;
 import ui.javafx.components.financialCards.financialCard.FinancialCard;
@@ -16,6 +14,10 @@ import ui.javafx.components.financialCards.financialCard.incomeCard.IncomeCard;
 import ui.javafx.components.financialCards.financialCard.investmentCard.InvestmentCard;
 import ui.javafx.events.TransactionEventBus;
 import ui.javafx.events.TransactionEventBus.Event;
+
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+
 
 public class FinancialCards extends HBox {
 

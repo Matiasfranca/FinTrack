@@ -1,5 +1,7 @@
 package ui.javafx.components.charts.expenseDistribution;
 
+import model.dto.CategoryChartData;
+
 import java.util.List;
 
 import javafx.geometry.Pos;
@@ -14,7 +16,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.ArcType;
-import model.dto.CategoryChartData;
+
 
 public class ExpenseDistribution extends VBox {
 

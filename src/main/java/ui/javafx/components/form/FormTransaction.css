@@ -250,27 +250,6 @@
     -fx-background-color: #34302C;
 }
 
-/* .form-dialog .dialog-pane,
-.form-dialog .header-panel {
-    -fx-background-color: #1C1C1F;
-}
-
-.form-dialog .content.label,
-.form-dialog .header-panel .label {
-    -fx-text-fill: #F5F5F0;
-}
-
-.form-dialog .button {
-    -fx-background-color: #28282C;
-    -fx-text-fill: #F5F5F0;
-    -fx-background-radius: 6px;
-}
-
-.form-dialog .button:default {
-    -fx-background-color: #C9A227;
-    -fx-text-fill: #121214;
-} */
-
 .form-title {
     -fx-font-size: 15px;
     -fx-font-weight: bold;

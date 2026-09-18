@@ -1,11 +1,9 @@
 package ui.javafx.components.transactions;
 
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.layout.VBox;
 import model.BankAccount;
 import model.Category;
 import model.Transaction;
+import controller.FinTracker;
 import ui.javafx.events.TransactionEventBus;
 import ui.javafx.events.TransactionEventBus.Event;
 
@@ -13,7 +11,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-import controller.FinTracker;
+
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.layout.VBox;
 
 public class TransactionList extends VBox {
 

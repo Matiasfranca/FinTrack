@@ -1,13 +1,5 @@
 package ui.console;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.YearMonth;
-import java.util.List;
-import java.util.Scanner;
-
-import controller.FinTracker;
-import exceptions.InvalidInput;
 import model.BankAccount;
 import model.BankAccountType;
 import model.Category;
@@ -16,6 +8,14 @@ import model.Transaction;
 import model.TransactionType;
 import model.dto.CardData;
 import model.dto.CategoryChartData;
+import controller.FinTracker;
+import exceptions.InvalidInput;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.List;
+import java.util.Scanner;
 
 public class ConsoleUI {
 

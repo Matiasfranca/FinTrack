@@ -1,5 +1,7 @@
 package ui.javafx.components.form;
 
+import model.Transaction;
+
 import javafx.animation.FadeTransition;
 import javafx.animation.TranslateTransition;
 import javafx.geometry.Insets;
@@ -9,7 +11,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
-import model.Transaction;
 
 public class TransactionFormOverlay extends StackPane {
 

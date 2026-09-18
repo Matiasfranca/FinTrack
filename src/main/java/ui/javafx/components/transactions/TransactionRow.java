@@ -1,10 +1,16 @@
 package ui.javafx.components.transactions;
 
+import controller.FinTracker;
+import model.Transaction;
+import model.TransactionType;
+import ui.javafx.events.TransactionEventBus;
+import ui.javafx.events.TransactionEventBus.Type;
+import utils.FormatCurrency;
+
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import controller.FinTracker;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
@@ -17,11 +23,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import model.Transaction;
-import model.TransactionType;
-import ui.javafx.events.TransactionEventBus;
-import ui.javafx.events.TransactionEventBus.Type;
-import utils.FormatCurrency;
+
+
 
 public class TransactionRow extends VBox {
 
@@ -29,7 +32,6 @@ public class TransactionRow extends VBox {
     private final FinTracker finTracker = new FinTracker();
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    // Atualizado para receber os Dicionários!
     public TransactionRow(Transaction transaction, Map<Integer, String> accountMap, Map<Integer, String> categoryMap, Consumer<Transaction> onEditTransaction) {
 
         this.transaction = transaction;

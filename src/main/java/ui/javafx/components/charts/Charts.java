@@ -1,12 +1,6 @@
 package ui.javafx.components.charts;
 
-import java.math.BigDecimal;
-import java.time.YearMonth;
-import java.util.ArrayList;
-import java.util.List;
-
 import controller.FinTracker;
-import javafx.scene.layout.HBox;
 import model.TransactionType;
 import model.dto.CategoryChartData;
 import model.dto.DailyFinancialData;
@@ -14,6 +8,13 @@ import ui.javafx.components.charts.expenseDistribution.ExpenseDistribution;
 import ui.javafx.components.charts.monthlyOverview.MonthlyOverview;
 import ui.javafx.events.TransactionEventBus;
 import ui.javafx.events.TransactionEventBus.Event;
+
+import javafx.scene.layout.HBox;
+
+import java.math.BigDecimal;
+import java.time.YearMonth;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Charts extends HBox {
 

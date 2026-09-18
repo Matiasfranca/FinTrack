@@ -1,5 +1,7 @@
 package ui.javafx.components.form;
 
+import model.BankAccountType;
+
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -8,7 +10,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
-import model.BankAccountType;
 
 import java.util.function.BiConsumer;
 

@@ -1,10 +1,19 @@
 package ui.javafx.components.form;
 
+import controller.FinTracker;
+import model.BankAccount;
+import model.Category;
+import model.PaymentMethod;
+import model.Transaction;
+import model.TransactionType;
+import ui.javafx.events.TransactionEventBus;
+import ui.javafx.events.TransactionEventBus.Type;
+import utils.FormatCurrency;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-import controller.FinTracker;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -19,14 +28,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
-import model.BankAccount;
-import model.Category;
-import model.PaymentMethod;
-import model.Transaction;
-import model.TransactionType;
-import ui.javafx.events.TransactionEventBus;
-import ui.javafx.events.TransactionEventBus.Type;
-import utils.FormatCurrency;
 
 public class FormTransaction extends VBox {
 

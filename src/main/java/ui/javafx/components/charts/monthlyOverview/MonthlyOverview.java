@@ -1,13 +1,15 @@
 package ui.javafx.components.charts.monthlyOverview;
 
+import controller.FinTracker;
+import exceptions.InvalidInput;
+import model.dto.DailyFinancialData;
+
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.TextStyle;
 import java.util.List;
 import java.util.Locale;
 
-import controller.FinTracker;
-import exceptions.InvalidInput;
 import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -19,7 +21,6 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import model.dto.DailyFinancialData;
 
 public class MonthlyOverview extends VBox {
 
@@ -211,7 +212,7 @@ public class MonthlyOverview extends VBox {
 
         gc.setFill(Color.web("#9A9A9E"));
         gc.setFont(Font.font(11));
-        gc.setTextAlign(javafx.scene.text.TextAlignment.LEFT); // explícito, não depende do que sobrou antes
+        gc.setTextAlign(javafx.scene.text.TextAlignment.LEFT); 
 
         for (double tick : scale.ticks) {
             double offset = (tick / scale.maxTick) * CHART_HALF_HEIGHT;

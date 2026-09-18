@@ -141,7 +141,7 @@ public class FinTrackerTest {
     @Test
     @Order(10)
     void shouldListTransactionsByMonthSuccessfully() {
-        YearMonth targetMonth = YearMonth.of(2026, 6); // Mês que usamos nos testes anteriores
+        YearMonth targetMonth = YearMonth.of(2026, 6);
 
         assertDoesNotThrow(() -> {
             var transactions = finTracker.listTransactionsByMonth(targetMonth);

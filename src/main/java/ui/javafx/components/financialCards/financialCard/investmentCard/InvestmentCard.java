@@ -1,6 +1,7 @@
 package ui.javafx.components.financialCards.financialCard.investmentCard;
 
 import java.util.List;
+
 import model.dto.CardData;
 import model.dto.DailyFinancialData;
 import ui.javafx.components.financialCards.financialCard.FinancialCard;

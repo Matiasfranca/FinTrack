@@ -1,14 +1,16 @@
 package ui.javafx.components.financialCards.financialCard;
 
+import utils.FormatCurrency;
+import model.dto.DailyFinancialData;
+
 import java.math.BigDecimal;
 import java.util.List;
-import utils.FormatCurrency;
+
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import model.dto.DailyFinancialData;
 
 public abstract class FinancialCard extends VBox {
 
