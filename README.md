@@ -1,239 +1,336 @@
 # FinTrack
 
+FinTrack is a personal finance management application built with Java, JavaFX, SQLite, and Maven. It provides a graphical dashboard and a terminal interface for recording and reviewing financial transactions.
+
 ## Overview
 
-FinTrack is a Java console application (with an in-development JavaFX graphical interface) for managing monthly financial transactions. The system allows users to:
+FinTrack is designed as a local, single-user desktop application. Financial data is stored in a local SQLite database, so no external database server or account system is required.
 
-* add transactions;
-* list registered transactions;
-* remove transactions;
-* calculate the total monthly balance.
+The application currently supports:
 
-The project uses in-memory storage, so all data is lost when the application is closed.
-
-The codebase follows a layered structure: business logic (`controller`, `model`) is fully decoupled from the presentation layer (`ui`), so the same core logic can be reused by different interfaces (console today, JavaFX planned).
-
----
+- Income, expense, and investment transactions
+- Transaction dates and descriptions
+- Bank account management
+- Transaction categories
+- Multiple payment methods
+- Monthly transaction organization
+- Monthly financial summaries
+- Category-based expense/income distribution
+- Daily financial overview
+- Graphical dashboard built with JavaFX
+- Terminal interface
+- SQLite persistence
+- Automated database initialization and maintenance
+- Unit and repository tests with JUnit 5
 
 ## Tech Stack
 
-* **Language:** Java 21
-* **Build Tool:** Maven
-* **GUI (in development):** JavaFX 21 (`javafx-controls`, `javafx-fxml`)
-* **Main class:** `app.Main`
+- **Language:** Java 25
+- **Build Tool:** Maven
+- **GUI:** JavaFX 25
+- **Database:** SQLite
+- **JDBC Driver:** Xerial SQLite JDBC
+- **Testing:** JUnit Jupiter 5
+- **CSS Development:** CSSFX
+- **Main Class:** `app.Main`
 
----
+## Architecture
+
+The project separates the application into distinct layers:
+
+```text
+UI
+├── JavaFX
+└── Console
+        │
+        ▼
+Controller
+└── FinTracker
+        │
+        ├── Services
+        └── Repositories
+                │
+                ▼
+             SQLite
+```
+
+### Main responsibilities
+
+- **`ui`** — presentation and user interaction
+- **`controller`** — application/business coordination
+- **`service`** — application-level services and maintenance operations
+- **`repository`** — persistence abstractions
+- **`repository.sqlite`** — SQLite repository implementations
+- **`database`** — database connection and schema initialization
+- **`model`** — domain entities, enums, and DTOs
+- **`utils`** — reusable utility components
+- **`exceptions`** — application-specific exceptions
+
+This separation allows the business and persistence logic to be reused by different user interfaces.
 
 ## Project Structure
 
 ```text
 FinTrack/
 ├── pom.xml
-├── src/
-│   └── main/
-│       └── java/
-│           ├── app/
-│           │   └── Main.java
-│           ├── controller/
-│           │   └── FinTracker.java
-│           ├── exceptions/
-│           │   └── InvalidInput.java
-│           ├── model/
-│           │   ├── MonthlyTransaction.java
-│           │   └── Transaction.java
-│           ├── ui/
-│           │   ├── console/
-│           │   │   ├── ConsoleFormatter.java
-│           │   │   ├── ConsoleInput.java
-│           │   │   └── ConsoleUI.java
-│           │   └── javafx/
-│           │       └── FinTrackUI.java
-│           └── utils/
-│               └── InputValidator.java
+├── LICENSE
+├── README.md
+├── resources-linux/
+│   ├── postinst
+│   └── prerm
+└── src/
+    ├── main/
+    │   └── java/
+    │       ├── app/
+    │       │   ├── Main.java
+    │       ├── controller/
+    │       │   └── FinTracker.java
+    │       ├── database/
+    │       │   ├── DatabaseConnection.java
+    │       │   ├── DatabaseInitializer.java
+    │       │   └── schemas/
+    │       │       └── schema.sql
+    │       ├── exceptions/
+    │       │   ├── DataAccessException.java
+    │       │   └── InvalidInput.java
+    │       ├── model/
+    │       │   ├── BankAccount.java
+    │       │   ├── BankAccountType.java
+    │       │   ├── Category.java
+    │       │   ├── Month.java
+    │       │   ├── PaymentMethod.java
+    │       │   ├── Transaction.java
+    │       │   ├── TransactionType.java
+    │       │   └── dto/
+    │       ├── repository/
+    │       │   ├── BankAccountRepository.java
+    │       │   ├── CategoryRepository.java
+    │       │   ├── DashboardRepository.java
+    │       │   ├── MonthRepository.java
+    │       │   ├── TransactionRepository.java
+    │       │   └── sqlite/
+    │       ├── service/
+    │       │   └── DatabaseMaintenanceService.java
+    │       ├── ui/
+    │       │   ├── console/
+    │       │   └── javafx/
+    │       └── utils/
+    │           └── ValidationRule.java
+    └── test/
+        └── java/
+            ├── controller/
+            ├── repository/
+            ├── service/
+            └── ui/
 ```
 
----
+## Core Domain
 
-## Project Files
+### Transactions
 
-### 1. app/Main.java
+A transaction contains:
 
-Application entry point. Its only responsibility is letting the user choose which interface to run.
+- value
+- date
+- transaction type
+- payment method
+- description
+- bank account
+- optional category
 
-#### Responsibilities
+Supported transaction types:
 
-* displays the startup choice between Terminal and Graphical Interface;
-* reads the selected option;
-* delegates control to `ConsoleUI` (the graphical option currently falls back to the terminal, since the JavaFX UI is still in development).
+```text
+INCOME
+EXPENSE
+INVESTMENT
+```
 
----
+Supported payment methods:
 
-### 2. ui/console/ConsoleUI.java
+```text
+PIX
+DEBIT_CARD
+CREDIT_CARD
+CASH
+BANK_TRANSFER
+BOLETO
+```
 
-Owns the console menu loop and orchestrates calls to the controller. This class did not exist in the previous version — the menu loop used to live in `Main.java` and now lives here, keeping `Main.java` focused only on choosing the interface.
+### Bank Accounts
 
-#### Responsibilities
+Supported account types:
 
-* runs the main menu loop until the exit option is selected;
-* reads the selected option and calls the matching private method (`addTransaction`, `listTransaction`, `removeTransaction`, `calculateTotalBalance`);
-* coordinates `ConsoleFormatter` (what to show) and `ConsoleInput` (what to read) around each `FinTracker` call.
+```text
+CHECKING
+SAVINGS
+CASH
+OTHER
+```
 
-#### Main Flow
+Accounts can be active or inactive.
 
-* option 1: add transaction;
-* option 2: list transactions;
-* option 3: remove transaction;
-* option 4: calculate total balance;
-* option 5: exit the program.
+### Categories
 
----
+Categories have a unique name and may contain a color used by the graphical interface.
 
-### 3. ui/console/ConsoleFormatter.java
+A transaction may also have no category.
 
-Responsible **only** for what gets printed to the console — no input reading, no validation, no business logic.
+## Database
 
-#### Main Methods
+FinTrack uses SQLite for local persistence.
 
-* `clearScreen()`: clears the screen by printing multiple blank lines;
-* `pause(Scanner sc)`: pauses execution until the user presses Enter;
-* `showMenu()`: displays the main menu;
-* `showInputDescription()`: displays the description prompt;
-* `showInputType()`: displays the income/expense options;
-* `showInputValue()`: displays the value prompt;
-* `showTransactions(List<Transaction> transactions)`: displays the list of transactions in a formatted table.
+The database schema contains the following main tables:
 
----
+- `MONTH`
+- `BANK_ACCOUNT`
+- `CATEGORY`
+- `TRANSACTION`
 
-### 4. ui/console/ConsoleInput.java
+Foreign-key constraints are enabled when a database connection is created.
 
-Responsible for reading and validating raw user input from the terminal. This was previously mixed into the formatter/controller layer and is now isolated here.
+The application initializes the database schema automatically when the graphical application starts.
 
-#### Main Methods
+The test environment can use a separate SQLite database through the database test mode.
 
-* `readString(Scanner sc)`: reads and validates a non-empty description, re-prompting on invalid input;
-* `readInt(Scanner sc, int id)`: reads and validates an integer option, re-prompting on invalid input;
-* `readDouble(Scanner sc, boolean receipt)`: reads a transaction value, applying the correct sign based on whether it's income or an expense.
+## Graphical Interface
 
----
+The JavaFX interface contains a dashboard-oriented layout with components for:
 
-### 5. controller/FinTracker.java
+- financial summary cards
+- income and expense information
+- monthly overview charts
+- category distribution charts
+- transaction listing
+- application header and navigation
+- transaction data presentation
 
-Class responsible for the application's business logic. It no longer reads any input directly — it only receives already-validated data and coordinates the model layer. This decoupling is what allows both the console UI and the future JavaFX UI to reuse the exact same logic.
+JavaFX stylesheets are kept alongside the UI components and are included as Maven resources during the build.
 
-#### Main Methods
+## Terminal Interface
 
-* `addTransaction(String description, double value, boolean receipt)`: creates and stores a new transaction.
-* `listTransaction()`: returns all registered transactions.
-* `removeTransaction(int option)`: removes a transaction selected by the user; throws `InvalidInput` if the index is invalid.
-* `calculateTotalBalance()`: returns the accumulated balance.
+The application also provides a terminal interface through `ConsoleUI`.
 
----
+The terminal interface supports operations such as:
 
-### 6. model/Transaction.java
+1. Add a transaction
+2. List transactions
+3. Remove a transaction
+4. View the dashboard
+5. Exit
 
-Represents a single financial transaction.
+It also provides interaction with bank accounts, categories, transaction types, and payment methods.
 
-#### Attributes
-
-* `description`: transaction description;
-* `value`: transaction value;
-* `receipt`: indicates whether the transaction is income (`true`) or expense (`false`);
-* `date`: date on which the transaction was created (set automatically to `LocalDate.now()`).
-
-#### Accessor Methods
-
-* `getDescription()`
-* `getValue()`
-* `isReceipt()`
-* `getDate()`
-
----
-
-### 7. model/MonthlyTransaction.java
-
-Responsible for storing and managing the collection of transactions.
-
-#### Main Methods
-
-* `add(Transaction transaction)`: adds a transaction to the history;
-* `del(int option)`: removes a transaction based on the provided index; throws `InvalidInput` if the list is empty or the index is out of range;
-* `getTransactions()`: returns an unmodifiable view of the transaction list;
-* `totalBalance()`: sums all transaction values (expenses are already stored as negative values, so this is a simple sum).
-
----
-
-### 8. exceptions/InvalidInput.java
-
-Custom checked exception used to signal invalid user input or invalid operations (e.g. removing from an empty list, or an out-of-range index).
-
----
-
-### 9. utils/InputValidator.java
-
-Small stateless utility with overloaded validation helpers, reused by `ConsoleInput`.
-
-#### Main Methods
-
-* `isValid(String input)`: true if the string is non-null and not blank;
-* `isValid(int input)`: true if the value is non-negative;
-* `isValid(double input)`: true if the value is non-negative.
-
----
-
-### 10. ui/javafx/FinTrackUI.java
-
-Placeholder for the upcoming JavaFX graphical interface. Currently empty — not yet implemented. The `pom.xml` already includes the `javafx-controls` and `javafx-fxml` dependencies in preparation for this.
-
----
-
-## System Behavior
-
-The program works as a small financial manager. The basic workflow is:
-
-1. the user chooses an interface (terminal, or graphical once available);
-2. the user selects an option from the menu;
-3. `ConsoleInput` reads and validates the required information;
-4. `FinTracker` stores the transaction via the model layer;
-5. the balance can be checked at any time.
-
----
-
-## Main Features
-
-* simple terminal interface, with a graphical interface planned;
-* support for income and expenses;
-* temporary in-memory storage;
-* input reading, validation, display, and business logic fully separated into their own layers;
-* organized transaction display.
-
----
-
-## Getting Started
+To explicitly start terminal mode:
 
 ```bash
-# Run from the terminal using Maven
-mvn compile exec:java
+mvn exec:java -Dexec.args="--console"
 ```
 
-Or build and run the packaged application through your IDE's Maven integration, using `app.Main` as the main class.
+## Running the Application
 
----
+### Requirements
 
-## Technical Details
+Install:
 
-* **Language:** Java 21;
-* **Build Tool:** Maven;
-* **Paradigm:** Object-Oriented Programming, with UI, business logic, and data layers separated;
-* **User Input:** `Scanner`, isolated in `ui/console/ConsoleInput.java`;
-* **Storage:** in-memory list (`ArrayList`), wrapped by `MonthlyTransaction`;
-* **Error Handling:** custom checked exception (`InvalidInput`) and `InputMismatchException` for malformed console input.
+- JDK 25
+- Maven
+
+Verify the installed versions:
+
+```bash
+java -version
+mvn -version
+```
+
+### Run the JavaFX application
+
+```bash
+mvn javafx:run
+```
+
+### Compile the project
+
+```bash
+mvn compile
+```
+
+### Run tests
+
+```bash
+mvn test
+```
+
+### Build the application
+
+```bash
+mvn clean package
+```
+
+The Maven build creates the application JAR and copies runtime dependencies into the `target/app` directory.
+
+## Database Maintenance
+
+FinTrack includes `DatabaseMaintenanceService`, which performs database maintenance when the application starts.
+
+The graphical application invokes the maintenance process before displaying the main interface.
+
+## Testing
+
+The project contains tests for multiple layers of the application, including:
+
+- controller behavior
+- transaction repository
+- bank account repository
+- category repository
+- month repository
+- dashboard repository
+- database maintenance
+- console input
+
+The test suite can be executed with:
+
+```bash
+mvn test
+```
+
+## Dependencies
+
+The main Maven dependencies are:
+
+- `org.openjfx:javafx-controls:25`
+- `org.openjfx:javafx-fxml:25`
+- `org.xerial:sqlite-jdbc:3.50.3.0`
+- `fr.brouillard.oss:cssfx:11.4.0`
+- `org.junit.jupiter:junit-jupiter:5.13.4`
+
+## Versioning
+
+The project follows semantic-style versioning.
+
+Development versions use the `-SNAPSHOT` suffix:
+
+```text
+2.0.0-SNAPSHOT
+```
+
+A completed release uses the corresponding stable version:
+
+```text
+2.0.0
+```
 
 ## License
 
 **Copyright (c) 2026 Matias Saraiva de França. All Rights Reserved.**
 
-FinTrack **is not an Open Source project**. The source code is made publicly available **strictly for academic study, portfolio evaluation, and technical review**.
+FinTrack is **not an Open Source project**. The source code is made publicly available **strictly for academic study, portfolio evaluation, and technical review**.
 
-No license is granted to copy, distribute, modify, reuse, or commercialize this code (in whole or in part) for any other projects. 
+No license is granted to copy, distribute, modify, reuse, or commercialize this code, in whole or in part, for other projects.
 
-For detailed terms and conditions, including permitted local execution for testing, please see the [`LICENSE`](LICENSE) file. To request authorization for any other use, please contact me directly at **[contato.matias7@gmail.com](mailto:contato.matias7@gmail.com)** or via my **[LinkedIn](https://linkedin.com/in/matias-saraiva-943110236)**.
+For detailed terms and conditions, including permitted local execution for testing, see the [`LICENSE`](LICENSE) file.
+
+To request authorization for any other use, contact:
+
+- **Email:** contato.matias7@gmail.com
+- **LinkedIn:** https://linkedin.com/in/matias-saraiva-943110236
