@@ -1,10 +1,5 @@
 package controller;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.YearMonth;
-import java.util.List;
-import java.util.Arrays;
 import exceptions.InvalidInput;
 import model.*;
 import model.dto.CardData;
@@ -21,6 +16,12 @@ import repository.sqlite.SqliteDashboardRepository;
 import repository.sqlite.SqliteMonthRepository;
 import repository.sqlite.SqliteTransactionRepository;
 import utils.ValidationRule;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.List;
+import java.util.Arrays;
 
 public class FinTracker {
 

@@ -1,5 +1,8 @@
 package app;
 
+import service.DatabaseMaintenanceService;
+import ui.javafx.JavafxUI;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -11,8 +14,6 @@ import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import service.DatabaseMaintenanceService;
-import ui.javafx.JavafxUI;
 
 import java.io.File;
 import java.io.IOException;
