@@ -48,9 +48,7 @@ public class SqliteTransactionRepositoryTest {
                 new BigDecimal("150.50"),
                 TransactionType.EXPENSE,
                 PaymentMethod.PIX,
-                LocalDate.of(2026, 8, 27),
-                testBankId,
-                testCategoryId);
+                LocalDate.of(2026, 8, 27));
 
         // Executes save
         assertDoesNotThrow(() -> {

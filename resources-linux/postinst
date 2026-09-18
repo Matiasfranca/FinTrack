@@ -1,0 +1,19 @@
+#!/bin/bash
+
+if [ -f /opt/fintrack/bin/fintrack ]; then
+    ln -sf /opt/fintrack/bin/fintrack /usr/local/bin/fintrack
+fi
+
+if [ -f /opt/fintrack/lib/fintrack-fintrack.desktop ]; then
+    cp /opt/fintrack/lib/fintrack-fintrack.desktop /usr/share/applications/fintrack.desktop
+    chmod 644 /usr/share/applications/fintrack.desktop
+fi
+
+if [ -f /opt/fintrack/lib/fintrack.png ]; then
+    mkdir -p /usr/share/icons/hicolor/512x512/apps
+    cp /opt/fintrack/lib/fintrack.png /usr/share/icons/hicolor/512x512/apps/fintrack.png
+    chmod 644 /usr/share/icons/hicolor/512x512/apps/fintrack.png
+fi
+
+update-desktop-database /usr/share/applications 2>/dev/null || true
+gtk-update-icon-cache -f /usr/share/icons/hicolor 2>/dev/null || true

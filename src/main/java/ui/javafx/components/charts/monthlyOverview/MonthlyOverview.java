@@ -96,7 +96,7 @@ public class MonthlyOverview extends VBox {
             maxAbsValue = Math.max(maxAbsValue, Math.abs(v));
         }
 
-        AxisScale scale = new AxisScale(maxAbsValue, 4); //
+        AxisScale scale = new AxisScale(maxAbsValue, 4); 
 
         drawGrid(gc, scale);
         drawAxisLines(gc);

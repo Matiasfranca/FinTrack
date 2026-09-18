@@ -13,25 +13,67 @@ import java.util.List;
 public class SqliteBankAccountRepository implements BankAccountRepository {
 
     @Override
+    public BankAccount getOrCreate(BankAccount account) {
+        if (account == null || account.getName() == null || account.getName().isBlank()) {
+            throw new IllegalArgumentException("Bank account name cannot be null or blank for getOrCreate.");
+        }
+
+        if (account.getType() == null) {
+            throw new IllegalArgumentException("Bank account type cannot be null.");
+        }
+
+        BankAccount existingAccount = findByNameAndType(account);
+
+        if (existingAccount != null) {
+            return existingAccount;
+        }
+
+        return save(account);
+    }
+
+    private BankAccount findByNameAndType(BankAccount account) {
+        String sql = "SELECT id, name, type, is_active FROM BANK_ACCOUNT WHERE name = ? AND type = ?";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, account.getName().trim());
+            stmt.setString(2, account.getType().name());
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new BankAccount(
+                            rs.getInt("id"),
+                            rs.getString("name"),
+                            BankAccountType.valueOf(rs.getString("type")),
+                            rs.getInt("is_active") == 1);
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to retrieve bank account by name and type: " + account.getName(), e);
+        }
+        return null;
+    }
+
+    @Override
     public BankAccount save(BankAccount account) {
         String sql = "INSERT INTO BANK_ACCOUNT (name, type) VALUES (?, ?)";
-        
+
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            
-            stmt.setString(1, account.getName());
+                PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            stmt.setString(1, account.getName().trim());
             stmt.setString(2, account.getType().name());
-            
+
             stmt.executeUpdate();
-            
+
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     return new BankAccount(
-                        generatedKeys.getInt(1),
-                        account.getName(),
-                        account.getType(),
-                        account.isActive()
-                    );
+                            generatedKeys.getInt(1),
+                            account.getName().trim(),
+                            account.getType(),
+                            account.isActive());
                 } else {
                     throw new SQLException("Failed to create bank account, no ID returned.");
                 }
@@ -44,16 +86,16 @@ public class SqliteBankAccountRepository implements BankAccountRepository {
     @Override
     public void update(BankAccount account) {
         String sql = "UPDATE BANK_ACCOUNT SET name = ?, type = ? WHERE id = ?";
-        
+
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setString(1, account.getName());
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, account.getName().trim());
             stmt.setString(2, account.getType().name());
             stmt.setInt(3, account.getId());
-            
+
             stmt.executeUpdate();
-            
+
         } catch (SQLException e) {
             throw new DataAccessException("Failed to update bank account", e);
         }
@@ -62,13 +104,13 @@ public class SqliteBankAccountRepository implements BankAccountRepository {
     @Override
     public void deactivate(int accountId) {
         String sql = "UPDATE BANK_ACCOUNT SET is_active = 0 WHERE id = ?";
-        
+
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
             stmt.setInt(1, accountId);
             stmt.executeUpdate();
-            
+
         } catch (SQLException e) {
             throw new DataAccessException("Failed to deactivate bank account " + accountId, e);
         }
@@ -81,28 +123,28 @@ public class SqliteBankAccountRepository implements BankAccountRepository {
 
     @Override
     public List<BankAccount> findAllActive() {
-        return fetchAccounts("SELECT id, name, type, is_active FROM BANK_ACCOUNT WHERE is_active = 1 ORDER BY name ASC");
+        return fetchAccounts(
+                "SELECT id, name, type, is_active FROM BANK_ACCOUNT WHERE is_active = 1 ORDER BY name ASC");
     }
 
     private List<BankAccount> fetchAccounts(String sql) {
         List<BankAccount> accounts = new ArrayList<>();
-        
+
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-            
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
+
             while (rs.next()) {
                 accounts.add(new BankAccount(
-                    rs.getInt("id"),
-                    rs.getString("name"),
-                    BankAccountType.valueOf(rs.getString("type")),
-                    rs.getInt("is_active") == 1
-                ));
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        BankAccountType.valueOf(rs.getString("type")),
+                        rs.getInt("is_active") == 1));
             }
         } catch (SQLException e) {
             throw new DataAccessException("Failed to retrieve bank accounts", e);
         }
-        
+
         return accounts;
     }
 }

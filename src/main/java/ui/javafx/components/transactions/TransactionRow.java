@@ -11,7 +11,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import model.Transaction;
-import ui.javafx.components.FinancialData;
 
 public class TransactionRow extends HBox {
 

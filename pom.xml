@@ -6,7 +6,7 @@
 
     <groupId>matias</groupId>
     <artifactId>fintrack</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>1.5.0-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.release>25</maven.compiler.release>
@@ -64,7 +64,6 @@
 
         <plugins>
 
-            <!-- Plugin 1: roda a aplicação como JavaFX (opção 2 do seu Main.java) -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
@@ -75,7 +74,6 @@
                 </configuration>
             </plugin>
 
-            <!-- Plugin 2: roda a aplicação como Java comum (mvn exec:java) -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
@@ -91,11 +89,10 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
                 <configuration>
-                    <useFile>false</useFile> <!-- Joga os prints direto pro seu console -->
+                    <useFile>false</useFile> 
                 </configuration>
             </plugin>
 
-            <!-- Define a classe principal no JAR para o build -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>

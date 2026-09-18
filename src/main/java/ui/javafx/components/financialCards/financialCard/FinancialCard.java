@@ -63,7 +63,7 @@ public abstract class FinancialCard extends VBox {
 
         double[] values = FinancialData.dailyBalance();
         double maxAbs = maxAbs(values);
-        double baseline = CHART_HEIGHT / 2.0; // linha do zero fica no meio do canvas
+        double baseline = CHART_HEIGHT / 2.0;
         double stepX = CHART_WIDTH / (values.length - 1);
 
         gc.setFill(Color.web("#34D399", 0.25));

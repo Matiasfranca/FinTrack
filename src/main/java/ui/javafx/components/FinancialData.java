@@ -1,12 +1,8 @@
 package ui.javafx.components;
 
 import java.text.NumberFormat;
-import java.util.List;
 import java.util.Locale;
 import java.util.Random;
-
-import model.Transaction;
-
 
 public class FinancialData {
 
@@ -47,8 +43,8 @@ public class FinancialData {
     static {
         Random random = new Random(42); 
         for (int i = 0; i < DAYS; i++) {
-            double income = random.nextDouble() * 500; // 0 a 500
-            double expense = random.nextDouble() * 400; // 0 a 400
+            double income = random.nextDouble() * 500; 
+            double expense = random.nextDouble() * 400; 
 
             DAILY_INCOME[i] = income;
             DAILY_EXPENSE[i] = expense;
