@@ -1,26 +1,35 @@
+> **Development Status**
+>
+> The current version is `2.0.0-SNAPSHOT`.
+>
+> Although this is a development version, the application is fully functional and includes the graphical interface, terminal interface, SQLite persistence, automated tests, and packaging for supported platforms.
+>
+> Additional features, improvements, and refinements are planned before the final `2.0.0` release.
+
 # FinTrack
 
-FinTrack is a personal finance management application built with Java, JavaFX, SQLite, and Maven. It provides a graphical dashboard and a terminal interface for recording and reviewing financial transactions.
+FinTrack is a personal finance management application built with Java, JavaFX, SQLite, and Maven. It provides a graphical dashboard and a terminal interface for recording, organizing, and reviewing financial transactions.
 
 ## Overview
 
 FinTrack is designed as a local, single-user desktop application. Financial data is stored in a local SQLite database, so no external database server or account system is required.
 
-The application currently supports:
+The application currently provides:
 
-- Income, expense, and investment transactions
+- Income, expense, investment, and redemption transactions
 - Transaction dates and descriptions
 - Bank account management
-- Transaction categories
+- Transaction categories with optional colors
 - Multiple payment methods
 - Monthly transaction organization
 - Monthly financial summaries
-- Category-based expense/income distribution
+- Category-based financial distribution
 - Daily financial overview
-- Graphical dashboard built with JavaFX
+- JavaFX graphical dashboard
 - Terminal interface
 - SQLite persistence
-- Automated database initialization and maintenance
+- Automatic database initialization
+- Database maintenance services
 - Unit and repository tests with JUnit 5
 
 ## Tech Stack
@@ -31,12 +40,11 @@ The application currently supports:
 - **Database:** SQLite
 - **JDBC Driver:** Xerial SQLite JDBC
 - **Testing:** JUnit Jupiter 5
-- **CSS Development:** CSSFX
 - **Main Class:** `app.Main`
 
 ## Architecture
 
-The project separates the application into distinct layers:
+The project separates presentation, application logic, and persistence into distinct layers:
 
 ```text
 UI
@@ -57,16 +65,16 @@ Controller
 ### Main responsibilities
 
 - **`ui`** — presentation and user interaction
-- **`controller`** — application/business coordination
-- **`service`** — application-level services and maintenance operations
+- **`controller`** — application and business coordination
+- **`service`** — application-level services and database maintenance
 - **`repository`** — persistence abstractions
 - **`repository.sqlite`** — SQLite repository implementations
-- **`database`** — database connection and schema initialization
+- **`database`** — database connection, path management, and schema initialization
 - **`model`** — domain entities, enums, and DTOs
-- **`utils`** — reusable utility components
+- **`utils`** — reusable utility components and validation rules
 - **`exceptions`** — application-specific exceptions
 
-This separation allows the business and persistence logic to be reused by different user interfaces.
+This separation allows the core application and persistence logic to be reused by different interfaces.
 
 ## Project Structure
 
@@ -78,36 +86,34 @@ FinTrack/
 ├── resources-linux/
 │   ├── postinst
 │   └── prerm
+├── .github/
+│   └── workflows/
+│       └── build.yml
 └── src/
     ├── main/
     │   └── java/
     │       ├── app/
     │       │   ├── Main.java
+    │       │   ├── Main.fxml
+    │       │   ├── Main.css
+    │       │   └── assets/
     │       ├── controller/
     │       │   └── FinTracker.java
     │       ├── database/
     │       │   ├── DatabaseConnection.java
     │       │   ├── DatabaseInitializer.java
+    │       │   ├── DatabasePath.java
     │       │   └── schemas/
-    │       │       └── schema.sql
+    │       │       ├── schema.sql
+    │       │       └── reset.sql
     │       ├── exceptions/
     │       │   ├── DataAccessException.java
     │       │   └── InvalidInput.java
     │       ├── model/
-    │       │   ├── BankAccount.java
-    │       │   ├── BankAccountType.java
-    │       │   ├── Category.java
-    │       │   ├── Month.java
-    │       │   ├── PaymentMethod.java
-    │       │   ├── Transaction.java
-    │       │   ├── TransactionType.java
+    │       │   ├── domain entities and enums
     │       │   └── dto/
     │       ├── repository/
-    │       │   ├── BankAccountRepository.java
-    │       │   ├── CategoryRepository.java
-    │       │   ├── DashboardRepository.java
-    │       │   ├── MonthRepository.java
-    │       │   ├── TransactionRepository.java
+    │       │   ├── repository interfaces
     │       │   └── sqlite/
     │       ├── service/
     │       │   └── DatabaseMaintenanceService.java
@@ -115,7 +121,6 @@ FinTrack/
     │       │   ├── console/
     │       │   └── javafx/
     │       └── utils/
-    │           └── ValidationRule.java
     └── test/
         └── java/
             ├── controller/
@@ -123,6 +128,8 @@ FinTrack/
             ├── service/
             └── ui/
 ```
+
+The project keeps JavaFX stylesheets, FXML files, SQL schemas, and UI assets under `src/main/java`. Maven is configured to include these resource types in the application build.
 
 ## Core Domain
 
@@ -144,6 +151,7 @@ Supported transaction types:
 INCOME
 EXPENSE
 INVESTMENT
+REDEMPTION
 ```
 
 Supported payment methods:
@@ -174,11 +182,11 @@ Accounts can be active or inactive.
 
 Categories have a unique name and may contain a color used by the graphical interface.
 
-A transaction may also have no category.
+A transaction may also have no category. The interfaces represent this as the default "Outros" option, while the database stores the category as `NULL`.
 
 ## Database
 
-FinTrack uses SQLite for local persistence.
+FinTrack uses SQLite for local persistence and automatically creates the required data directory and database file.
 
 The database schema contains the following main tables:
 
@@ -187,23 +195,32 @@ The database schema contains the following main tables:
 - `CATEGORY`
 - `TRANSACTION`
 
-Foreign-key constraints are enabled when a database connection is created.
+Foreign-key constraints are enabled for SQLite connections.
 
-The application initializes the database schema automatically when the graphical application starts.
+### Database locations
 
-The test environment can use a separate SQLite database through the database test mode.
+The application stores `fintrack.db` in a platform-specific user data directory:
+
+| Platform | Location |
+| --- | --- |
+| Windows | `%LOCALAPPDATA%/FinTrack/fintrack.db` |
+| Linux | `~/.local/share/FinTrack/fintrack.db` |
+| Other systems | `~/FinTrack/fintrack.db` |
+
+The test environment can use `reset.sql` through the database test mode to isolate test data from the user's normal database.
 
 ## Graphical Interface
 
-The JavaFX interface contains a dashboard-oriented layout with components for:
+The JavaFX interface is dashboard-oriented and includes components for:
 
 - financial summary cards
-- income and expense information
+- income, expense, investment, and balance information
 - monthly overview charts
 - category distribution charts
 - transaction listing
+- transaction forms
+- bank account and category creation
 - application header and navigation
-- transaction data presentation
 
 JavaFX stylesheets are kept alongside the UI components and are included as Maven resources during the build.
 
@@ -216,7 +233,7 @@ The terminal interface supports operations such as:
 1. Add a transaction
 2. List transactions
 3. Remove a transaction
-4. View the dashboard
+4. View financial summaries
 5. Exit
 
 It also provides interaction with bank accounts, categories, transaction types, and payment methods.
@@ -226,6 +243,8 @@ To explicitly start terminal mode:
 ```bash
 mvn exec:java -Dexec.args="--console"
 ```
+
+When running a packaged application, the Windows build also creates a dedicated `FinTrack-CLI` launcher. On supported Linux desktop environments, the graphical application can open the terminal interface through the configured system terminal.
 
 ## Running the Application
 
@@ -267,17 +286,31 @@ mvn test
 mvn clean package
 ```
 
-The Maven build creates the application JAR and copies runtime dependencies into the `target/app` directory.
+The Maven build creates the application JAR and copies runtime dependencies into `target/app`. This output is used by the packaging workflow.
+
+## Packaging
+
+Packaging is automated through GitHub Actions whenever changes are pushed to `main`, and it can also be triggered manually.
+
+The workflow builds packages for:
+
+- **Debian/Ubuntu:** `.deb`
+- **Fedora-compatible Linux distributions:** `.rpm`
+- **Windows:** `.exe`
+
+The packaging workflow uses JDK 25 and `jpackage`. Linux packages use the PNG application icon, while the Windows package uses the ICO icon.
+
+For Linux packaging, the workflow also installs the required `fakeroot`/RPM tooling before invoking `jpackage`.
 
 ## Database Maintenance
 
-FinTrack includes `DatabaseMaintenanceService`, which performs database maintenance when the application starts.
+FinTrack includes `DatabaseMaintenanceService`, which performs scheduled database cleanup and maintenance logic when the graphical application starts.
 
-The graphical application invokes the maintenance process before displaying the main interface.
+The current startup flow initializes the database first and then runs the monthly maintenance check before displaying the main interface.
 
 ## Testing
 
-The project contains tests for multiple layers of the application, including:
+The project contains automated tests for multiple application layers, including:
 
 - controller behavior
 - transaction repository
@@ -288,7 +321,7 @@ The project contains tests for multiple layers of the application, including:
 - database maintenance
 - console input
 
-The test suite can be executed with:
+Run the complete test suite with:
 
 ```bash
 mvn test
@@ -301,23 +334,26 @@ The main Maven dependencies are:
 - `org.openjfx:javafx-controls:25`
 - `org.openjfx:javafx-fxml:25`
 - `org.xerial:sqlite-jdbc:3.50.3.0`
-- `fr.brouillard.oss:cssfx:11.4.0`
 - `org.junit.jupiter:junit-jupiter:5.13.4`
 
 ## Versioning
 
 The project follows semantic-style versioning.
 
-Development versions use the `-SNAPSHOT` suffix:
+Development versions use the `-SNAPSHOT` suffix. A `SNAPSHOT` version represents the current development state of the application and may still receive new features, fixes, and refinements.
+
+The current development version is:
 
 ```text
-1.5.0-SNAPSHOT
+2.0.0-SNAPSHOT
 ```
 
-A completed release uses the corresponding stable version:
+Although the current `2.0.0-SNAPSHOT` version is fully functional, additional features and refinements are planned before the final `2.0.0` release.
+
+A completed release removes the `-SNAPSHOT` suffix:
 
 ```text
-1.5.0
+2.0.0
 ```
 
 ## License

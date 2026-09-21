@@ -1,54 +1,154 @@
 package ui.javafx.components.financialCards.financialCard;
 
+import utils.FormatCurrency;
+import model.dto.DailyFinancialData;
+
+import java.math.BigDecimal;
+import java.util.List;
+
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import ui.javafx.components.FinancialData;
 
 public abstract class FinancialCard extends VBox {
 
     public enum ChartMode {
-        BALANCE, INCOME, EXPENSE
+        BALANCE, INCOME, EXPENSE, INVESTMENT
     }
 
-    private static final double CHART_WIDTH = 333; // The chart width accounts for the card's horizontal padding.
+    private static final double CHART_WIDTH = 220; // The chart width accounts for the card's horizontal padding.
     private static final double CHART_HEIGHT = 50;
+
+    private final Canvas chartCanvas;
+    private List<DailyFinancialData> dailyFinancialData;
 
     protected Label valueLabel;
     private final ChartMode chartMode;
 
-    public FinancialCard(String title, String value, ChartMode chartMode) {
+    public FinancialCard(String title, BigDecimal value, ChartMode chartMode,
+            List<DailyFinancialData> dailyFinancialData, String scopeHint) {
 
         this.chartMode = chartMode;
+        this.dailyFinancialData = dailyFinancialData;
 
         setSpacing(14);
-
-        // CSS
         getStyleClass().addAll("card", "surface");
 
-        // Content
         Label titleLabel = new Label(title);
         titleLabel.getStyleClass().addAll("text-primary", "title");
 
-        this.valueLabel = new Label(value);
+        String formattedValue = FormatCurrency.formatCurrency(value);
+        this.valueLabel = new Label(formattedValue);
         valueLabel.getStyleClass().addAll("text-primary", "value");
+        updateValueFontSize(formattedValue);
 
-        Canvas chartCanvas = new Canvas(CHART_WIDTH, CHART_HEIGHT);
-        drawMiniChart(chartCanvas.getGraphicsContext2D());
+        this.chartCanvas = new Canvas(CHART_WIDTH, CHART_HEIGHT);
+        chartCanvas.setOpacity(0);
 
-        getChildren().addAll(titleLabel, valueLabel, chartCanvas);
+        drawMiniChart();
+
+        widthProperty().addListener((obs, oldW, newW) -> {
+            // Account for the card's horizontal padding (20px on each side).
+            double innerWidth = newW.doubleValue() - 40;
+
+            // Redraw on any real change — canvas redraw is cheap, no need
+            // for a large epsilon that was hiding sub-pixel updates on
+            // cards other than the last one in the row.
+            if (innerWidth > 0 && innerWidth != chartCanvas.getWidth()) {
+                chartCanvas.setWidth(innerWidth);
+                drawMiniChart();
+            }
+            chartCanvas.setOpacity(1);
+        });
+
+        getChildren().add(titleLabel);
+        getChildren().add(valueLabel);
+
+        if (scopeHint != null) {
+            Label hint = new Label(scopeHint);
+            hint.getStyleClass().addAll("text-secondary", "scope-hint");
+            getChildren().add(hint);
+        }
+
+        getChildren().add(chartCanvas);
+    }
+
+    public FinancialCard(String title, BigDecimal value, ChartMode chartMode,
+            List<DailyFinancialData> dailyFinancialData) {
+        this(title, value, chartMode, dailyFinancialData, null);
+    }
+
+    /**
+     * Shrinks the value label's font size when the formatted number gets
+     * long (e.g. "R$ 12.345.678,90"), and restores the base size for
+     * shorter values. This keeps every card readable regardless of the
+     * magnitude of the number it displays.
+     */
+    private void updateValueFontSize(String formattedValue) {
+
+        // Balance keeps a larger base size (set via CSS ".balance-card .value"),
+        // the other three cards share the default ".value" size.
+        double baseSize = this.getStyleClass().contains("balance-card") ? 34 : 26;
+        double minSize = 16;
+
+        int length = formattedValue.length();
+
+        // Every 2 extra characters beyond 8 shrinks the font by 2px,
+        // never going below minSize.
+        int extraChars = Math.max(0, length - 8);
+        double shrinkSteps = extraChars / 2;
+        double newSize = Math.max(minSize, baseSize - (shrinkSteps * 2));
+
+        // Inline style intentionally overrides the CSS-defined size —
+        // this is the one property meant to vary per-instance, at runtime.
+        valueLabel.setStyle("-fx-font-size: " + newSize + "px;");
+    }
+
+    public void refreshData(BigDecimal newValue, List<DailyFinancialData> dailyFinancialData) {
+        String formattedValue = FormatCurrency.formatCurrency(newValue);
+        this.valueLabel.setText(formattedValue);
+        updateValueFontSize(formattedValue);
+
+        this.dailyFinancialData = dailyFinancialData;
+
+        drawMiniChart();
+    }
+
+    private double[] getChartValuesAsArray() {
+        int daysInMonth = java.time.LocalDate.now().lengthOfMonth();
+        double[] monthValues = new double[daysInMonth];
+
+        if (dailyFinancialData != null) {
+            dailyFinancialData.forEach(data -> {
+                int index = data.getDayOfMonth() - 1;
+
+                monthValues[index] = switch (chartMode) {
+                    case BALANCE -> data.getBalance().doubleValue();
+                    case INCOME -> data.getIncome().doubleValue();
+                    case EXPENSE -> data.getExpense().doubleValue();
+                    case INVESTMENT -> data.getInvestment().doubleValue();
+                };
+            });
+        }
+        return monthValues;
     }
 
     /**
      * Selects the appropriate chart according to the card's purpose.
      */
-    private void drawMiniChart(GraphicsContext gc) {
+    private void drawMiniChart() {
+        // Reset Graphic
+        GraphicsContext gc = chartCanvas.getGraphicsContext2D();
+        gc.clearRect(0, 0, chartCanvas.getWidth(), chartCanvas.getHeight());
+
+        double[] values = getChartValuesAsArray();
         switch (chartMode) {
-            case BALANCE -> drawBalanceChart(gc);
-            case INCOME -> drawSingleColorChart(gc, FinancialData.dailyIncome(), "#34D399");
-            case EXPENSE -> drawSingleColorChart(gc, FinancialData.dailyExpense(), "#F87171");
+            case BALANCE -> drawBalanceChart(gc, values);
+            case INCOME -> drawSingleColorChart(gc, values, "#34D399");
+            case EXPENSE -> drawSingleColorChart(gc, values, "#F87171");
+            case INVESTMENT -> drawSingleColorChart(gc, values, "#7E8B5A");
         }
     }
 
@@ -59,9 +159,8 @@ public abstract class FinancialCard extends VBox {
      * while negative values are represented by a red filled area.
      * The zero line is positioned at the vertical center of the chart.
      */
-    private void drawBalanceChart(GraphicsContext gc) {
+    private void drawBalanceChart(GraphicsContext gc, double[] values) {
 
-        double[] values = FinancialData.dailyBalance();
         double maxAbs = maxAbs(values);
         double baseline = CHART_HEIGHT / 2.0;
         double stepX = CHART_WIDTH / (values.length - 1);
@@ -186,7 +285,7 @@ public abstract class FinancialCard extends VBox {
 
         for (double v : values)
             max = Math.max(max, Math.abs(v));
-        
+
         // Prevents division by zero when all values are zero.
         return max == 0 ? 1 : max;
     }

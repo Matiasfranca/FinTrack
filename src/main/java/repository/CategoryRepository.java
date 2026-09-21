@@ -1,6 +1,8 @@
 package repository;
 
 import model.Category;
+import model.TransactionType;
+
 import java.util.List;
 
 public interface CategoryRepository {
@@ -13,4 +15,6 @@ public interface CategoryRepository {
     void delete(int categoryId);
     
     List<Category> findAll();
+
+    List<Category> findByTransactionType(TransactionType type);
 }

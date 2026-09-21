@@ -15,7 +15,7 @@ public class DatabaseConnection {
     }
 
     private static String getUrl() {
-        return testMode ? "jdbc:sqlite:fintrack-test.db" : "jdbc:sqlite:fintrack.db";
+        return testMode ? "jdbc:sqlite:fintrack-test.db" : "jdbc:sqlite:" + DatabasePath.create().path();
     }
 
     public static Connection getConnection() throws SQLException {

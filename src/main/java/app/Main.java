@@ -1,18 +1,30 @@
 package app;
 
+import service.DatabaseMaintenanceService;
+import ui.javafx.JavafxUI;
+
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import service.DatabaseMaintenanceService;
-import ui.javafx.JavafxUI;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.Scanner;
 
 public class Main extends Application {
 
@@ -35,15 +47,27 @@ public class Main extends Application {
     private ImageView guiPointer;
 
     public static void main(String[] args) {
-        if (args.length > 0 && args[0].equals("--console")) {
-            java.util.Scanner sc = new java.util.Scanner(System.in);
-            ui.console.ConsoleUI consoleUI = new ui.console.ConsoleUI();
-            consoleUI.start(sc);
-            System.exit(0);
+
+        if (args.length > 0 && "--console".equals(args[0])) {
+            runConsole();
             return;
-        } else {
-            launch(args);
         }
+
+        launch(args);
+    }
+
+    private static void runConsole() {
+        System.out.println("Iniciando modo console...");
+
+        Scanner sc = new Scanner(System.in);
+
+        System.out.println("Criando ConsoleUI...");
+        ui.console.ConsoleUI consoleUI = new ui.console.ConsoleUI();
+
+        System.out.println("Iniciando menu...");
+        consoleUI.start(sc);
+
+        System.out.println("Console finalizado.");
     }
 
     @Override
@@ -60,11 +84,12 @@ public class Main extends Application {
 
         Parent root = loader.load();
 
-        Scene scene = new Scene(root, 500, 350);
-        this.scene = scene;
+        this.scene = new Scene(root, 500, 350);
 
         scene.getStylesheets().add(
-                getClass().getResource("Main.css").toExternalForm());
+                getClass()
+                        .getResource("Main.css")
+                        .toExternalForm());
 
         primaryStage.setTitle("FinTrack");
         primaryStage.setScene(scene);
@@ -74,26 +99,18 @@ public class Main extends Application {
     @FXML
     private void initialize() {
 
-        Tooltip aviso = new Tooltip("Em desenvolvimento. Por favor, utilize o Terminal nesta versão.");
-        guiButton.setTooltip(aviso);
+        guiPointer.setVisible(true);
+        terminalPointer.setVisible(false);
 
-        guiButton.setOpacity(0.4);
-        guiButton.setOnAction(event -> {
-
+        terminalOption.setOnMouseEntered(e -> {
+            terminalPointer.setVisible(true);
+            guiPointer.setVisible(false);
         });
 
-        guiPointer.setVisible(false);
-        terminalPointer.setVisible(true);
-
-        // terminalOption.setOnMouseEntered(e -> {
-        // terminalPointer.setVisible(true);
-        // guiPointer.setVisible(false);
-        // });
-
-        // guiOption.setOnMouseEntered(e -> {
-        // terminalPointer.setVisible(false);
-        // guiPointer.setVisible(true);
-        // });
+        guiOption.setOnMouseEntered(e -> {
+            terminalPointer.setVisible(false);
+            guiPointer.setVisible(true);
+        });
     }
 
     @FXML
@@ -105,48 +122,315 @@ public class Main extends Application {
 
     @FXML
     private void openTERMINAL(ActionEvent event) {
-        stage.close();
 
         try {
-            ProcessBuilder check = new ProcessBuilder("which", "fintrack");
-            Process process = check.start();
-            int errorCode = process.waitFor();
 
-            if (errorCode == 0) {
-                try {
-                    ProcessBuilder pb = new ProcessBuilder("x-terminal-emulator", "-e", "fintrack", "--console");
-                    pb.start();
-                } catch (Exception e) {
-                    String[] terminals = { "gnome-terminal", "konsole", "xfce4-terminal", "xterm" };
-                    for (String term : terminals) {
-                        try {
-                            ProcessBuilder pb = new ProcessBuilder(term, term.equals("gnome-terminal") ? "--" : "-e",
-                                    "fintrack", "--console");
-                            pb.start();
-                            break;
-                        } catch (Exception ignored) {
-                        }
-                    }
-                }
-                javafx.application.Platform.exit();
-                System.exit(0);
+            OperatingSystem os = detectOperatingSystem();
 
-            } else {
-                System.out.println("\n--- MODO TERMINAL (Ambiente de Desenvolvimento) ---\n");
+            switch (os) {
 
-                javafx.application.Platform.exit();
+                case WINDOWS:
+                    openWindowsTerminal();
+                    break;
 
-                new Thread(() -> {
-                    java.util.Scanner sc = new java.util.Scanner(System.in);
-                    ui.console.ConsoleUI consoleUI = new ui.console.ConsoleUI();
-                    consoleUI.start(sc);
-                    System.exit(0);
-                }).start();
+                case LINUX:
+                    openLinuxTerminal();
+                    break;
+
+                default:
+                    runConsoleInCurrentProcess();
+                    return;
             }
 
+            /*
+             * Close the GUI only after the terminal process
+             * has been started successfully.
+             */
+            Platform.exit();
+
         } catch (Exception e) {
-            System.err.println("Erro ao iniciar o terminal: " + e.getMessage());
+
+            System.err.println(
+                    "Failed to open terminal mode: "
+                            + e.getMessage());
+
+            e.printStackTrace();
+
             stage.show();
         }
+    }
+
+    // ============================================================
+    // OPERATING SYSTEM
+    // ============================================================
+
+    private OperatingSystem detectOperatingSystem() {
+
+        String os = System.getProperty("os.name")
+                .toLowerCase(Locale.ROOT);
+
+        if (os.contains("win")) {
+            return OperatingSystem.WINDOWS;
+        }
+
+        if (os.contains("linux")) {
+            return OperatingSystem.LINUX;
+        }
+
+        return OperatingSystem.OTHER;
+    }
+
+    // ============================================================
+    // WINDOWS
+    // ============================================================
+
+    private void openWindowsTerminal() throws IOException {
+        if (detectOperatingSystem() != OperatingSystem.WINDOWS) {
+            throw new UnsupportedOperationException("Windows terminal is not supported on this OS.");
+        }
+
+        Optional<String> comandoAtual = ProcessHandle.current().info().command();
+        Path installDir = null;
+
+        if (comandoAtual.isPresent()) {
+            Path currentExe = Paths.get(comandoAtual.get());
+            installDir = currentExe.getParent();
+        } else if (getCurrentExecutable() != null) {
+            installDir = new File(getCurrentExecutable()).toPath().getParent();
+        }
+
+        if (installDir == null) {
+            throw new IOException("Could not locate the FinTrack installation directory.");
+        }
+
+        Path cliExe = installDir.resolve("FinTrack-CLI.exe");
+
+        if (Files.exists(cliExe)) {
+            ProcessBuilder pb = new ProcessBuilder("cmd", "/c", "start", "FinTrack Terminal", cliExe.toString());
+            pb.directory(installDir.toFile());
+            pb.start();
+        } else {
+            throw new IOException("CLI executable not found at: " + cliExe);
+        }
+    }
+
+    // ============================================================
+    // LINUX
+    // ============================================================
+
+    private void openLinuxTerminal() throws IOException {
+
+        String executable = getCurrentExecutable();
+
+        /*
+         * If a real executable exists, the application is most likely
+         * running from a jpackage installation.
+         */
+        if (executable != null) {
+
+            List<TerminalCommand> terminals = List.of(
+
+                    // Debian/Ubuntu and systems that provide
+                    // the default terminal through this command.
+                    new TerminalCommand(
+                            "x-terminal-emulator",
+                            List.of(
+                                    "-e",
+                                    executable,
+                                    "--console")),
+
+                    // GNOME
+                    new TerminalCommand(
+                            "gnome-terminal",
+                            List.of(
+                                    "--",
+                                    executable,
+                                    "--console")),
+
+                    // KDE
+                    new TerminalCommand(
+                            "konsole",
+                            List.of(
+                                    "-e",
+                                    executable,
+                                    "--console")),
+
+                    // XFCE
+                    new TerminalCommand(
+                            "xfce4-terminal",
+                            List.of(
+                                    "--command",
+                                    executable + " --console")),
+
+                    // MATE
+                    new TerminalCommand(
+                            "mate-terminal",
+                            List.of(
+                                    "--",
+                                    executable,
+                                    "--console")),
+
+                    // LXDE
+                    new TerminalCommand(
+                            "lxterminal",
+                            List.of(
+                                    "-e",
+                                    executable + " --console")),
+
+                    // Universal X11 fallback
+                    new TerminalCommand(
+                            "xterm",
+                            List.of(
+                                    "-e",
+                                    executable,
+                                    "--console")));
+
+            for (TerminalCommand terminal : terminals) {
+
+                if (commandExists(terminal.command())) {
+
+                    try {
+
+                        List<String> command = new ArrayList<>();
+
+                        command.add(terminal.command());
+                        command.addAll(terminal.arguments());
+
+                        new ProcessBuilder(command).start();
+
+                        return;
+
+                    } catch (IOException ignored) {
+                        /*
+                         * The terminal exists but failed to start.
+                         * Try the next available terminal.
+                         */
+                    }
+                }
+            }
+
+            throw new IOException(
+                    "No compatible terminal emulator was found.");
+        }
+
+        /*
+         * Development environment:
+         *
+         * mvn javafx:run
+         *
+         * In this case, there may be no FinTrack executable
+         * installed on the system.
+         *
+         * The console should continue in the terminal where
+         * Maven was started.
+         */
+        runConsoleInCurrentProcess();
+    }
+
+    // ============================================================
+    // CURRENT EXECUTABLE
+    // ============================================================
+
+    private String getCurrentExecutable() {
+
+        Optional<String> command = ProcessHandle.current()
+                .info()
+                .command();
+
+        if (command.isEmpty()) {
+            return null;
+        }
+
+        String executable = command.get();
+
+        /*
+         * If the application is being launched directly through
+         * Java/Maven, this is likely the Java executable rather
+         * than the FinTrack executable.
+         */
+        String fileName = new File(executable)
+                .getName()
+                .toLowerCase(Locale.ROOT);
+
+        if (fileName.equals("java")
+                || fileName.equals("java.exe")
+                || fileName.equals("javaw.exe")) {
+
+            return null;
+        }
+
+        return executable;
+    }
+
+    // ============================================================
+    // COMMAND CHECK
+    // ============================================================
+
+    private boolean commandExists(String command) {
+
+        try {
+
+            Process process;
+
+            if (detectOperatingSystem() == OperatingSystem.WINDOWS) {
+
+                process = new ProcessBuilder(
+                        "where",
+                        command).start();
+
+            } else {
+
+                process = new ProcessBuilder(
+                        "sh",
+                        "-c",
+                        "command -v " + command).start();
+            }
+
+            return process.waitFor() == 0;
+
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    // ============================================================
+    // DEVELOPMENT ENVIRONMENT
+    // ============================================================
+
+    private void runConsoleInCurrentProcess() {
+
+        Platform.exit();
+
+        new Thread(() -> {
+
+            try {
+
+                java.util.Scanner sc = new java.util.Scanner(System.in);
+
+                ui.console.ConsoleUI consoleUI = new ui.console.ConsoleUI();
+
+                consoleUI.start(sc);
+
+            } finally {
+
+                System.exit(0);
+            }
+
+        }).start();
+    }
+
+    // ============================================================
+    // AUXILIARY TYPES
+    // ============================================================
+
+    private enum OperatingSystem {
+        WINDOWS,
+        LINUX,
+        OTHER
+    }
+
+    private record TerminalCommand(
+            String command,
+            List<String> arguments) {
     }
 }

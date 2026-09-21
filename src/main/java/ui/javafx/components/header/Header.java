@@ -8,7 +8,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.text.Text;
 
 public class Header extends HBox {
-    public Header() {
+    public Header(Runnable onAddTransaction) {
 
         getStyleClass().add("header");
         setAlignment(Pos.CENTER_LEFT);
@@ -21,10 +21,14 @@ public class Header extends HBox {
         setHgrow(spacer, Priority.ALWAYS);
 
         Button addTransaction = new Button("+ Adicionar transação");
+        addTransaction.setOnAction(e -> {
+            onAddTransaction.run();
+        });
         addTransaction.getStyleClass().add("add-transaction"); 
 
         getChildren().addAll(title, spacer, addTransaction);
 
         getStylesheets().add(getClass().getResource("Header.css").toExternalForm());
     }
+
 }

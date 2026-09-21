@@ -1,10 +1,5 @@
 package controller;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.YearMonth;
-import java.util.List;
-import java.util.Arrays;
 import exceptions.InvalidInput;
 import model.*;
 import model.dto.CardData;
@@ -21,6 +16,12 @@ import repository.sqlite.SqliteDashboardRepository;
 import repository.sqlite.SqliteMonthRepository;
 import repository.sqlite.SqliteTransactionRepository;
 import utils.ValidationRule;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.List;
+import java.util.Arrays;
 
 public class FinTracker {
 
@@ -93,15 +94,15 @@ public class FinTracker {
         transactionRepository.update(transaction, monthId, accountId, categoryId);
     }
 
-    public void deleteTransaction(int transactionId) throws InvalidInput {
-        if (transactionId <= 0) {
+    public void deleteTransaction(Transaction transaction) throws InvalidInput {
+        if (transaction.getId() <= 0) {
             throw new InvalidInput("Cannot delete a transaction with an invalid ID.");
         }
 
-        transactionRepository.delete(transactionId);
+        transactionRepository.delete(transaction.getId());
     }
 
-    // --- LIST ---
+    // --- List transactions ---
 
     public List<Transaction> listTransactionsByMonth(YearMonth yearMonth) throws InvalidInput {
         if (yearMonth == null) {
@@ -111,12 +112,39 @@ public class FinTracker {
         return transactionRepository.findByMonth(yearMonth);
     }
 
-    public List<CategoryChartData> getCategoryDistribution(YearMonth yearMonth, TransactionType type) throws InvalidInput {
+    public List<Transaction> listGlobalTransactions(int limit, int offset) {
+        return transactionRepository.listGlobalTransactions(limit, offset);
+    }
+
+    // List of dashboard
+
+    public List<CategoryChartData> getCategoryDistribution(YearMonth yearMonth, TransactionType type)
+            throws InvalidInput {
         if (yearMonth == null || type == null) {
             throw new InvalidInput("YearMonth and TransactionType cannot be null.");
         }
         int monthId = monthRepository.getOrCreate(yearMonth).getId();
         return dashboardRepository.getCategoryDistribution(monthId, type);
+    }
+
+    public List<CategoryChartData> getGlobalCategoryDistribution(TransactionType type)
+            throws InvalidInput {
+        if (type == null) {
+            throw new InvalidInput("TransactionType cannot be null.");
+        }
+        return dashboardRepository.getGlobalCategoryDistribution(type);
+    }
+
+    public CardData getMonthlyCard(YearMonth yearMonth) throws InvalidInput {
+        if (yearMonth == null) {
+            throw new InvalidInput("YearMonth cannot be null.");
+        }
+        int monthId = monthRepository.getOrCreate(yearMonth).getId();
+        return dashboardRepository.getMonthlyCard(monthId);
+    }
+
+    public CardData getGlobalCard() throws InvalidInput {
+        return dashboardRepository.getGlobalCard();
     }
 
     public List<DailyFinancialData> getMonthlyOverview(YearMonth yearMonth) throws InvalidInput {
@@ -127,20 +155,22 @@ public class FinTracker {
         return dashboardRepository.getMonthlyOverview(monthId);
     }
 
-    // --- CARD ---
-
-    public CardData getMonthlyCard(YearMonth yearMonth) throws InvalidInput {
-        if (yearMonth == null) {
-            throw new InvalidInput("YearMonth cannot be null.");
-        }
-        int monthId = monthRepository.getOrCreate(yearMonth).getId();
-        return dashboardRepository.getMonthlyCard(monthId);
-    }
-
     // --- CATEGORIES ---
+
+    public Category getOrCreateCategory(Category category) {
+        return categoryRepository.getOrCreate(category);
+    }
 
     public List<Category> listAllCategories() {
         return categoryRepository.findAll();
+    }
+
+    public List<Category> listCategoriesByTransactionType(TransactionType query) {
+        TransactionType queryType = (query == TransactionType.REDEMPTION)
+                ? TransactionType.INVESTMENT
+                : query;
+
+        return categoryRepository.findByTransactionType(queryType);
     }
 
     public void updateCategory(Category category) throws InvalidInput {
@@ -158,6 +188,10 @@ public class FinTracker {
     }
 
     // --- BANK ACCOUNTS ---
+
+    public BankAccount getOrCreateBankAccount(BankAccount account) {
+        return bankAccountRepository.getOrCreate(account);
+    }
 
     public List<BankAccount> listAllBankAccounts() {
         return bankAccountRepository.findAll();

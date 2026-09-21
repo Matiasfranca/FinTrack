@@ -4,9 +4,15 @@ import java.math.BigDecimal;
 
 public class CardData {
 
-    private final BigDecimal income;
-    private final BigDecimal expense;
-    private final BigDecimal investment;
+    private BigDecimal income;
+    private BigDecimal expense;
+    private BigDecimal investment;
+    private BigDecimal redemption = BigDecimal.ZERO;
+
+    public CardData(BigDecimal income, BigDecimal expense, BigDecimal investment, BigDecimal redemption) {
+        this(income,expense,investment);
+        this.redemption = redemption;
+    }
 
     public CardData(BigDecimal income, BigDecimal expense, BigDecimal investment) {
         this.income = income;
@@ -14,9 +20,18 @@ public class CardData {
         this.investment = investment;
     }
 
-    public BigDecimal getCashFlowBalance() { return income.subtract(expense).subtract(investment); }
+    public BigDecimal getCashFlowBalance() { return income.subtract(expense).subtract(investment).add(redemption); }
+
+    //Getters
     public BigDecimal getTotalIncome() { return income; }
     public BigDecimal getTotalExpense() { return expense; }
-    public BigDecimal getTotalInvestment() { return investment; }
+    public BigDecimal getTotalInvestment() { return investment.subtract(redemption); }
+    
+    //Setters
+    public void setTotalIncome(BigDecimal income) { this.income = income; }
+    public void setTotalExpense(BigDecimal expense) { this.expense = expense; }
+    public void setTotalInvestment(BigDecimal investment) { this.investment = investment; }
+    public void setTotalRedemption(BigDecimal redemption) { this.redemption = redemption; }
+    
     
 }

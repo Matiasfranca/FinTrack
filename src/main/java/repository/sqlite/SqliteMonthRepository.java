@@ -3,8 +3,9 @@ package repository.sqlite;
 import repository.MonthRepository;
 import database.DatabaseConnection;
 import exceptions.DataAccessException;
-import java.time.YearMonth;
 import model.Month;
+
+import java.time.YearMonth;
 import java.sql.*;
 
 public class SqliteMonthRepository implements MonthRepository {

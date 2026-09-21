@@ -119,20 +119,20 @@ public class FinTrackerTest {
     @Test
     @Order(8)
     void shouldDeleteTransactionSuccessfully() {
-        int validTransactionId = 1;
+        Transaction transaction = new Transaction(1, "Bad Update", new BigDecimal("-50.00"), TransactionType.EXPENSE, PaymentMethod.PIX, LocalDate.now(), 1, 1);
 
         assertDoesNotThrow(() -> {
-            finTracker.deleteTransaction(validTransactionId);
+            finTracker.deleteTransaction(transaction);
         });
     }
 
     @Test
     @Order(9)
     void shouldThrowExceptionWhenTryingToDeleteWithInvalidId() {
-        int invalidTransactionId = 0; 
+        Transaction transaction = new Transaction(0, "Bad Update", new BigDecimal("-50.00"), TransactionType.EXPENSE, PaymentMethod.PIX, LocalDate.now(), 1, 1);
 
         InvalidInput exception = assertThrows(InvalidInput.class, () -> {
-            finTracker.deleteTransaction(invalidTransactionId);
+            finTracker.deleteTransaction(transaction);
         });
 
         assertEquals("Cannot delete a transaction with an invalid ID.", exception.getMessage());

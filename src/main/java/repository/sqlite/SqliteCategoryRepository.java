@@ -3,6 +3,7 @@ package repository.sqlite;
 import database.DatabaseConnection;
 import exceptions.DataAccessException;
 import model.Category;
+import model.TransactionType;
 import repository.CategoryRepository;
 
 import java.sql.*;
@@ -61,10 +62,8 @@ public class SqliteCategoryRepository implements CategoryRepository {
 
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    return new Category(
-                            generatedKeys.getInt(1),
-                            category.getName().trim(),
-                            category.getColor());
+                    category.setId(generatedKeys.getInt(1));
+                    return category;
                 } else {
                     throw new SQLException("Failed to create category, no ID returned.");
                 }
@@ -123,6 +122,50 @@ public class SqliteCategoryRepository implements CategoryRepository {
             }
         } catch (SQLException e) {
             throw new DataAccessException("Failed to retrieve categories", e);
+        }
+
+        return categories;
+    }
+
+    @Override
+    public List<Category> findByTransactionType(TransactionType type) {
+        String sql = """
+                SELECT c.id, c.name, c.color
+                FROM CATEGORY c
+                INNER JOIN "TRANSACTION" t ON t.category_id = c.id
+                WHERE t.type = ?
+
+                UNION
+
+                SELECT NULL AS id, 'Outros' AS name, NULL AS color
+                WHERE EXISTS (
+                    SELECT 1 FROM "TRANSACTION" t
+                    WHERE t.type = ? AND t.category_id IS NULL
+                )
+
+                ORDER BY name ASC
+                """;
+
+        List<Category> categories = new ArrayList<>();
+
+        try (Connection conn = DatabaseConnection.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, type.name());
+            stmt.setString(2, type.name());
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+
+                    Integer id = rs.getObject("id") != null ? rs.getInt("id") : null;
+                    String name = rs.getString("name");
+                    String color = rs.getString("color");
+
+                    categories.add(new Category(id, name, color));
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to retrieve categories for transaction type: " + type, e);
         }
 
         return categories;

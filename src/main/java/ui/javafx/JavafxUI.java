@@ -6,36 +6,37 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import ui.javafx.components.Components;
+import ui.javafx.components.form.TransactionFormOverlay;
 
-/**
- * FintrackUI
- */
 public class JavafxUI {
 
     private final Stage stage;
     private final Scene scene;
 
     public JavafxUI(Stage stage, Scene scene) {
-
         this.stage = stage;
         this.scene = scene;
-
     }
 
     public void start() throws Exception {
 
-        StackPane root = new StackPane(new Components());
-        root.getStyleClass().add("background");
-        root.setAlignment(Pos.TOP_CENTER);
+        TransactionFormOverlay overlay = new TransactionFormOverlay();
 
-        ScrollPane scrollPane = new ScrollPane(root);
+        StackPane content = new StackPane(new Components(overlay::show, overlay::show));
+        content.getStyleClass().add("background");
+        content.setAlignment(Pos.TOP_CENTER);
+
+        ScrollPane scrollPane = new ScrollPane(content);
         scrollPane.setFitToWidth(true);
         scrollPane.getStyleClass().add("main-scroll");
+        
+        StackPane appRoot = new StackPane(scrollPane, overlay);
 
-        scene.setRoot(scrollPane);
+        overlay.setScroolPane(scrollPane);
+
+        scene.setRoot(appRoot);
 
         stage.setMaximized(true);
-
+        stage.show();
     }
-
 }

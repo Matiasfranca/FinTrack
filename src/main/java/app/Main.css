@@ -47,7 +47,7 @@
 
 .main-scroll .scroll-bar .increment-arrow,
 .main-scroll .scroll-bar .decrement-arrow {
-    -fx-shape: " ";  /* some com a setinha padrão, fica mais clean */
+    -fx-shape: " "; 
 }
 
 /* =========================
@@ -57,11 +57,6 @@
 .surface {
     -fx-background-color: #1C1C1F;
 }
-
-/* .surface:hover {
-    -fx-background-color: #28282C;
-} */
-
 
 /* =========================
    Primary

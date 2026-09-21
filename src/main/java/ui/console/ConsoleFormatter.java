@@ -10,7 +10,7 @@ import model.dto.CardData;
 import model.dto.CategoryChartData;
 
 public class ConsoleFormatter {
-    
+
     public static void clearScreen() {
         System.out.println("\n".repeat(40));
     }
@@ -19,22 +19,22 @@ public class ConsoleFormatter {
         System.out.print("\nPressione ENTER para continuar...");
         sc.nextLine();
     }
-    
-    public static void showMenu() { 
+
+    public static void showMenu() {
         System.out.print("""
-        ──────────────────────────────────────────────────
-                        💰 FINTRACK
-        ──────────────────────────────────────────────────
+                ──────────────────────────────────────────────────
+                                💰 FINTRACK
+                ──────────────────────────────────────────────────
 
-        [1] ➜ Adicionar transação
-        [2] ➜ Listar transações
-        [3] ➜ Remover transação
-        [4] ➜ Resumo Financeiro (Dashboard)
-        [5] ➜ Sair
+                [1] ➜ Adicionar transação
+                [2] ➜ Listar transações
+                [3] ➜ Remover transação
+                [4] ➜ Resumo Financeiro (Dashboard)
+                [5] ➜ Sair
 
-        ──────────────────────────────────────────────────
-        Opção: \
-        """);
+                ──────────────────────────────────────────────────
+                Opção: \
+                """);
     }
 
     public static void showHeader(String title) {
@@ -50,43 +50,48 @@ public class ConsoleFormatter {
     public static void showInputType() {
         System.out.print("""
 
-        Tipo da transação:
+                Tipo da transação:
 
-        [1] ➜ Receita (Entrada)
-        [2] ➜ Despesa (Saída)
-        [3] ➜ Investimento
+                [1] ➜ Receita (Entrada)
+                [2] ➜ Despesa (Saída)
+                [3] ➜ Investimento
+                [4] ➜ Resgate
 
-        Opção: \
-        """);
+                Opção: \
+                """);
     }
 
     public static void showInputValue() {
         System.out.print("\nValor da transação (R$): ");
     }
-    
+
     public static void showTransactions(List<Transaction> transactions) {
+        int i = 1;
+
         System.out.print("""
-                
-        ──────────────────────────────────────────────────────────────────────────────
-         ID   │ Tipo         │ Valor       │ Data       │ Descrição
-        ──────────────────────────────────────────────────────────────────────────────
-        """);
+
+                ──────────────────────────────────────────────────────────────────────────────
+                 ID   │ Tipo         │ Valor       │ Data       │ Descrição
+                ──────────────────────────────────────────────────────────────────────────────
+                """);
         for (Transaction transaction : transactions) {
-            
+
             String tipoTraduzido = switch (transaction.getTransactionType()) {
                 case INCOME -> "Receita";
                 case EXPENSE -> "Despesa";
                 case INVESTMENT -> "Investimento";
+                case REDEMPTION -> "Resgate";
             };
 
             System.out.printf(
-                " %-4d │ %-12s │ R$ %8.2f │ %s │ %s%n",
-                transaction.getId(),
-                tipoTraduzido,
-                transaction.getValue(),
-                transaction.getDate(),
-                transaction.getDescription() != null ? transaction.getDescription() : "-"
-            );
+                    " %-4d │ %-12s │ R$ %8.2f │ %s │ %s%n",
+                    i,
+                    tipoTraduzido,
+                    transaction.getValue(),
+                    transaction.getDate(),
+                    transaction.getDescription() != null ? transaction.getDescription() : "-");
+
+            i++;
         }
         System.out.println("──────────────────────────────────────────────────────────────────────────────");
     }
@@ -94,16 +99,16 @@ public class ConsoleFormatter {
     public static void showPaymentMethods() {
         System.out.print("""
 
-        Forma de Pagamento:
-        [1] ➜ PIX
-        [2] ➜ Cartão de Crédito
-        [3] ➜ Cartão de Débito
-        [4] ➜ Dinheiro (Cash)
-        [5] ➜ Transferência Bancária
-        [6] ➜ Boleto
+                Forma de Pagamento:
+                [1] ➜ PIX
+                [2] ➜ Cartão de Crédito
+                [3] ➜ Cartão de Débito
+                [4] ➜ Dinheiro (Cash)
+                [5] ➜ Transferência Bancária
+                [6] ➜ Boleto
 
-        Opção: \
-        """);
+                Opção: \
+                """);
     }
 
     public static void showBankAccounts(List<BankAccount> accounts) {
@@ -117,14 +122,14 @@ public class ConsoleFormatter {
     public static void showBankAccountTypes() {
         System.out.print("""
 
-        Tipo de Conta:
-        [1] ➜ Conta Corrente (Checking)
-        [2] ➜ Conta Poupança (Savings)
-        [3] ➜ Carteira Física (Cash)
-        [4] ➜ Outros
+                Tipo de Conta:
+                [1] ➜ Conta Corrente (Checking)
+                [2] ➜ Conta Poupança (Savings)
+                [3] ➜ Carteira Física (Cash)
+                [4] ➜ Outros
 
-        Opção: \
-        """);
+                Opção: \
+                """);
     }
 
     public static void showCategories(List<Category> categories) {
@@ -140,27 +145,27 @@ public class ConsoleFormatter {
 
     public static void showDashboardCard(CardData card) {
         System.out.printf("""
-                
-        ──────────────────────────────────────────────────
-                        📊 BALANÇO DO MÊS
-        ──────────────────────────────────────────────────
-         📥 Receitas      : R$ %10.2f
-         📤 Despesas      : R$ %10.2f
-         💎 Investimentos : R$ %10.2f
-        ──────────────────────────────────────────────────
-         ⚖️ SALDO TOTAL   : R$ %10.2f
-        ──────────────────────────────────────────────────
-        """, 
-        card.getTotalIncome(), 
-        card.getTotalExpense(), 
-        card.getTotalInvestment(),
-        card.getCashFlowBalance());
+
+                ──────────────────────────────────────────────────
+                                📊 BALANÇO DO MÊS
+                ──────────────────────────────────────────────────
+                 📥 Receitas      : R$ %10.2f
+                 📤 Despesas      : R$ %10.2f
+                 💎 Investimentos : R$ %10.2f
+                ──────────────────────────────────────────────────
+                 ⚖️ SALDO TOTAL   : R$ %10.2f
+                ──────────────────────────────────────────────────
+                """,
+                card.getTotalIncome(),
+                card.getTotalExpense(),
+                card.getTotalInvestment(),
+                card.getCashFlowBalance());
     }
 
     public static void showCategoryDistribution(List<CategoryChartData> distribution) {
         System.out.println("\n📈 GASTOS POR CATEGORIA:");
         System.out.println("──────────────────────────────────────────────────");
-        
+
         if (distribution.isEmpty()) {
             System.out.println("  Nenhum gasto registrado neste mês.");
         } else {
