@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'v*' 
   workflow_dispatch:
 
 jobs:
@@ -13,10 +15,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       - name: Setup Java
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "25"
@@ -46,57 +48,57 @@ jobs:
             --icon src/main/java/app/assets/fintrack_ico.png \
             --linux-shortcut
 
-      - name: Upload DEB
+      - name: Upload DEB Artifact
         uses: actions/upload-artifact@v4
         with:
           name: fintrack-deb
           path: target/package/*.deb
 
   build-windows:
-        name: Build Windows installer
-        runs-on: windows-latest
+    name: Build Windows installer
+    runs-on: windows-latest
 
-        steps:
-          - name: Checkout
-            uses: actions/checkout@v5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-          - name: Setup Java
-            uses: actions/setup-java@v5
-            with:
-              distribution: temurin
-              java-version: '25'
-              cache: maven
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
 
-          - name: Build application
-            run: mvn clean package
+      - name: Build application
+        run: mvn clean package
 
-          - name: Prepare CLI Launcher
-            run: |
-              echo "win-console=true" > cli.properties
-              echo "arguments=--console" >> cli.properties
+      - name: Prepare CLI Launcher
+        run: |
+          echo "win-console=true" > cli.properties
+          echo "arguments=--console" >> cli.properties
 
-          - name: Build EXE
-            run: |
-              jpackage `
-                --type exe `
-                --name FinTrack `
-                --app-version 2.0.0 `
-                --input target/app `
-                --main-jar fintrack-2.0.0-SNAPSHOT.jar `
-                --main-class app.Main `
-                --module-path target/app/lib `
-                --add-modules javafx.controls,javafx.fxml,java.sql `
-                --dest target/package `
-                --win-menu `
-                --win-shortcut `
-                --icon src/main/java/app/assets/fintrack_ico.ico `
-                --add-launcher FinTrack-CLI=cli.properties
+      - name: Build EXE
+        run: |
+          jpackage `
+            --type exe `
+            --name FinTrack `
+            --app-version 2.0.0 `
+            --input target/app `
+            --main-jar fintrack-2.0.0-SNAPSHOT.jar `
+            --main-class app.Main `
+            --module-path target/app/lib `
+            --add-modules javafx.controls,javafx.fxml,java.sql `
+            --dest target/package `
+            --win-menu `
+            --win-shortcut `
+            --icon src/main/java/app/assets/fintrack_ico.ico `
+            --add-launcher FinTrack-CLI=cli.properties
 
-          - name: Upload EXE
-            uses: actions/upload-artifact@v4
-            with:
-              name: fintrack-windows
-              path: target/package/*.exe
+      - name: Upload EXE Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fintrack-windows
+          path: target/package/*.exe
 
   build-rpm:
     name: Build Fedora package
@@ -104,10 +106,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       - name: Setup Java
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "25"
@@ -137,8 +139,42 @@ jobs:
             --icon src/main/java/app/assets/fintrack_ico.png \
             --linux-shortcut
 
-      - name: Upload RPM
+      - name: Upload RPM Artifact
         uses: actions/upload-artifact@v4
         with:
           name: fintrack-rpm
           path: target/package/*.rpm
+
+  publish-release:
+    name: Publish Release with Executables
+    needs: [build-deb, build-windows, build-rpm]
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download DEB Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: fintrack-deb
+          path: dist
+
+      - name: Download EXE Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: fintrack-windows
+          path: dist
+
+      - name: Download RPM Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: fintrack-rpm
+          path: dist
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

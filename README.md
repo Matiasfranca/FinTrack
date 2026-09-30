@@ -356,6 +356,12 @@ A completed release removes the `-SNAPSHOT` suffix:
 2.0.0
 ```
 
+## 🚀 Download Executables
+
+Download pre-built installers for **Windows (.exe)**, **Debian/Ubuntu (.deb)**, or **Fedora (.rpm)**:
+
+👉 **[Download latest FinTrack release](https://github.com/Matiasfranca/FinTrack/releases/latest)**
+
 ## License
 
 **Copyright (c) 2026 Matias Saraiva de França. All Rights Reserved.**
