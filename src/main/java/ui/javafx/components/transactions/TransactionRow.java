@@ -2,9 +2,9 @@ package ui.javafx.components.transactions;
 
 import controller.FinTracker;
 import model.Transaction;
-import model.TransactionType;
 import ui.javafx.events.TransactionEventBus;
 import ui.javafx.events.TransactionEventBus.Type;
+import utils.EnumLabels;
 import utils.FormatCurrency;
 
 import java.time.format.DateTimeFormatter;
@@ -100,10 +100,10 @@ public class TransactionRow extends VBox {
         detailsBox.add(createDetailValue(transaction.getDate().format(dateFormatter)), 1, 0);
 
         detailsBox.add(createDetailLabel("Tipo:"), 0, 1);
-        detailsBox.add(createDetailValue(translateType(transaction.getTransactionType())), 1, 1);
+        detailsBox.add(createDetailValue(EnumLabels.label(transaction.getTransactionType())), 1, 1);
 
         detailsBox.add(createDetailLabel("Pagamento:"), 0, 2);
-        detailsBox.add(createDetailValue(translatePaymentMethod(transaction.getPaymentMethod())), 1, 2);
+        detailsBox.add(createDetailValue(EnumLabels.label(transaction.getPaymentMethod())), 1, 2);
         
         detailsBox.add(createDetailLabel("Conta:"), 0, 3);
         detailsBox.add(createDetailValue(accName), 1, 3);
@@ -133,28 +133,6 @@ public class TransactionRow extends VBox {
         Label lbl = new Label(text);
         lbl.getStyleClass().addAll("text-primary", "detail-value");
         return lbl;
-    }
-
-    private String translatePaymentMethod(model.PaymentMethod method) {
-        if (method == null)
-            return "Não informado";
-        return switch (method) {
-            case PIX -> "Pix";
-            case DEBIT_CARD -> "Cartão de débito";
-            case CREDIT_CARD -> "Cartão de crédito";
-            case CASH -> "Dinheiro";
-            case BANK_TRANSFER -> "Transferência";
-            case BOLETO -> "Boleto";
-        };
-    }
-
-    private String translateType(TransactionType type) {
-        return switch (type) {
-            case INCOME -> "Receita";
-            case EXPENSE -> "Despesa";
-            case INVESTMENT -> "Investimento";
-            case REDEMPTION -> "Resgate";
-        };
     }
 
     public Transaction getTransaction() {

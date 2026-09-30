@@ -1,4 +1,4 @@
-package ui.javafx.components.form;
+package ui.javafx.components.form.bankAccountForm;
 
 import model.BankAccountType;
 
@@ -87,6 +87,6 @@ public class BankAccountFormCard extends VBox {
 
         getChildren().addAll(title, nameLabel, nameField, typeLabel, typeBox, errorLabel, buttonRow);
 
-        getStylesheets().add(getClass().getResource("FormTransaction.css").toExternalForm());
+        getStylesheets().add(getClass().getResource("../FormTransaction.css").toExternalForm());
     }
 }

@@ -1,4 +1,4 @@
-package ui.javafx.components.form;
+package ui.javafx.components.form.categoryForm;
 
 import model.Category;
 

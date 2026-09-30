@@ -6,8 +6,13 @@ import model.Category;
 import model.PaymentMethod;
 import model.Transaction;
 import model.TransactionType;
+import ui.javafx.components.form.bankAccountForm.BankAccountFormCard;
+import ui.javafx.components.form.categoryForm.CategoryFormCard;
+import ui.javafx.components.form.categoryForm.CategoryOption;
 import ui.javafx.events.TransactionEventBus;
 import ui.javafx.events.TransactionEventBus.Type;
+import utils.CurrencyInputFormatter;
+import utils.EnumLabels;
 import utils.FormatCurrency;
 
 import java.math.BigDecimal;
@@ -29,6 +34,15 @@ import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
 
+/**
+ * The "add / edit transaction" form itself.
+ *
+ * Only the form's own layout and wiring live here. Currency masking
+ * (utils.CurrencyInputFormatter) and enum-to-label translation
+ * (utils.EnumLabels) are shared utilities, and creating a brand new
+ * bank account or category is delegated to their own small cards
+ * (BankAccountFormCard, CategoryFormCard) in sibling packages.
+ */
 public class FormTransaction extends VBox {
 
     private Node activeChildCard;
@@ -66,7 +80,8 @@ public class FormTransaction extends VBox {
         Label title = new Label("Adicionar transação");
         title.getStyleClass().addAll("text-primary", "form-title");
 
-        this.configureValueField(this.valueField);
+        CurrencyInputFormatter.attach(this.valueField);
+        this.valueField.getStyleClass().add("form-input");
 
         this.descriptionArea.setPromptText("Descrição da transação");
         this.descriptionArea.setPrefRowCount(2);
@@ -76,7 +91,7 @@ public class FormTransaction extends VBox {
         this.datePicker.getStyleClass().add("form-input");
         this.datePicker.setMaxWidth(Double.MAX_VALUE);
 
-        this.configureEnumBox(this.typeBox, this::translateType);
+        this.configureEnumBox(this.typeBox, EnumLabels::label);
         TransactionType initialType = (editingTransaction != null)
                 ? editingTransaction.getTransactionType()
                 : TransactionType.INCOME;
@@ -92,7 +107,7 @@ public class FormTransaction extends VBox {
             }
         });
 
-        this.configureEnumBox(this.paymentMethodBox, this::translatePaymentMethod);
+        this.configureEnumBox(this.paymentMethodBox, EnumLabels::label);
         this.paymentMethodBox.getSelectionModel().selectFirst();
 
         this.configureBankAccountBox(editingTransaction);
@@ -138,12 +153,13 @@ public class FormTransaction extends VBox {
                 this.statusLabel,
                 buttonRow);
 
-        getStylesheets().add(getClass().getResource("FormTransaction.css").toExternalForm());
+        // Shared stylesheet lives one package up (ui.javafx.components.form),
+        // since BankAccountFormCard and CategoryFormCard need it too.
+        getStylesheets().add(getClass().getResource("/ui/javafx/components/form/FormTransaction.css").toExternalForm());
     }
 
     private void toggleAddButtons(TransactionType type) {
         boolean isRedemption = (type == TransactionType.REDEMPTION);
-
         addCategoryButton.setDisable(isRedemption);
     }
 
@@ -165,52 +181,6 @@ public class FormTransaction extends VBox {
         return new HBox(8, comboBox, addButton);
     }
 
-    private void configureValueField(TextField valueField) {
-        java.util.function.UnaryOperator<TextFormatter.Change> filter = change -> {
-            String text = change.getControlNewText();
-            if (text.matches("[0-9.,]*")) {
-                return change;
-            }
-            return null;
-        };
-
-        valueField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
-            if (!isNowFocused) {
-                try {
-                    String texto = valueField.getText();
-                    if (texto == null || texto.isEmpty())
-                        return;
-
-                    texto = texto.trim();
-
-                    if (texto.contains(".") && !texto.contains(",")) {
-                        if (texto.matches(".*\\.\\d{1,2}$")) {
-                            int lastDot = texto.lastIndexOf('.');
-                            texto = texto.substring(0, lastDot) + "," + texto.substring(lastDot + 1);
-                        }
-                    }
-
-                    String textoLimpo = texto.replace(".", "").replace(",", ".");
-                    BigDecimal valorDigitado = new BigDecimal(textoLimpo);
-
-                    java.text.DecimalFormatSymbols symbols = new java.text.DecimalFormatSymbols(
-                            java.util.Locale.of("pt", "BR"));
-                    symbols.setDecimalSeparator(',');
-                    symbols.setGroupingSeparator('.');
-                    java.text.DecimalFormat df = new java.text.DecimalFormat("#,##0.00", symbols);
-
-                    valueField.setText(df.format(valorDigitado));
-                } catch (NumberFormatException e) {
-
-                }
-            }
-        });
-
-        valueField.setTextFormatter(new TextFormatter<>(filter));
-        valueField.setPromptText("0,00");
-        valueField.getStyleClass().add("form-input");
-    }
-
     private <T> void configureEnumBox(ComboBox<T> box, java.util.function.Function<T, String> translator) {
         box.setConverter(new StringConverter<>() {
             @Override
@@ -225,26 +195,6 @@ public class FormTransaction extends VBox {
         });
         box.getStyleClass().add("form-input");
         box.setMaxWidth(Double.MAX_VALUE);
-    }
-
-    private String translateType(TransactionType type) {
-        return switch (type) {
-            case INCOME -> "Receita";
-            case EXPENSE -> "Despesa";
-            case INVESTMENT -> "Investimento";
-            case REDEMPTION -> "Resgate";
-        };
-    }
-
-    private String translatePaymentMethod(PaymentMethod method) {
-        return switch (method) {
-            case PIX -> "Pix";
-            case DEBIT_CARD -> "Cartão de débito";
-            case CREDIT_CARD -> "Cartão de crédito";
-            case CASH -> "Dinheiro";
-            case BANK_TRANSFER -> "Transferência";
-            case BOLETO -> "Boleto";
-        };
     }
 
     private void configureBankAccountBox(Transaction editingTransaction) {
@@ -415,7 +365,7 @@ public class FormTransaction extends VBox {
         Integer selectedCategoryId = selectedCategoryObj != null ? selectedCategoryObj.getId() : null;
 
         try {
-            BigDecimal val = getValue();
+            BigDecimal val = CurrencyInputFormatter.parse(valueField.getText());
 
             if (editingTransaction != null) {
                 transaction = new Transaction(
@@ -504,21 +454,5 @@ public class FormTransaction extends VBox {
             statusLabel.setManaged(false);
         });
         pause.play();
-    }
-
-    private BigDecimal getValue() {
-        String text = valueField.getText().trim();
-
-        if (text.contains(".") && !text.contains(",")) {
-            if (text.matches(".*\\.\\d{1,2}$")) {
-                int lastDot = text.lastIndexOf('.');
-                text = text.substring(0, lastDot) + "," + text.substring(lastDot + 1);
-            }
-        }
-
-        String textoSemPontos = text.replace(".", "");
-        String textoLimpo = textoSemPontos.replace(",", ".");
-
-        return new BigDecimal(textoLimpo);
     }
 }

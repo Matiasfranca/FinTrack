@@ -1,4 +1,4 @@
-package ui.javafx.components.form;
+package ui.javafx.components.form.categoryForm;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -63,6 +63,6 @@ public class CategoryFormCard extends VBox {
 
         getChildren().addAll(title, nameLabel, nameField, errorLabel, buttonRow);
 
-        getStylesheets().add(getClass().getResource("FormTransaction.css").toExternalForm());
+        getStylesheets().add(getClass().getResource("../FormTransaction.css").toExternalForm());
     }
 }
