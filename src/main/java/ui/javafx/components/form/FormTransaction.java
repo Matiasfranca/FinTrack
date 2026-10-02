@@ -25,6 +25,7 @@ import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
@@ -63,7 +64,9 @@ public class FormTransaction extends VBox {
     private final Label statusLabel = new Label();
 
     private final Button addBankAccountButton = new Button("+");
+    private final Button delBankAccountButton = new Button("-");
     private final Button addCategoryButton = new Button("+");
+    private final Button delCategoryButton = new Button("-");
 
     public FormTransaction(Runnable onCancelTransaction) {
         this(onCancelTransaction, null);
@@ -147,9 +150,11 @@ public class FormTransaction extends VBox {
                 this.formLabel("Descrição", false), this.descriptionArea,
                 this.formLabel("Data", false), this.datePicker,
                 this.formLabel("Conta", true),
-                this.rowWithAddButton(bankAccountBox, addBankAccountButton, this::promptNewBankAccount),
+                this.rowWithAddButton(bankAccountBox, addBankAccountButton, delBankAccountButton,
+                        this::promptNewBankAccount, () -> bankAccountBox.getValue() != null),
                 this.formLabel("Categoria", false),
-                this.rowWithAddButton(categoryBox, addCategoryButton, this::promptNewCategory),
+                this.rowWithAddButton(categoryBox, addCategoryButton, delCategoryButton, this::promptNewCategory,
+                        () -> categoryBox.getValue() != null && categoryBox.getValue().category().getId() != null),
                 this.statusLabel,
                 buttonRow);
 
@@ -169,16 +174,27 @@ public class FormTransaction extends VBox {
         return label;
     }
 
-    private HBox rowWithAddButton(ComboBox<?> comboBox, Button addButton, Runnable onAdd) {
+    private HBox rowWithAddButton(ComboBox<?> comboBox, Button addButton, Button delButton, Runnable onAdd,
+            java.util.function.Supplier<Boolean> canDelete) {
 
         comboBox.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(comboBox, Priority.ALWAYS);
         comboBox.getStyleClass().add("form-input");
 
         addButton.getStyleClass().add("form-add-button");
+        delButton.getStyleClass().add("form-del-button");
         addButton.setOnAction(e -> onAdd.run());
 
-        return new HBox(8, comboBox, addButton);
+        Runnable updateDeleteVisibility = () -> {
+            boolean visible = canDelete.get();
+            delButton.setVisible(visible);
+            delButton.setManaged(visible);
+        };
+
+        updateDeleteVisibility.run();
+        comboBox.valueProperty().addListener((obs, oldV, newV) -> updateDeleteVisibility.run());
+
+        return new HBox(8, comboBox, addButton, delButton);
     }
 
     private <T> void configureEnumBox(ComboBox<T> box, java.util.function.Function<T, String> translator) {
@@ -208,6 +224,9 @@ public class FormTransaction extends VBox {
         };
 
         task.setOnSucceeded(e -> Platform.runLater(() -> {
+            if (task.getValue() == null) {
+                bankAccountBox.setPromptText("Crie uma conta");
+            }
             bankAccountBox.getItems().setAll(task.getValue());
 
             if (editingTransaction != null) {
@@ -428,6 +447,14 @@ public class FormTransaction extends VBox {
         Thread thread = new Thread(task);
         thread.setDaemon(true);
         thread.start();
+    }
+
+    private void deactivateBankAccount(){
+
+    }
+
+    private void deleteCategory(){
+
     }
 
     private void clearFields() {

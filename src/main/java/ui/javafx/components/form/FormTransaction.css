@@ -195,6 +195,20 @@
     -fx-text-fill: #121214;
 }
 
+.form-del-button {
+    -fx-background-color: #28282C;
+    -fx-text-fill: #9A9A9E;
+    -fx-font-weight: bold;
+    -fx-background-radius: 6px;
+    -fx-min-width: 36px;
+    -fx-cursor: hand;
+}
+
+.form-del-button:hover {
+    -fx-background-color: #F87171;
+    -fx-text-fill: #121214;
+}
+
 .form-save-button {
     -fx-background-radius: 8px;
     -fx-text-fill: #121214;
