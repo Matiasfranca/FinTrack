@@ -27,7 +27,6 @@ import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
@@ -242,9 +241,7 @@ public class FormTransaction extends VBox {
         };
 
         task.setOnSucceeded(e -> Platform.runLater(() -> {
-            if (task.getValue() == null) {
-                bankAccountBox.setPromptText("Crie uma conta");
-            }
+            bankAccountBox.setPromptText("Crie uma conta");
             bankAccountBox.getItems().setAll(task.getValue());
 
             if (editingTransaction != null) {
@@ -278,15 +275,17 @@ public class FormTransaction extends VBox {
 
         task.setOnSucceeded(e -> Platform.runLater(() -> {
             if (task.getValue() != null) {
-                if (task.getValue().isEmpty() && queryType != TransactionType.REDEMPTION) {
+                task.getValue().forEach(cat -> categoryBox.getItems().add(new CategoryOption(cat, cat.getName())));
+            } else {
+                if (queryType != TransactionType.REDEMPTION) {
                     categoryBox.getItems().add(new CategoryOption(null, "Outros"));
                 }
-                task.getValue().forEach(cat -> categoryBox.getItems().add(new CategoryOption(cat, cat.getName())));
             }
+
             if (editingTransaction != null && editingTransaction.getCategoryId() != null) {
                 categoryBox.getItems().stream()
                         .filter(opt -> opt.category() != null
-                                && opt.category().getId().equals(editingTransaction.getCategoryId()))
+                                && editingTransaction.getCategoryId().equals(opt.category().getId()))
                         .findFirst()
                         .ifPresentOrElse(
                                 categoryBox.getSelectionModel()::select,
@@ -453,7 +452,6 @@ public class FormTransaction extends VBox {
                 TransactionEventBus.getInstance().publish(Type.CREATED, transaction);
             }
             saveButton.setDisable(false);
-            clearFields();
             showStatus("Transação salva com sucesso.", true);
         }));
 
