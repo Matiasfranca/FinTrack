@@ -12,12 +12,11 @@ import ui.javafx.components.financialCards.financialCard.balanceCard.BalanceCard
 import ui.javafx.components.financialCards.financialCard.expenseCard.ExpenseCard;
 import ui.javafx.components.financialCards.financialCard.incomeCard.IncomeCard;
 import ui.javafx.components.financialCards.financialCard.investmentCard.InvestmentCard;
+import ui.javafx.events.AppEventBus;
 import ui.javafx.events.TransactionEventBus;
-import ui.javafx.events.TransactionEventBus.Event;
 
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-
 
 public class FinancialCards extends HBox {
 
@@ -49,7 +48,8 @@ public class FinancialCards extends HBox {
 
         getChildren().addAll(balanceCard, incomeCard, expenseCard, investmentCard);
 
-        TransactionEventBus.getInstance().subscribe(this::updateAllCards);
+        TransactionEventBus.getInstance().subscribe(e -> updateAllCards());
+        AppEventBus.getInstance().subscribe(e -> updateAllCards());
 
         // Component stylesheet
         getStylesheets().add(getClass().getResource("FinancialCards.css").toExternalForm());
@@ -66,7 +66,7 @@ public class FinancialCards extends HBox {
         }
     }
 
-    private void updateAllCards(Event e) {
+    private void updateAllCards() {
         this.fetchData();
 
         this.balanceCard.refreshData(this.globCardData.getCashFlowBalance(), this.newDailyData);

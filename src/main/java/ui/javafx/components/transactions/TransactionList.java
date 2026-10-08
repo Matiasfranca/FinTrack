@@ -4,6 +4,7 @@ import model.BankAccount;
 import model.Category;
 import model.Transaction;
 import controller.FinTracker;
+import ui.javafx.events.AppEventBus;
 import ui.javafx.events.TransactionEventBus;
 import ui.javafx.events.TransactionEventBus.Event;
 
@@ -59,11 +60,19 @@ public class TransactionList extends VBox {
             this.removeTransaction(e);
         });
 
+        AppEventBus.getInstance().subscribe(e -> {
+            loadMaps();
+            loadMoreTransactions();
+        });
+
         getChildren().addAll(title, this.rows, this.btnLoadMore);
         getStylesheets().add(getClass().getResource("TransactionList.css").toExternalForm());
     }
 
     private void loadMaps() {
+        accountMap.clear();
+        categoryMap.clear();
+        
         List<BankAccount> bankAccounts = finTracker.listActiveBankAccounts();
         for (BankAccount acc : bankAccounts) {
             accountMap.put(acc.getId(), acc.getName());
@@ -76,6 +85,7 @@ public class TransactionList extends VBox {
     }
 
     private void loadMoreTransactions() {
+        this.rows.getChildren().clear();
         List<Transaction> transactions = finTracker.listGlobalTransactions(PAGE_LIMIT, this.currentOffset);
 
         for (Transaction transaction : transactions) {

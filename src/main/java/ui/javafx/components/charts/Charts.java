@@ -6,8 +6,8 @@ import model.dto.CategoryChartData;
 import model.dto.DailyFinancialData;
 import ui.javafx.components.charts.expenseDistribution.ExpenseDistribution;
 import ui.javafx.components.charts.monthlyOverview.MonthlyOverview;
+import ui.javafx.events.AppEventBus;
 import ui.javafx.events.TransactionEventBus;
-import ui.javafx.events.TransactionEventBus.Event;
 
 import javafx.scene.layout.HBox;
 
@@ -45,7 +45,8 @@ public class Charts extends HBox {
         getStylesheets().add(getClass().getResource("Charts.css").toExternalForm());
 
         // Events
-        TransactionEventBus.getInstance().subscribe(this::updateCharts);
+        TransactionEventBus.getInstance().subscribe(e -> updateCharts());
+        AppEventBus.getInstance().subscribe(e -> updateCharts());
 
     }
 
@@ -87,7 +88,7 @@ public class Charts extends HBox {
         }
     }
 
-    private void updateCharts(Event e) {
+    private void updateCharts() {
         fetchData();
 
         this.monthlyOverview.refreshData(this.dailyFinancialData);

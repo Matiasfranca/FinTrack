@@ -1,6 +1,7 @@
 package ui.javafx.components.form;
 
 import controller.FinTracker;
+import exceptions.InvalidInput;
 import model.BankAccount;
 import model.Category;
 import model.PaymentMethod;
@@ -9,6 +10,7 @@ import model.TransactionType;
 import ui.javafx.components.form.bankAccountForm.BankAccountFormCard;
 import ui.javafx.components.form.categoryForm.CategoryFormCard;
 import ui.javafx.components.form.categoryForm.CategoryOption;
+import ui.javafx.events.AppEventBus;
 import ui.javafx.events.TransactionEventBus;
 import ui.javafx.events.TransactionEventBus.Type;
 import utils.CurrencyInputFormatter;
@@ -114,6 +116,22 @@ public class FormTransaction extends VBox {
         this.paymentMethodBox.getSelectionModel().selectFirst();
 
         this.configureBankAccountBox(editingTransaction);
+
+        // Configure delete and deactivate buttons
+        this.delCategoryButton.setOnAction(e -> {
+            CategoryOption option = categoryBox.getValue();
+
+            if (option != null && option.category() != null) {
+                deleteCategory(option.category().getId());
+            }
+        });
+        this.delBankAccountButton.setOnAction(e -> {
+            BankAccount account = bankAccountBox.getValue();
+
+            if (account != null) {
+                deactivateBankAccount(account.getId());
+            }
+        });
 
         if (editingTransaction != null) {
             this.valueField.setText(FormatCurrency.formatCurrency(editingTransaction.getValue()).substring(3));
@@ -449,12 +467,24 @@ public class FormTransaction extends VBox {
         thread.start();
     }
 
-    private void deactivateBankAccount(){
-
+    private void deactivateBankAccount(int id) {
+        try {
+            finTracker.deactivateBankAccount(id);
+            showStatus("Conta desativada com sucesso.", true);
+            AppEventBus.getInstance().publish(AppEventBus.Type.DATA_CHANGED);
+        } catch (InvalidInput e) {
+            showStatus("Erro ao desativar conta", false);
+        }
     }
 
-    private void deleteCategory(){
-
+    private void deleteCategory(int id) {
+        try {
+            finTracker.deleteCategory(id);
+            showStatus("Categoria excluída com sucesso.", true);
+            AppEventBus.getInstance().publish(AppEventBus.Type.DATA_CHANGED);
+        } catch (InvalidInput e) {
+            showStatus("Erro ao excluir categoria", false);
+        }
     }
 
     private void clearFields() {
