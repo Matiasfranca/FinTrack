@@ -171,7 +171,7 @@ public class FormTransaction extends VBox {
                         this::promptNewBankAccount, () -> bankAccountBox.getValue() != null),
                 this.formLabel("Categoria", false),
                 this.rowWithAddButton(categoryBox, addCategoryButton, delCategoryButton, this::promptNewCategory,
-                        () -> categoryBox.getValue() != null && categoryBox.getValue().category().getId() != null),
+                        () -> categoryBox.getValue() != null && categoryBox.getValue().category() != null && categoryBox.getValue().category().getId() != null),
                 this.statusLabel,
                 buttonRow);
 
@@ -293,11 +293,10 @@ public class FormTransaction extends VBox {
 
         task.setOnSucceeded(e -> Platform.runLater(() -> {
             if (task.getValue() != null) {
-                task.getValue().forEach(cat -> categoryBox.getItems().add(new CategoryOption(cat, cat.getName())));
-            } else {
-                if (queryType != TransactionType.REDEMPTION) {
+                if (task.getValue().isEmpty() && queryType != TransactionType.REDEMPTION) {
                     categoryBox.getItems().add(new CategoryOption(null, "Outros"));
                 }
+                task.getValue().forEach(cat -> categoryBox.getItems().add(new CategoryOption(cat, cat.getName())));
             }
 
             if (editingTransaction != null && editingTransaction.getCategoryId() != null) {
@@ -517,6 +516,12 @@ public class FormTransaction extends VBox {
 
             categoryBox.getSelectionModel().clearSelection();
             categoryBox.getItems().remove(option);
+
+            // Keep the default "Outros" fallback when no real category is left
+            // (except for redemptions, which must always have an investment).
+            if (categoryBox.getItems().isEmpty() && typeBox.getValue() != TransactionType.REDEMPTION) {
+                categoryBox.getItems().add(new CategoryOption(null, "Outros"));
+            }
             categoryBox.getSelectionModel().selectFirst();
 
             showStatus("Categoria excluída com sucesso.", true);
