@@ -119,6 +119,16 @@
     -fx-padding: 6px 8px;
 }
 
+.combo-box .list-cell.combo-placeholder {
+    -fx-text-fill: #6B6B70;
+}
+
+.combo-box.field-error {
+    -fx-border-color: #F87171;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+}
+
 .combo-box-popup .list-view {
     -fx-background-color: #1C1C1F;
     -fx-border-color: #28282C;

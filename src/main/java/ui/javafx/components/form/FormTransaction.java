@@ -121,14 +121,14 @@ public class FormTransaction extends VBox {
             CategoryOption option = categoryBox.getValue();
 
             if (option != null && option.category() != null) {
-                deleteCategory(option.category().getId());
+                deleteCategory(option);
             }
         });
         this.delBankAccountButton.setOnAction(e -> {
             BankAccount account = bankAccountBox.getValue();
 
             if (account != null) {
-                deactivateBankAccount(account.getId());
+                deactivateBankAccount(account);
             }
         });
 
@@ -232,6 +232,24 @@ public class FormTransaction extends VBox {
 
     private void configureBankAccountBox(Transaction editingTransaction) {
         bankAccountBox.getStyleClass().add("form-input");
+
+        bankAccountBox.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(BankAccount item, boolean empty) {
+                super.updateItem(item, empty);
+                getStyleClass().remove("combo-placeholder");
+
+                if (empty || item == null) {
+                    setText("Crie uma conta para continuar");
+                    getStyleClass().add("combo-placeholder");
+                } else {
+                    setText(item.toString());
+                }
+            }
+        });
+
+        bankAccountBox.valueProperty()
+                .addListener((obs, oldV, newV) -> bankAccountBox.getStyleClass().remove("field-error"));
 
         Task<List<BankAccount>> task = new Task<>() {
             @Override
@@ -393,6 +411,18 @@ public class FormTransaction extends VBox {
     }
 
     private void createTransaction(Transaction editingTransaction) {
+        // Blocking prerequisite: checked first so the user never has to fix
+        // other fields only to be stopped by the missing account afterwards.
+        if (bankAccountBox.getValue() == null) {
+            if (!bankAccountBox.getStyleClass().contains("field-error")) {
+                bankAccountBox.getStyleClass().add("field-error");
+            }
+            showStatus(bankAccountBox.getItems().isEmpty()
+                    ? "Crie uma conta no botão +."
+                    : "Selecione uma conta.", false);
+            return;
+        }
+
         Transaction transaction;
 
         Integer selectedBankAccountId = bankAccountBox.getValue() != null ? bankAccountBox.getValue().getId() : null;
@@ -465,9 +495,15 @@ public class FormTransaction extends VBox {
         thread.start();
     }
 
-    private void deactivateBankAccount(int id) {
+    private void deactivateBankAccount(BankAccount account) {
         try {
-            finTracker.deactivateBankAccount(id);
+            finTracker.deactivateBankAccount(account.getId());
+
+            // Clear first so the combo doesn't keep a stale value, then remove.
+            bankAccountBox.getSelectionModel().clearSelection();
+            bankAccountBox.getItems().remove(account);
+            bankAccountBox.getSelectionModel().selectFirst();
+
             showStatus("Conta desativada com sucesso.", true);
             AppEventBus.getInstance().publish(AppEventBus.Type.DATA_CHANGED);
         } catch (InvalidInput e) {
@@ -475,24 +511,19 @@ public class FormTransaction extends VBox {
         }
     }
 
-    private void deleteCategory(int id) {
+    private void deleteCategory(CategoryOption option) {
         try {
-            finTracker.deleteCategory(id);
+            finTracker.deleteCategory(option.category().getId());
+
+            categoryBox.getSelectionModel().clearSelection();
+            categoryBox.getItems().remove(option);
+            categoryBox.getSelectionModel().selectFirst();
+
             showStatus("Categoria excluída com sucesso.", true);
             AppEventBus.getInstance().publish(AppEventBus.Type.DATA_CHANGED);
         } catch (InvalidInput e) {
             showStatus("Erro ao excluir categoria", false);
         }
-    }
-
-    private void clearFields() {
-        valueField.clear();
-        typeBox.getSelectionModel().selectFirst();
-        paymentMethodBox.getSelectionModel().selectFirst();
-        descriptionArea.clear();
-        datePicker.setValue(LocalDate.now());
-        bankAccountBox.getSelectionModel().selectFirst();
-        categoryBox.getSelectionModel().selectFirst();
     }
 
     private void showStatus(String message, boolean success) {
