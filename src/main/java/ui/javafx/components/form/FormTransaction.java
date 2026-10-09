@@ -31,6 +31,7 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
@@ -69,6 +70,8 @@ public class FormTransaction extends VBox {
     private final Button addCategoryButton = new Button("+");
     private final Button delCategoryButton = new Button("-");
 
+    private final PauseTransition statusTimer = new PauseTransition(Duration.seconds(3));
+
     public FormTransaction(Runnable onCancelTransaction) {
         this(onCancelTransaction, null);
     }
@@ -76,7 +79,7 @@ public class FormTransaction extends VBox {
     public FormTransaction(Runnable onCancelTransaction, Transaction editingTransaction) {
 
         getStyleClass().add("form-card");
-        setSpacing(12);
+        setSpacing(8);
         setPadding(new Insets(18));
         setPrefWidth(300);
         setMaxWidth(300);
@@ -86,6 +89,12 @@ public class FormTransaction extends VBox {
 
         CurrencyInputFormatter.attach(this.valueField);
         this.valueField.getStyleClass().add("form-input");
+        // Clears the red border as soon as the user types something.
+        this.valueField.textProperty().addListener((obs, oldText, newText) -> {
+            if (!newText.isBlank()) {
+                valueField.getStyleClass().remove("field-error");
+            }
+        });
 
         this.descriptionArea.setPromptText("Descrição da transação");
         this.descriptionArea.setPrefRowCount(2);
@@ -147,6 +156,7 @@ public class FormTransaction extends VBox {
         }
 
         this.statusLabel.setWrapText(true);
+        this.statusLabel.setMinHeight(Region.USE_PREF_SIZE);
         this.statusLabel.setVisible(false);
         this.statusLabel.setManaged(false);
 
@@ -171,7 +181,8 @@ public class FormTransaction extends VBox {
                         this::promptNewBankAccount, () -> bankAccountBox.getValue() != null),
                 this.formLabel("Categoria", false),
                 this.rowWithAddButton(categoryBox, addCategoryButton, delCategoryButton, this::promptNewCategory,
-                        () -> categoryBox.getValue() != null && categoryBox.getValue().category() != null && categoryBox.getValue().category().getId() != null),
+                        () -> categoryBox.getValue() != null && categoryBox.getValue().category() != null
+                                && categoryBox.getValue().category().getId() != null),
                 this.statusLabel,
                 buttonRow);
 
@@ -234,13 +245,17 @@ public class FormTransaction extends VBox {
         bankAccountBox.getStyleClass().add("form-input");
 
         bankAccountBox.setButtonCell(new ListCell<>() {
+            {
+                setTextOverrun(OverrunStyle.CENTER_ELLIPSIS);
+            }
+
             @Override
             protected void updateItem(BankAccount item, boolean empty) {
                 super.updateItem(item, empty);
                 getStyleClass().remove("combo-placeholder");
 
                 if (empty || item == null) {
-                    setText("Crie uma conta para continuar");
+                    setText("Nenhuma conta");
                     getStyleClass().add("combo-placeholder");
                 } else {
                     setText(item.toString());
@@ -313,7 +328,7 @@ public class FormTransaction extends VBox {
 
             if (selectedType == TransactionType.REDEMPTION && categoryBox.getItems().isEmpty()) {
                 saveButton.setDisable(true);
-                showStatus("Nenhum investimento disponível para resgatar.", false);
+                showStatus("Sem investimento para resgatar.", false);
             } else {
                 saveButton.setDisable(false);
             }
@@ -412,6 +427,15 @@ public class FormTransaction extends VBox {
     private void createTransaction(Transaction editingTransaction) {
         // Blocking prerequisite: checked first so the user never has to fix
         // other fields only to be stopped by the missing account afterwards.
+
+        if (valueField.getText().isBlank()) {
+            if (!valueField.getStyleClass().contains("field-error")) {
+                valueField.getStyleClass().add("field-error");
+            }
+            showStatus("Informe um valor válido.", false);
+            return;
+        }
+
         if (bankAccountBox.getValue() == null) {
             if (!bankAccountBox.getStyleClass().contains("field-error")) {
                 bankAccountBox.getStyleClass().add("field-error");
@@ -451,12 +475,10 @@ public class FormTransaction extends VBox {
                         datePicker.getValue());
             }
         } catch (NumberFormatException e) {
-            showStatus("Informe um valor válido.", false);
-            return;
-        }
-
-        if (bankAccountBox.getValue() == null) {
-            showStatus("Selecione uma conta.", false);
+            if (!valueField.getStyleClass().contains("field-error")) {
+                valueField.getStyleClass().add("field-error");
+            }
+            showStatus("Erro ao salvar.", false);
             return;
         }
 
@@ -486,7 +508,7 @@ public class FormTransaction extends VBox {
 
         task.setOnFailed(e -> Platform.runLater(() -> {
             saveButton.setDisable(false);
-            showStatus("Não foi possível salvar. Tente novamente.", false);
+            showStatus("Não foi possível salvar.", false);
         }));
 
         Thread thread = new Thread(task);
@@ -539,11 +561,11 @@ public class FormTransaction extends VBox {
         statusLabel.setVisible(true);
         statusLabel.setManaged(true);
 
-        PauseTransition pause = new PauseTransition(Duration.seconds(3));
-        pause.setOnFinished(e -> {
+        statusTimer.stop();
+        statusTimer.setOnFinished(e -> {
             statusLabel.setVisible(false);
             statusLabel.setManaged(false);
         });
-        pause.play();
+        statusTimer.playFromStart();
     }
 }

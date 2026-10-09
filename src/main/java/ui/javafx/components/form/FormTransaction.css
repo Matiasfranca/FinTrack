@@ -35,6 +35,13 @@
     -fx-border-radius: 6px;
 }
 
+.form-input.text-field.field-error,
+.form-input.text-field.field-error:focused {
+    -fx-border-color: #F87171;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+}
+
 /* ---- TextArea ---- */
 
 .text-area {
