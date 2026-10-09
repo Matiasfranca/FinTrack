@@ -36,10 +36,10 @@ public class Charts extends HBox {
         setSpacing(40);
         setAlignment(javafx.geometry.Pos.TOP_LEFT);
 
-        this.monthlyOverview = new MonthlyOverview(this.dailyFinancialData, this.finTracker);
-        this.expenseDistribution = new ExpenseDistribution(this.expenseData, this.investmentData);
+        monthlyOverview = new MonthlyOverview(dailyFinancialData, finTracker);
+        expenseDistribution = new ExpenseDistribution(expenseData, investmentData);
 
-        getChildren().addAll(this.monthlyOverview, this.expenseDistribution);
+        getChildren().addAll(monthlyOverview, expenseDistribution);
 
         // Component stylesheet
         getStylesheets().add(getClass().getResource("Charts.css").toExternalForm());
@@ -53,12 +53,12 @@ public class Charts extends HBox {
     private void fetchData() {
         try {
             YearMonth now = YearMonth.now();
-            this.dailyFinancialData = this.finTracker.getMonthlyOverview(now);
-            this.expenseData = this.finTracker.getCategoryDistribution(now, TransactionType.EXPENSE);
-            this.investmentData = this.finTracker.getGlobalCategoryDistribution(TransactionType.INVESTMENT);
-            this.redemptions = finTracker.getGlobalCategoryDistribution(TransactionType.REDEMPTION);
+            dailyFinancialData = finTracker.getMonthlyOverview(now);
+            expenseData = finTracker.getCategoryDistribution(now, TransactionType.EXPENSE);
+            investmentData = finTracker.getGlobalCategoryDistribution(TransactionType.INVESTMENT);
+            redemptions = finTracker.getGlobalCategoryDistribution(TransactionType.REDEMPTION);
 
-            this.netInvestments.clear();
+            netInvestments.clear();
 
             for (CategoryChartData inv : investmentData) {
                 String catName = inv.getCategoryName();
@@ -82,7 +82,7 @@ public class Charts extends HBox {
                 }
             }
 
-            this.investmentData = netInvestments;
+            investmentData = netInvestments;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -91,9 +91,9 @@ public class Charts extends HBox {
     private void updateCharts() {
         fetchData();
 
-        this.monthlyOverview.refreshData(this.dailyFinancialData);
+        monthlyOverview.refreshData(dailyFinancialData);
 
-        this.expenseDistribution.refreshData(this.expenseData, this.investmentData);
+        expenseDistribution.refreshData(expenseData, investmentData);
     }
 
 }

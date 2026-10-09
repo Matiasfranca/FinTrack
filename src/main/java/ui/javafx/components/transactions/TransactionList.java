@@ -39,25 +39,25 @@ public class TransactionList extends VBox {
         Label title = new Label("Transações");
         title.getStyleClass().addAll("title", "text-primary");
 
-        this.rows.getStyleClass().add("transaction-rows");
+        rows.getStyleClass().add("transaction-rows");
         
-        this.btnLoadMore.getStyleClass().add("btn-load-more");
-        this.btnLoadMore.setMaxWidth(Double.MAX_VALUE);
-        this.btnLoadMore.setOnAction(e -> loadMoreTransactions());
+        btnLoadMore.getStyleClass().add("btn-load-more");
+        btnLoadMore.setMaxWidth(Double.MAX_VALUE);
+        btnLoadMore.setOnAction(e -> loadMoreTransactions());
 
         loadMaps();
         loadMoreTransactions();
 
         TransactionEventBus.getInstance().subscribe(TransactionEventBus.Type.CREATED, e -> {
-            this.addTransaction(e, onEditTransaction);
+            addTransaction(e, onEditTransaction);
         });
 
         TransactionEventBus.getInstance().subscribe(TransactionEventBus.Type.UPDATED, e -> {
-            this.updateTransaction(e, onEditTransaction);
+            updateTransaction(e, onEditTransaction);
         });
 
         TransactionEventBus.getInstance().subscribe(TransactionEventBus.Type.DELETED, e -> {
-            this.removeTransaction(e);
+            removeTransaction(e);
         });
 
         AppEventBus.getInstance().subscribe(e -> {
@@ -65,7 +65,7 @@ public class TransactionList extends VBox {
             loadMoreTransactions();
         });
 
-        getChildren().addAll(title, this.rows, this.btnLoadMore);
+        getChildren().addAll(title, rows, btnLoadMore);
         getStylesheets().add(getClass().getResource("TransactionList.css").toExternalForm());
     }
 
@@ -85,19 +85,19 @@ public class TransactionList extends VBox {
     }
 
     private void loadMoreTransactions() {
-        this.rows.getChildren().clear();
-        List<Transaction> transactions = finTracker.listGlobalTransactions(PAGE_LIMIT, this.currentOffset);
+        rows.getChildren().clear();
+        List<Transaction> transactions = finTracker.listGlobalTransactions(PAGE_LIMIT, currentOffset);
 
         for (Transaction transaction : transactions) {
-            this.rows.getChildren()
+            rows.getChildren()
                     .add(new TransactionRow(transaction, accountMap, categoryMap, onEditTransaction));
         }
 
         if (transactions.size() < PAGE_LIMIT) {
-            this.btnLoadMore.setVisible(false);
-            this.btnLoadMore.setManaged(false); 
+            btnLoadMore.setVisible(false);
+            btnLoadMore.setManaged(false); 
         } else {
-            this.currentOffset += PAGE_LIMIT;
+            currentOffset += PAGE_LIMIT;
         }
     }
 
@@ -114,10 +114,10 @@ public class TransactionList extends VBox {
 
         TransactionRow newRow = new TransactionRow(newTransaction, accountMap, categoryMap, onEditTransaction);
 
-        int insertPosition = this.rows.getChildren().size();
+        int insertPosition = rows.getChildren().size();
 
-        for (int i = 0; i < this.rows.getChildren().size(); i++) {
-            if (this.rows.getChildren().get(i) instanceof TransactionRow currentRow) {
+        for (int i = 0; i < rows.getChildren().size(); i++) {
+            if (rows.getChildren().get(i) instanceof TransactionRow currentRow) {
                 Transaction currentTransaction = currentRow.getTransaction();
                 if (newTransaction.getDate().isAfter(currentTransaction.getDate()) ||
                         newTransaction.getDate().isEqual(currentTransaction.getDate())) {
@@ -126,16 +126,16 @@ public class TransactionList extends VBox {
                 }
             }
         }
-        this.rows.getChildren().add(insertPosition, newRow);
+        rows.getChildren().add(insertPosition, newRow);
     }
 
     private void updateTransaction(Event e, Consumer<Transaction> onEditTransaction) {
-        this.removeTransaction(e);
-        this.addTransaction(e, onEditTransaction);
+        removeTransaction(e);
+        addTransaction(e, onEditTransaction);
     }
 
     private void removeTransaction(Event e) {
-        this.rows.getChildren().removeIf(node -> node instanceof TransactionRow currentRow &&
+        rows.getChildren().removeIf(node -> node instanceof TransactionRow currentRow &&
                 currentRow.getTransaction().getId().equals(e.transaction().getId()));
     }
 }

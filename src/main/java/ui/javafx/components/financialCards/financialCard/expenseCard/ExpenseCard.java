@@ -9,6 +9,6 @@ import ui.javafx.components.financialCards.financialCard.FinancialCard;
 public class ExpenseCard extends FinancialCard {
     public ExpenseCard(CardData cardData, List<DailyFinancialData> dailyFinancialData) {
         super("Despesas", cardData.getTotalExpense(), ChartMode.EXPENSE, dailyFinancialData);
-        this.valueLabel.getStyleClass().add("danger");
+        valueLabel.getStyleClass().add("danger");
     }
 }

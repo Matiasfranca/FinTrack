@@ -10,7 +10,7 @@ public class IncomeCard extends FinancialCard {
 
     public IncomeCard(CardData cardData, List<DailyFinancialData> dailyFinancialData) {
         super("Receitas", cardData.getTotalIncome(), ChartMode.INCOME, dailyFinancialData);
-        this.valueLabel.getStyleClass().add("success");
+        valueLabel.getStyleClass().add("success");
     }
 
 }

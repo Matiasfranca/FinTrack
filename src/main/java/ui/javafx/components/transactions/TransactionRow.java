@@ -73,7 +73,7 @@ public class TransactionRow extends VBox {
         MenuItem removeItem = new MenuItem("Remover");
         removeItem.setOnAction(e -> {
             try {
-                finTracker.deleteTransaction(this.transaction);
+                finTracker.deleteTransaction(transaction);
                 TransactionEventBus.getInstance().publish(Type.DELETED, transaction);
             } catch (Exception err) {
                 System.err.println(err);
@@ -136,6 +136,6 @@ public class TransactionRow extends VBox {
     }
 
     public Transaction getTransaction() {
-        return this.transaction;
+        return transaction;
     }
 }

@@ -50,16 +50,16 @@ public class MonthlyOverview extends VBox {
         setSpacing(10);
 
         this.dailyFinancialData = dailyFinancialData;
-        this.dailyValuesTotal = getChartValuesAsArray();
         this.finTracker = finTracker;
+        dailyValuesTotal = getChartValuesAsArray();
 
-        this.canvas = new Canvas(CANVAS_WIDTH, CANVAS_HEIGHT);
-        this.canvas.getStyleClass().add("monthly-chart");
+        canvas = new Canvas(CANVAS_WIDTH, CANVAS_HEIGHT);
+        canvas.getStyleClass().add("monthly-chart");
 
         getStyleClass().addAll("chart-card", "surface");
-        getChildren().addAll(this.buildHeader(), this.canvas);
+        getChildren().addAll(buildHeader(), canvas);
 
-        this.drawChart();
+        drawChart();
     }
 
     private HBox buildHeader() {
@@ -67,21 +67,21 @@ public class MonthlyOverview extends VBox {
         Label title = new Label("Balanço Mensal");
         title.getStyleClass().addAll("title", "text-primary");
 
-        Label periodLabel = new Label(formatMonth(this.currentMonth));
+        Label periodLabel = new Label(formatMonth(currentMonth));
         periodLabel.getStyleClass().addAll("text-secondary", "month-label");
 
         Button prevButton = new Button("‹");
         prevButton.getStyleClass().add("month-nav-button");
         prevButton.setOnAction(e -> {
             changeMonth(-1);
-            periodLabel.setText(formatMonth(this.currentMonth));
+            periodLabel.setText(formatMonth(currentMonth));
         });
 
         Button nextButton = new Button("›");
         nextButton.getStyleClass().add("month-nav-button");
         nextButton.setOnAction(e -> {
             changeMonth(1);
-            periodLabel.setText(formatMonth(this.currentMonth));
+            periodLabel.setText(formatMonth(currentMonth));
         });
 
         Region spacer = new Region();
@@ -94,12 +94,12 @@ public class MonthlyOverview extends VBox {
     }
 
     private double[] getChartValuesAsArray() {
-        if (this.dailyFinancialData == null || this.dailyFinancialData.isEmpty()) {
+        if (dailyFinancialData == null || dailyFinancialData.isEmpty()) {
             return new double[] { 0.0 };
         }
 
         double[] list = new double[daysInMonth];
-        this.dailyFinancialData.forEach(data -> {
+        dailyFinancialData.forEach(data -> {
             list[data.getDayOfMonth() - 1] = data.getBalance().doubleValue();
         });
 
@@ -108,17 +108,17 @@ public class MonthlyOverview extends VBox {
 
     public void refreshData(List<DailyFinancialData> dailyFinancialData) {
 
-        this.daysInMonth = this.currentMonth.lengthOfMonth();
+        daysInMonth = currentMonth.lengthOfMonth();
         this.dailyFinancialData = dailyFinancialData;
-        this.dailyValuesTotal = getChartValuesAsArray();
+        dailyValuesTotal = getChartValuesAsArray();
 
-        this.drawChart();
+        drawChart();
     }
 
     private void changeMonth(int delta) {
-        this.currentMonth = currentMonth.plusMonths(delta);
+        currentMonth = currentMonth.plusMonths(delta);
         try {
-            this.refreshData(this.finTracker.getMonthlyOverview(YearMonth.from(currentMonth)));
+            refreshData(finTracker.getMonthlyOverview(YearMonth.from(currentMonth)));
         } catch (InvalidInput e) {
             e.printStackTrace();
         }
@@ -130,7 +130,7 @@ public class MonthlyOverview extends VBox {
     }
 
     private void drawChart() {
-        GraphicsContext gc = this.canvas.getGraphicsContext2D();
+        GraphicsContext gc = canvas.getGraphicsContext2D();
 
         gc.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 

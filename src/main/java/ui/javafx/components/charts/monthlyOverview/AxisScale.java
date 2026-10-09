@@ -27,10 +27,10 @@ public class AxisScale {
         else
             niceStep = magnitude;
 
-        this.maxTick = Math.ceil(maxAbsValue / niceStep) * niceStep;
+        maxTick = Math.ceil(maxAbsValue / niceStep) * niceStep;
 
-        this.ticks = new ArrayList<>();
-        for (double v = 0; v <= this.maxTick + 0.0001; v += niceStep) {
+        ticks = new ArrayList<>();
+        for (double v = 0; v <= maxTick + 0.0001; v += niceStep) {
             ticks.add(v);
         }
     }

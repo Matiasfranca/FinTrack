@@ -84,7 +84,7 @@ public class Main extends Application {
 
         Parent root = loader.load();
 
-        this.scene = new Scene(root, 500, 350);
+        scene = new Scene(root, 500, 350);
 
         scene.getStylesheets().add(
                 getClass()

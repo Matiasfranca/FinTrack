@@ -87,53 +87,53 @@ public class FormTransaction extends VBox {
         Label title = new Label("Adicionar transação");
         title.getStyleClass().addAll("text-primary", "form-title");
 
-        CurrencyInputFormatter.attach(this.valueField);
-        this.valueField.getStyleClass().add("form-input");
+        CurrencyInputFormatter.attach(valueField);
+        valueField.getStyleClass().add("form-input");
         // Clears the red border as soon as the user types something.
-        this.valueField.textProperty().addListener((obs, oldText, newText) -> {
+        valueField.textProperty().addListener((obs, oldText, newText) -> {
             if (!newText.isBlank()) {
                 valueField.getStyleClass().remove("field-error");
             }
         });
 
-        this.descriptionArea.setPromptText("Descrição da transação");
-        this.descriptionArea.setPrefRowCount(2);
-        this.descriptionArea.setWrapText(true);
-        this.descriptionArea.getStyleClass().add("form-input");
+        descriptionArea.setPromptText("Descrição da transação");
+        descriptionArea.setPrefRowCount(2);
+        descriptionArea.setWrapText(true);
+        descriptionArea.getStyleClass().add("form-input");
 
-        this.datePicker.getStyleClass().add("form-input");
-        this.datePicker.setMaxWidth(Double.MAX_VALUE);
+        datePicker.getStyleClass().add("form-input");
+        datePicker.setMaxWidth(Double.MAX_VALUE);
 
-        this.configureEnumBox(this.typeBox, EnumLabels::label);
+        configureEnumBox(typeBox, EnumLabels::label);
         TransactionType initialType = (editingTransaction != null)
                 ? editingTransaction.getTransactionType()
                 : TransactionType.INCOME;
-        this.typeBox.setValue(initialType);
+        typeBox.setValue(initialType);
 
-        this.loadCategoriesForType(initialType, editingTransaction);
-        this.toggleAddButtons(initialType);
+        loadCategoriesForType(initialType, editingTransaction);
+        toggleAddButtons(initialType);
 
-        this.typeBox.valueProperty().addListener((obs, oldType, newType) -> {
+        typeBox.valueProperty().addListener((obs, oldType, newType) -> {
             if (newType != null && newType != oldType) {
-                this.loadCategoriesForType(newType, null);
-                this.toggleAddButtons(newType);
+                loadCategoriesForType(newType, null);
+                toggleAddButtons(newType);
             }
         });
 
-        this.configureEnumBox(this.paymentMethodBox, EnumLabels::label);
-        this.paymentMethodBox.getSelectionModel().selectFirst();
+        configureEnumBox(paymentMethodBox, EnumLabels::label);
+        paymentMethodBox.getSelectionModel().selectFirst();
 
-        this.configureBankAccountBox(editingTransaction);
+        configureBankAccountBox(editingTransaction);
 
         // Configure delete and deactivate buttons
-        this.delCategoryButton.setOnAction(e -> {
+        delCategoryButton.setOnAction(e -> {
             CategoryOption option = categoryBox.getValue();
 
             if (option != null && option.category() != null) {
                 deleteCategory(option);
             }
         });
-        this.delBankAccountButton.setOnAction(e -> {
+        delBankAccountButton.setOnAction(e -> {
             BankAccount account = bankAccountBox.getValue();
 
             if (account != null) {
@@ -142,48 +142,48 @@ public class FormTransaction extends VBox {
         });
 
         if (editingTransaction != null) {
-            this.valueField.setText(FormatCurrency.formatCurrency(editingTransaction.getValue()).substring(3));
-            this.typeBox.setValue(editingTransaction.getTransactionType());
-            this.paymentMethodBox.setValue(editingTransaction.getPaymentMethod());
-            this.descriptionArea.setText(editingTransaction.getDescription());
-            this.datePicker.setValue(editingTransaction.getDate());
-            this.saveButton.setText("Alterar");
-            this.saveButton.setOnAction(e -> this.createTransaction(editingTransaction));
+            valueField.setText(FormatCurrency.formatCurrency(editingTransaction.getValue()).substring(3));
+            typeBox.setValue(editingTransaction.getTransactionType());
+            paymentMethodBox.setValue(editingTransaction.getPaymentMethod());
+            descriptionArea.setText(editingTransaction.getDescription());
+            datePicker.setValue(editingTransaction.getDate());
+            saveButton.setText("Alterar");
+            saveButton.setOnAction(e -> createTransaction(editingTransaction));
         } else {
-            this.typeBox.getSelectionModel().selectFirst();
-            this.paymentMethodBox.getSelectionModel().selectFirst();
-            this.saveButton.setOnAction(e -> this.createTransaction(null));
+            typeBox.getSelectionModel().selectFirst();
+            paymentMethodBox.getSelectionModel().selectFirst();
+            saveButton.setOnAction(e -> createTransaction(null));
         }
 
-        this.statusLabel.setWrapText(true);
-        this.statusLabel.setMinHeight(Region.USE_PREF_SIZE);
-        this.statusLabel.setVisible(false);
-        this.statusLabel.setManaged(false);
+        statusLabel.setWrapText(true);
+        statusLabel.setMinHeight(Region.USE_PREF_SIZE);
+        statusLabel.setVisible(false);
+        statusLabel.setManaged(false);
 
-        this.saveButton.getStyleClass().addAll("primary", "form-save-button");
-        this.saveButton.setFocusTraversable(false);
+        saveButton.getStyleClass().addAll("primary", "form-save-button");
+        saveButton.setFocusTraversable(false);
 
-        this.cancelButton.getStyleClass().add("form-cancel-button");
-        this.cancelButton.setOnAction(e -> onCancelTransaction.run());
+        cancelButton.getStyleClass().add("form-cancel-button");
+        cancelButton.setOnAction(e -> onCancelTransaction.run());
 
         HBox buttonRow = new HBox(10, cancelButton, saveButton);
         buttonRow.setAlignment(Pos.CENTER_RIGHT);
 
         getChildren().addAll(
                 title,
-                this.formLabel("Valor", true), this.valueField,
-                this.formLabel("Tipo", true), this.typeBox,
-                this.formLabel("Forma de pagamento", true), this.paymentMethodBox,
-                this.formLabel("Descrição", false), this.descriptionArea,
-                this.formLabel("Data", false), this.datePicker,
-                this.formLabel("Conta", true),
-                this.rowWithAddButton(bankAccountBox, addBankAccountButton, delBankAccountButton,
+                formLabel("Valor", true), valueField,
+                formLabel("Tipo", true), typeBox,
+                formLabel("Forma de pagamento", true), paymentMethodBox,
+                formLabel("Descrição", false), descriptionArea,
+                formLabel("Data", false), datePicker,
+                formLabel("Conta", true),
+                rowWithAddButton(bankAccountBox, addBankAccountButton, delBankAccountButton,
                         this::promptNewBankAccount, () -> bankAccountBox.getValue() != null),
-                this.formLabel("Categoria", false),
-                this.rowWithAddButton(categoryBox, addCategoryButton, delCategoryButton, this::promptNewCategory,
+                formLabel("Categoria", false),
+                rowWithAddButton(categoryBox, addCategoryButton, delCategoryButton, this::promptNewCategory,
                         () -> categoryBox.getValue() != null && categoryBox.getValue().category() != null
                                 && categoryBox.getValue().category().getId() != null),
-                this.statusLabel,
+                statusLabel,
                 buttonRow);
 
         // Shared stylesheet lives one package up (ui.javafx.components.form),

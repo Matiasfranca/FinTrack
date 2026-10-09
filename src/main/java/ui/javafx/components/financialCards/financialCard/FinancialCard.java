@@ -40,11 +40,11 @@ public abstract class FinancialCard extends VBox {
         titleLabel.getStyleClass().addAll("text-primary", "title");
 
         String formattedValue = FormatCurrency.formatCurrency(value);
-        this.valueLabel = new Label(formattedValue);
+        valueLabel = new Label(formattedValue);
         valueLabel.getStyleClass().addAll("text-primary", "value");
         updateValueFontSize(formattedValue);
 
-        this.chartCanvas = new Canvas(CHART_WIDTH, CHART_HEIGHT);
+        chartCanvas = new Canvas(CHART_WIDTH, CHART_HEIGHT);
         chartCanvas.setOpacity(0);
 
         drawMiniChart();
@@ -90,7 +90,7 @@ public abstract class FinancialCard extends VBox {
 
         // Balance keeps a larger base size (set via CSS ".balance-card .value"),
         // the other three cards share the default ".value" size.
-        double baseSize = this.getStyleClass().contains("balance-card") ? 34 : 26;
+        double baseSize = getStyleClass().contains("balance-card") ? 34 : 26;
         double minSize = 16;
 
         int length = formattedValue.length();
@@ -102,16 +102,16 @@ public abstract class FinancialCard extends VBox {
         double newSize = Math.max(minSize, baseSize - (shrinkSteps * 2));
 
         // Inline style intentionally overrides the CSS-defined size —
-        // this is the one property meant to vary per-instance, at runtime.
+        // is the one property meant to vary per-instance, at runtime.
         valueLabel.setStyle("-fx-font-size: " + newSize + "px;");
     }
 
     public void refreshData(BigDecimal newValue, List<DailyFinancialData> dailyFinancialData) {
         String formattedValue = FormatCurrency.formatCurrency(newValue);
-        this.valueLabel.setText(formattedValue);
+        valueLabel.setText(formattedValue);
         updateValueFontSize(formattedValue);
 
-        this.dailyFinancialData = dailyFinancialData;
+        dailyFinancialData = dailyFinancialData;
 
         drawMiniChart();
     }

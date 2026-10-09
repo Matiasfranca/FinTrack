@@ -40,14 +40,14 @@ public class TransactionEventBus {
 
     public void subscribe(Type eventType, Consumer<Event> listener) {
         for (TransactionType transactionType : TransactionType.values()) {
-            this.subscribe(eventType, transactionType, listener);
+            subscribe(eventType, transactionType, listener);
         }
     }
 
     public void subscribe(Consumer<Event> listener) {
         for (Type type : Type.values()) {
             for (TransactionType transactionType : TransactionType.values()) {
-                this.subscribe(type, transactionType, listener);
+                subscribe(type, transactionType, listener);
             }
         }
 
