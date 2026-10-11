@@ -1,13 +1,20 @@
 package ui.javafx.components.form;
 
 import controller.FinTracker;
+import exceptions.InvalidInput;
 import model.BankAccount;
 import model.Category;
 import model.PaymentMethod;
 import model.Transaction;
 import model.TransactionType;
+import ui.javafx.components.form.bankAccountForm.BankAccountFormCard;
+import ui.javafx.components.form.categoryForm.CategoryFormCard;
+import ui.javafx.components.form.categoryForm.CategoryOption;
+import ui.javafx.events.AppEventBus;
 import ui.javafx.events.TransactionEventBus;
 import ui.javafx.events.TransactionEventBus.Type;
+import utils.CurrencyInputFormatter;
+import utils.EnumLabels;
 import utils.FormatCurrency;
 
 import java.math.BigDecimal;
@@ -24,11 +31,21 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
 
+/**
+ * The "add / edit transaction" form itself.
+ *
+ * Only the form's own layout and wiring live here. Currency masking
+ * (utils.CurrencyInputFormatter) and enum-to-label translation
+ * (utils.EnumLabels) are shared utilities, and creating a brand new
+ * bank account or category is delegated to their own small cards
+ * (BankAccountFormCard, CategoryFormCard) in sibling packages.
+ */
 public class FormTransaction extends VBox {
 
     private Node activeChildCard;
@@ -49,7 +66,11 @@ public class FormTransaction extends VBox {
     private final Label statusLabel = new Label();
 
     private final Button addBankAccountButton = new Button("+");
+    private final Button delBankAccountButton = new Button("-");
     private final Button addCategoryButton = new Button("+");
+    private final Button delCategoryButton = new Button("-");
+
+    private final PauseTransition statusTimer = new PauseTransition(Duration.seconds(3));
 
     public FormTransaction(Runnable onCancelTransaction) {
         this(onCancelTransaction, null);
@@ -58,7 +79,7 @@ public class FormTransaction extends VBox {
     public FormTransaction(Runnable onCancelTransaction, Transaction editingTransaction) {
 
         getStyleClass().add("form-card");
-        setSpacing(12);
+        setSpacing(8);
         setPadding(new Insets(18));
         setPrefWidth(300);
         setMaxWidth(300);
@@ -66,84 +87,112 @@ public class FormTransaction extends VBox {
         Label title = new Label("Adicionar transação");
         title.getStyleClass().addAll("text-primary", "form-title");
 
-        this.configureValueField(this.valueField);
-
-        this.descriptionArea.setPromptText("Descrição da transação");
-        this.descriptionArea.setPrefRowCount(2);
-        this.descriptionArea.setWrapText(true);
-        this.descriptionArea.getStyleClass().add("form-input");
-
-        this.datePicker.getStyleClass().add("form-input");
-        this.datePicker.setMaxWidth(Double.MAX_VALUE);
-
-        this.configureEnumBox(this.typeBox, this::translateType);
-        TransactionType initialType = (editingTransaction != null)
-                ? editingTransaction.getTransactionType()
-                : TransactionType.INCOME;
-        this.typeBox.setValue(initialType);
-
-        this.loadCategoriesForType(initialType, editingTransaction);
-        this.toggleAddButtons(initialType);
-
-        this.typeBox.valueProperty().addListener((obs, oldType, newType) -> {
-            if (newType != null && newType != oldType) {
-                this.loadCategoriesForType(newType, null);
-                this.toggleAddButtons(newType);
+        CurrencyInputFormatter.attach(valueField);
+        valueField.getStyleClass().add("form-input");
+        // Clears the red border as soon as the user types something.
+        valueField.textProperty().addListener((obs, oldText, newText) -> {
+            if (!newText.isBlank()) {
+                valueField.getStyleClass().remove("field-error");
             }
         });
 
-        this.configureEnumBox(this.paymentMethodBox, this::translatePaymentMethod);
-        this.paymentMethodBox.getSelectionModel().selectFirst();
+        descriptionArea.setPromptText("Descrição da transação");
+        descriptionArea.setPrefRowCount(2);
+        descriptionArea.setWrapText(true);
+        descriptionArea.getStyleClass().add("form-input");
 
-        this.configureBankAccountBox(editingTransaction);
+        datePicker.getStyleClass().add("form-input");
+        datePicker.setMaxWidth(Double.MAX_VALUE);
+
+        configureEnumBox(typeBox, EnumLabels::label);
+        TransactionType initialType = (editingTransaction != null)
+                ? editingTransaction.getTransactionType()
+                : TransactionType.INCOME;
+        typeBox.setValue(initialType);
+
+        loadCategoriesForType(initialType, editingTransaction);
+        toggleAddButtons(initialType);
+
+        typeBox.valueProperty().addListener((obs, oldType, newType) -> {
+            if (newType != null && newType != oldType) {
+                loadCategoriesForType(newType, null);
+                toggleAddButtons(newType);
+            }
+        });
+
+        configureEnumBox(paymentMethodBox, EnumLabels::label);
+        paymentMethodBox.getSelectionModel().selectFirst();
+
+        configureBankAccountBox(editingTransaction);
+
+        // Configure delete and deactivate buttons
+        delCategoryButton.setOnAction(e -> {
+            CategoryOption option = categoryBox.getValue();
+
+            if (option != null && option.category() != null) {
+                deleteCategory(option);
+            }
+        });
+        delBankAccountButton.setOnAction(e -> {
+            BankAccount account = bankAccountBox.getValue();
+
+            if (account != null) {
+                deactivateBankAccount(account);
+            }
+        });
 
         if (editingTransaction != null) {
-            this.valueField.setText(FormatCurrency.formatCurrency(editingTransaction.getValue()).substring(3));
-            this.typeBox.setValue(editingTransaction.getTransactionType());
-            this.paymentMethodBox.setValue(editingTransaction.getPaymentMethod());
-            this.descriptionArea.setText(editingTransaction.getDescription());
-            this.datePicker.setValue(editingTransaction.getDate());
-            this.saveButton.setText("Alterar");
-            this.saveButton.setOnAction(e -> this.createTransaction(editingTransaction));
+            valueField.setText(FormatCurrency.formatCurrency(editingTransaction.getValue()).substring(3));
+            typeBox.setValue(editingTransaction.getTransactionType());
+            paymentMethodBox.setValue(editingTransaction.getPaymentMethod());
+            descriptionArea.setText(editingTransaction.getDescription());
+            datePicker.setValue(editingTransaction.getDate());
+            saveButton.setText("Alterar");
+            saveButton.setOnAction(e -> createTransaction(editingTransaction));
         } else {
-            this.typeBox.getSelectionModel().selectFirst();
-            this.paymentMethodBox.getSelectionModel().selectFirst();
-            this.saveButton.setOnAction(e -> this.createTransaction(null));
+            typeBox.getSelectionModel().selectFirst();
+            paymentMethodBox.getSelectionModel().selectFirst();
+            saveButton.setOnAction(e -> createTransaction(null));
         }
 
-        this.statusLabel.setWrapText(true);
-        this.statusLabel.setVisible(false);
-        this.statusLabel.setManaged(false);
+        statusLabel.setWrapText(true);
+        statusLabel.setMinHeight(Region.USE_PREF_SIZE);
+        statusLabel.setVisible(false);
+        statusLabel.setManaged(false);
 
-        this.saveButton.getStyleClass().addAll("primary", "form-save-button");
-        this.saveButton.setFocusTraversable(false);
+        saveButton.getStyleClass().addAll("primary", "form-save-button");
+        saveButton.setFocusTraversable(false);
 
-        this.cancelButton.getStyleClass().add("form-cancel-button");
-        this.cancelButton.setOnAction(e -> onCancelTransaction.run());
+        cancelButton.getStyleClass().add("form-cancel-button");
+        cancelButton.setOnAction(e -> onCancelTransaction.run());
 
         HBox buttonRow = new HBox(10, cancelButton, saveButton);
         buttonRow.setAlignment(Pos.CENTER_RIGHT);
 
         getChildren().addAll(
                 title,
-                this.formLabel("Valor", true), this.valueField,
-                this.formLabel("Tipo", true), this.typeBox,
-                this.formLabel("Forma de pagamento", true), this.paymentMethodBox,
-                this.formLabel("Descrição", false), this.descriptionArea,
-                this.formLabel("Data", false), this.datePicker,
-                this.formLabel("Conta", true),
-                this.rowWithAddButton(bankAccountBox, addBankAccountButton, this::promptNewBankAccount),
-                this.formLabel("Categoria", false),
-                this.rowWithAddButton(categoryBox, addCategoryButton, this::promptNewCategory),
-                this.statusLabel,
+                formLabel("Valor", true), valueField,
+                formLabel("Tipo", true), typeBox,
+                formLabel("Forma de pagamento", true), paymentMethodBox,
+                formLabel("Descrição", false), descriptionArea,
+                formLabel("Data", false), datePicker,
+                formLabel("Conta", true),
+                rowWithAddButton(bankAccountBox, addBankAccountButton, delBankAccountButton,
+                        this::promptNewBankAccount, () -> bankAccountBox.getValue() != null),
+                formLabel("Categoria", false),
+                rowWithAddButton(categoryBox, addCategoryButton, delCategoryButton, this::promptNewCategory,
+                        () -> categoryBox.getValue() != null && categoryBox.getValue().category() != null
+                                && categoryBox.getValue().category().getId() != null),
+                statusLabel,
                 buttonRow);
 
-        getStylesheets().add(getClass().getResource("FormTransaction.css").toExternalForm());
+        // Shared stylesheet lives one package up (ui.javafx.components.form),
+        // since BankAccountFormCard and CategoryFormCard need it too.
+        getStylesheets().add(getClass().getResource("/ui/javafx/components/form/FormTransaction.css").toExternalForm());
     }
 
     private void toggleAddButtons(TransactionType type) {
         boolean isRedemption = (type == TransactionType.REDEMPTION);
-
         addCategoryButton.setDisable(isRedemption);
     }
 
@@ -153,62 +202,27 @@ public class FormTransaction extends VBox {
         return label;
     }
 
-    private HBox rowWithAddButton(ComboBox<?> comboBox, Button addButton, Runnable onAdd) {
+    private HBox rowWithAddButton(ComboBox<?> comboBox, Button addButton, Button delButton, Runnable onAdd,
+            java.util.function.Supplier<Boolean> canDelete) {
 
         comboBox.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(comboBox, Priority.ALWAYS);
         comboBox.getStyleClass().add("form-input");
 
         addButton.getStyleClass().add("form-add-button");
+        delButton.getStyleClass().add("form-del-button");
         addButton.setOnAction(e -> onAdd.run());
 
-        return new HBox(8, comboBox, addButton);
-    }
-
-    private void configureValueField(TextField valueField) {
-        java.util.function.UnaryOperator<TextFormatter.Change> filter = change -> {
-            String text = change.getControlNewText();
-            if (text.matches("[0-9.,]*")) {
-                return change;
-            }
-            return null;
+        Runnable updateDeleteVisibility = () -> {
+            boolean visible = canDelete.get();
+            delButton.setVisible(visible);
+            delButton.setManaged(visible);
         };
 
-        valueField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
-            if (!isNowFocused) {
-                try {
-                    String texto = valueField.getText();
-                    if (texto == null || texto.isEmpty())
-                        return;
+        updateDeleteVisibility.run();
+        comboBox.valueProperty().addListener((obs, oldV, newV) -> updateDeleteVisibility.run());
 
-                    texto = texto.trim();
-
-                    if (texto.contains(".") && !texto.contains(",")) {
-                        if (texto.matches(".*\\.\\d{1,2}$")) {
-                            int lastDot = texto.lastIndexOf('.');
-                            texto = texto.substring(0, lastDot) + "," + texto.substring(lastDot + 1);
-                        }
-                    }
-
-                    String textoLimpo = texto.replace(".", "").replace(",", ".");
-                    BigDecimal valorDigitado = new BigDecimal(textoLimpo);
-
-                    java.text.DecimalFormatSymbols symbols = new java.text.DecimalFormatSymbols(
-                            java.util.Locale.of("pt", "BR"));
-                    symbols.setDecimalSeparator(',');
-                    symbols.setGroupingSeparator('.');
-                    java.text.DecimalFormat df = new java.text.DecimalFormat("#,##0.00", symbols);
-
-                    valueField.setText(df.format(valorDigitado));
-                } catch (NumberFormatException e) {
-
-                }
-            }
-        });
-
-        valueField.setTextFormatter(new TextFormatter<>(filter));
-        valueField.setPromptText("0,00");
-        valueField.getStyleClass().add("form-input");
+        return new HBox(8, comboBox, addButton, delButton);
     }
 
     private <T> void configureEnumBox(ComboBox<T> box, java.util.function.Function<T, String> translator) {
@@ -227,28 +241,30 @@ public class FormTransaction extends VBox {
         box.setMaxWidth(Double.MAX_VALUE);
     }
 
-    private String translateType(TransactionType type) {
-        return switch (type) {
-            case INCOME -> "Receita";
-            case EXPENSE -> "Despesa";
-            case INVESTMENT -> "Investimento";
-            case REDEMPTION -> "Resgate";
-        };
-    }
-
-    private String translatePaymentMethod(PaymentMethod method) {
-        return switch (method) {
-            case PIX -> "Pix";
-            case DEBIT_CARD -> "Cartão de débito";
-            case CREDIT_CARD -> "Cartão de crédito";
-            case CASH -> "Dinheiro";
-            case BANK_TRANSFER -> "Transferência";
-            case BOLETO -> "Boleto";
-        };
-    }
-
     private void configureBankAccountBox(Transaction editingTransaction) {
         bankAccountBox.getStyleClass().add("form-input");
+
+        bankAccountBox.setButtonCell(new ListCell<>() {
+            {
+                setTextOverrun(OverrunStyle.CENTER_ELLIPSIS);
+            }
+
+            @Override
+            protected void updateItem(BankAccount item, boolean empty) {
+                super.updateItem(item, empty);
+                getStyleClass().remove("combo-placeholder");
+
+                if (empty || item == null) {
+                    setText("Nenhuma conta");
+                    getStyleClass().add("combo-placeholder");
+                } else {
+                    setText(item.toString());
+                }
+            }
+        });
+
+        bankAccountBox.valueProperty()
+                .addListener((obs, oldV, newV) -> bankAccountBox.getStyleClass().remove("field-error"));
 
         Task<List<BankAccount>> task = new Task<>() {
             @Override
@@ -258,6 +274,7 @@ public class FormTransaction extends VBox {
         };
 
         task.setOnSucceeded(e -> Platform.runLater(() -> {
+            bankAccountBox.setPromptText("Crie uma conta");
             bankAccountBox.getItems().setAll(task.getValue());
 
             if (editingTransaction != null) {
@@ -296,10 +313,11 @@ public class FormTransaction extends VBox {
                 }
                 task.getValue().forEach(cat -> categoryBox.getItems().add(new CategoryOption(cat, cat.getName())));
             }
+
             if (editingTransaction != null && editingTransaction.getCategoryId() != null) {
                 categoryBox.getItems().stream()
                         .filter(opt -> opt.category() != null
-                                && opt.category().getId().equals(editingTransaction.getCategoryId()))
+                                && editingTransaction.getCategoryId().equals(opt.category().getId()))
                         .findFirst()
                         .ifPresentOrElse(
                                 categoryBox.getSelectionModel()::select,
@@ -310,7 +328,7 @@ public class FormTransaction extends VBox {
 
             if (selectedType == TransactionType.REDEMPTION && categoryBox.getItems().isEmpty()) {
                 saveButton.setDisable(true);
-                showStatus("Nenhum investimento disponível para resgatar.", false);
+                showStatus("Sem investimento para resgatar.", false);
             } else {
                 saveButton.setDisable(false);
             }
@@ -407,6 +425,27 @@ public class FormTransaction extends VBox {
     }
 
     private void createTransaction(Transaction editingTransaction) {
+        // Blocking prerequisite: checked first so the user never has to fix
+        // other fields only to be stopped by the missing account afterwards.
+
+        if (valueField.getText().isBlank()) {
+            if (!valueField.getStyleClass().contains("field-error")) {
+                valueField.getStyleClass().add("field-error");
+            }
+            showStatus("Informe um valor válido.", false);
+            return;
+        }
+
+        if (bankAccountBox.getValue() == null) {
+            if (!bankAccountBox.getStyleClass().contains("field-error")) {
+                bankAccountBox.getStyleClass().add("field-error");
+            }
+            showStatus(bankAccountBox.getItems().isEmpty()
+                    ? "Crie uma conta no botão +."
+                    : "Selecione uma conta.", false);
+            return;
+        }
+
         Transaction transaction;
 
         Integer selectedBankAccountId = bankAccountBox.getValue() != null ? bankAccountBox.getValue().getId() : null;
@@ -415,7 +454,7 @@ public class FormTransaction extends VBox {
         Integer selectedCategoryId = selectedCategoryObj != null ? selectedCategoryObj.getId() : null;
 
         try {
-            BigDecimal val = getValue();
+            BigDecimal val = CurrencyInputFormatter.parse(valueField.getText());
 
             if (editingTransaction != null) {
                 transaction = new Transaction(
@@ -436,12 +475,10 @@ public class FormTransaction extends VBox {
                         datePicker.getValue());
             }
         } catch (NumberFormatException e) {
-            showStatus("Informe um valor válido.", false);
-            return;
-        }
-
-        if (bankAccountBox.getValue() == null) {
-            showStatus("Selecione uma conta.", false);
+            if (!valueField.getStyleClass().contains("field-error")) {
+                valueField.getStyleClass().add("field-error");
+            }
+            showStatus("Erro ao salvar.", false);
             return;
         }
 
@@ -466,13 +503,12 @@ public class FormTransaction extends VBox {
                 TransactionEventBus.getInstance().publish(Type.CREATED, transaction);
             }
             saveButton.setDisable(false);
-            clearFields();
             showStatus("Transação salva com sucesso.", true);
         }));
 
         task.setOnFailed(e -> Platform.runLater(() -> {
             saveButton.setDisable(false);
-            showStatus("Não foi possível salvar. Tente novamente.", false);
+            showStatus("Não foi possível salvar.", false);
         }));
 
         Thread thread = new Thread(task);
@@ -480,14 +516,41 @@ public class FormTransaction extends VBox {
         thread.start();
     }
 
-    private void clearFields() {
-        valueField.clear();
-        typeBox.getSelectionModel().selectFirst();
-        paymentMethodBox.getSelectionModel().selectFirst();
-        descriptionArea.clear();
-        datePicker.setValue(LocalDate.now());
-        bankAccountBox.getSelectionModel().selectFirst();
-        categoryBox.getSelectionModel().selectFirst();
+    private void deactivateBankAccount(BankAccount account) {
+        try {
+            finTracker.deactivateBankAccount(account.getId());
+
+            // Clear first so the combo doesn't keep a stale value, then remove.
+            bankAccountBox.getSelectionModel().clearSelection();
+            bankAccountBox.getItems().remove(account);
+            bankAccountBox.getSelectionModel().selectFirst();
+
+            showStatus("Conta desativada com sucesso.", true);
+            AppEventBus.getInstance().publish(AppEventBus.Type.DATA_CHANGED);
+        } catch (InvalidInput e) {
+            showStatus("Erro ao desativar conta", false);
+        }
+    }
+
+    private void deleteCategory(CategoryOption option) {
+        try {
+            finTracker.deleteCategory(option.category().getId());
+
+            categoryBox.getSelectionModel().clearSelection();
+            categoryBox.getItems().remove(option);
+
+            // Keep the default "Outros" fallback when no real category is left
+            // (except for redemptions, which must always have an investment).
+            if (categoryBox.getItems().isEmpty() && typeBox.getValue() != TransactionType.REDEMPTION) {
+                categoryBox.getItems().add(new CategoryOption(null, "Outros"));
+            }
+            categoryBox.getSelectionModel().selectFirst();
+
+            showStatus("Categoria excluída com sucesso.", true);
+            AppEventBus.getInstance().publish(AppEventBus.Type.DATA_CHANGED);
+        } catch (InvalidInput e) {
+            showStatus("Erro ao excluir categoria", false);
+        }
     }
 
     private void showStatus(String message, boolean success) {
@@ -498,27 +561,11 @@ public class FormTransaction extends VBox {
         statusLabel.setVisible(true);
         statusLabel.setManaged(true);
 
-        PauseTransition pause = new PauseTransition(Duration.seconds(3));
-        pause.setOnFinished(e -> {
+        statusTimer.stop();
+        statusTimer.setOnFinished(e -> {
             statusLabel.setVisible(false);
             statusLabel.setManaged(false);
         });
-        pause.play();
-    }
-
-    private BigDecimal getValue() {
-        String text = valueField.getText().trim();
-
-        if (text.contains(".") && !text.contains(",")) {
-            if (text.matches(".*\\.\\d{1,2}$")) {
-                int lastDot = text.lastIndexOf('.');
-                text = text.substring(0, lastDot) + "," + text.substring(lastDot + 1);
-            }
-        }
-
-        String textoSemPontos = text.replace(".", "");
-        String textoLimpo = textoSemPontos.replace(",", ".");
-
-        return new BigDecimal(textoLimpo);
+        statusTimer.playFromStart();
     }
 }

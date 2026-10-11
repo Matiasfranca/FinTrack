@@ -35,6 +35,13 @@
     -fx-border-radius: 6px;
 }
 
+.form-input.text-field.field-error,
+.form-input.text-field.field-error:focused {
+    -fx-border-color: #F87171;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+}
+
 /* ---- TextArea ---- */
 
 .text-area {
@@ -119,6 +126,16 @@
     -fx-padding: 6px 8px;
 }
 
+.combo-box .list-cell.combo-placeholder {
+    -fx-text-fill: #6B6B70;
+}
+
+.combo-box.field-error {
+    -fx-border-color: #F87171;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+}
+
 .combo-box-popup .list-view {
     -fx-background-color: #1C1C1F;
     -fx-border-color: #28282C;
@@ -192,6 +209,20 @@
 
 .form-add-button:hover {
     -fx-background-color: #C9A227;
+    -fx-text-fill: #121214;
+}
+
+.form-del-button {
+    -fx-background-color: #28282C;
+    -fx-text-fill: #9A9A9E;
+    -fx-font-weight: bold;
+    -fx-background-radius: 6px;
+    -fx-min-width: 36px;
+    -fx-cursor: hand;
+}
+
+.form-del-button:hover {
+    -fx-background-color: #F87171;
     -fx-text-fill: #121214;
 }
 

@@ -22,7 +22,7 @@ public class ConsoleUI {
     private final FinTracker finTracker;
 
     public ConsoleUI() {
-        this.finTracker = new FinTracker();
+        finTracker = new FinTracker();
     }
 
     public void start(Scanner sc) {
@@ -37,10 +37,10 @@ public class ConsoleUI {
 
             switch (option) {
 
-                case 1 -> this.addTransaction(sc);
-                case 2 -> this.listTransaction(sc);
-                case 3 -> this.removeTransaction(sc);
-                case 4 -> this.showDashboard(sc);
+                case 1 -> addTransaction(sc);
+                case 2 -> listTransaction(sc);
+                case 3 -> removeTransaction(sc);
+                case 4 -> showDashboard(sc);
                 case 5 -> {
                     System.out.println("\nSaindo do FinTrack. Até logo! 👋");
                     sc.close();

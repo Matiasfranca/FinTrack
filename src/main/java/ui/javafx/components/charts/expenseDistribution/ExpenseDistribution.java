@@ -46,15 +46,15 @@ public class ExpenseDistribution extends VBox {
 
         setSpacing(10);
 
-        this.canvas = new Canvas(CANVAS_WIDTH, MIN_CANVAS_HEIGHT);
+        canvas = new Canvas(CANVAS_WIDTH, MIN_CANVAS_HEIGHT);
 
         this.expenseData = expenseData;
         this.investmentData = investmentData;
 
         getStyleClass().addAll("chart-card", "surface");
-        getChildren().addAll(this.buildToggle(), this.canvas);
+        getChildren().addAll(buildToggle(), canvas);
 
-        this.drawChart(this.currentMode);
+        drawChart(currentMode);
     }
 
     private HBox buildToggle() {
@@ -77,13 +77,13 @@ public class ExpenseDistribution extends VBox {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         expenseTab.setOnAction(e -> {
-            this.currentMode = ChartMode.EXPENSE;
-            this.drawChart(this.currentMode);
+            currentMode = ChartMode.EXPENSE;
+            drawChart(currentMode);
         });
 
         investmentTab.setOnAction(e -> {
-            this.currentMode = ChartMode.INVESTMENT;
-            this.drawChart(this.currentMode);
+            currentMode = ChartMode.INVESTMENT;
+            drawChart(currentMode);
         });
 
         HBox toggle = new HBox(8, title, spacer, expenseTab, investmentTab);
@@ -101,10 +101,10 @@ public class ExpenseDistribution extends VBox {
                 : activeList.size() * LEGEND_ITEM_HEIGHT;
 
         double requiredHeight = CHART_Y + CHART_SIZE + 30 + legendHeight + LEGEND_BOTTOM_PADDING;
-        this.canvas.setHeight(Math.max(MIN_CANVAS_HEIGHT, requiredHeight));
+        canvas.setHeight(Math.max(MIN_CANVAS_HEIGHT, requiredHeight));
 
-        GraphicsContext gc = this.canvas.getGraphicsContext2D();
-        gc.clearRect(0, 0, CANVAS_WIDTH, this.canvas.getHeight());
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        gc.clearRect(0, 0, CANVAS_WIDTH, canvas.getHeight());
 
         if (activeList == null || activeList.isEmpty()) {
             drawEmptyState(gc);
@@ -238,6 +238,6 @@ public class ExpenseDistribution extends VBox {
         this.expenseData = expenseData;
         this.investmentData = investmentData;
 
-        this.drawChart(this.currentMode);
+        drawChart(currentMode);
     }
 }

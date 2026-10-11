@@ -48,6 +48,9 @@ public class Main extends Application {
 
     public static void main(String[] args) {
 
+        database.DatabaseInitializer.initialize();
+        DatabaseMaintenanceService.cleanIfFirstDayOfMonth();
+
         if (args.length > 0 && "--console".equals(args[0])) {
             runConsole();
             return;
@@ -73,9 +76,6 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 
-        database.DatabaseInitializer.initialize();
-        DatabaseMaintenanceService.cleanIfFirstDayOfMonth();
-
         this.stage = primaryStage;
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("Main.fxml"));
@@ -84,7 +84,7 @@ public class Main extends Application {
 
         Parent root = loader.load();
 
-        this.scene = new Scene(root, 500, 350);
+        scene = new Scene(root, 500, 350);
 
         scene.getStylesheets().add(
                 getClass()

@@ -13,11 +13,9 @@ import ui.javafx.components.financialCards.financialCard.expenseCard.ExpenseCard
 import ui.javafx.components.financialCards.financialCard.incomeCard.IncomeCard;
 import ui.javafx.components.financialCards.financialCard.investmentCard.InvestmentCard;
 import ui.javafx.events.TransactionEventBus;
-import ui.javafx.events.TransactionEventBus.Event;
 
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-
 
 public class FinancialCards extends HBox {
 
@@ -35,12 +33,12 @@ public class FinancialCards extends HBox {
 
         setSpacing(40);
 
-        this.fetchData();
+        fetchData();
 
-        this.balanceCard = new BalanceCard(this.globCardData, newDailyData);
-        this.incomeCard = new IncomeCard(this.cardData, newDailyData);
-        this.expenseCard = new ExpenseCard(this.cardData, newDailyData);
-        this.investmentCard = new InvestmentCard(this.globCardData, newDailyData);
+        balanceCard = new BalanceCard(globCardData, newDailyData);
+        incomeCard = new IncomeCard(cardData, newDailyData);
+        expenseCard = new ExpenseCard(cardData, newDailyData);
+        investmentCard = new InvestmentCard(globCardData, newDailyData);
 
         for (var card : List.of(balanceCard, incomeCard, expenseCard, investmentCard)) {
             HBox.setHgrow(card, Priority.ALWAYS);
@@ -49,7 +47,7 @@ public class FinancialCards extends HBox {
 
         getChildren().addAll(balanceCard, incomeCard, expenseCard, investmentCard);
 
-        TransactionEventBus.getInstance().subscribe(this::updateAllCards);
+        TransactionEventBus.getInstance().subscribe(e -> updateAllCards());
 
         // Component stylesheet
         getStylesheets().add(getClass().getResource("FinancialCards.css").toExternalForm());
@@ -58,21 +56,21 @@ public class FinancialCards extends HBox {
 
     private void fetchData() {
         try {
-            this.cardData = this.fintracker.getMonthlyCard(YearMonth.now());
-            this.globCardData = this.fintracker.getGlobalCard();
-            this.newDailyData = this.fintracker.getMonthlyOverview(YearMonth.now());
+            cardData = fintracker.getMonthlyCard(YearMonth.now());
+            globCardData = fintracker.getGlobalCard();
+            newDailyData = fintracker.getMonthlyOverview(YearMonth.now());
         } catch (InvalidInput e) {
             e.printStackTrace();
         }
     }
 
-    private void updateAllCards(Event e) {
-        this.fetchData();
+    private void updateAllCards() {
+        fetchData();
 
-        this.balanceCard.refreshData(this.globCardData.getCashFlowBalance(), this.newDailyData);
-        this.incomeCard.refreshData(this.cardData.getTotalIncome(), this.newDailyData);
-        this.expenseCard.refreshData(this.cardData.getTotalExpense(), this.newDailyData);
-        this.investmentCard.refreshData(this.globCardData.getTotalInvestment(), this.newDailyData);
+        balanceCard.refreshData(globCardData.getCashFlowBalance(), newDailyData);
+        incomeCard.refreshData(cardData.getTotalIncome(), newDailyData);
+        expenseCard.refreshData(cardData.getTotalExpense(), newDailyData);
+        investmentCard.refreshData(globCardData.getTotalInvestment(), newDailyData);
     }
 
 }

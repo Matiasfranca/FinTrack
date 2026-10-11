@@ -33,6 +33,6 @@ public class Month {
      * Returns the YearMonth object corresponding to this month.
      */
     public YearMonth getYearMonth() {
-        return YearMonth.of(this.year, this.month);
+        return YearMonth.of(year, month);
     }
 }
